@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Martin-Maseko",
+  "license": "ISC",
+  "description": "Backend for locals.ZA - A platform for local businesses in South Africa",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
