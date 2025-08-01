@@ -61,6 +61,15 @@ const reportRoutes = require('./src/routes/reportRoutes');
 // Mount the report router at the /api/reports base path.
 app.use('/api/reports', reportRoutes);
 
+// Import the message routes for handling user messages.
+// This will handle operations like sending and retrieving messages between users.
+const messageRoutes = require('./src/routes/messageRoutes');
+
+// Mount the message router at the /api/messages base path.
+app.use('/api/messages', messageRoutes);
+
+
+// Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
