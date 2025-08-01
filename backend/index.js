@@ -23,6 +23,22 @@ const userRoutes = require('./src/routes/userRoutes');
 // Mount the user router at the /api/users base path.
 app.use('/api/users', userRoutes);
 
+
+// Import the product routes from ./src/routes/productRoutes.
+// This will handle product-related operations like adding, updating, and deleting products.
+
+const productRoutes = require('./src/routes/productRoutes');
+// Mount the product router at the /api/products base path.
+app.use('/api/products', productRoutes);
+
+
+// Import the order routes from ./src/routes/orderRoutes.
+// This will handle order-related operations like creating and managing orders.
+const orderRoutes = require('./src/routes/orderRoutes');
+
+// Mount the order router at the /api/orders base path.
+app.use('/api/orders', orderRoutes);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
