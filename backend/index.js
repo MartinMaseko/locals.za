@@ -39,6 +39,13 @@ const orderRoutes = require('./src/routes/orderRoutes');
 // Mount the order router at the /api/orders base path.
 app.use('/api/orders', orderRoutes);
 
+// Import the driver routes from ./src/routes/driverRoutes.
+// This will handle driver-related operations like managing deliveries and earnings.
+const driverRoutes = require('./src/routes/driverRoutes');
+
+// Mount the driver router at the /api/drivers base path.
+app.use('/api/drivers', driverRoutes);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
