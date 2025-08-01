@@ -46,6 +46,21 @@ const driverRoutes = require('./src/routes/driverRoutes');
 // Mount the driver router at the /api/drivers base path.
 app.use('/api/drivers', driverRoutes);
 
+// Import the dashboard routes for internal team operations.
+// This will handle operations like fetching driver locations and dashboard deliveries.
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
+
+// Mount the dashboard router at the /api/dashboard base path.
+app.use('/api/dashboard', dashboardRoutes);
+
+
+// Import the report routes for generating delivery reports.
+// This will handle operations like fetching delivered deliveries for reporting.
+const reportRoutes = require('./src/routes/reportRoutes');
+
+// Mount the report router at the /api/reports base path.
+app.use('/api/reports', reportRoutes);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
