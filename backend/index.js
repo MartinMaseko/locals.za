@@ -68,6 +68,13 @@ const messageRoutes = require('./src/routes/messageRoutes');
 // Mount the message router at the /api/messages base path.
 app.use('/api/messages', messageRoutes);
 
+// Import the ticket routes for handling support tickets.
+// This will handle operations like creating, updating, and retrieving support tickets.
+const ticketRoutes = require('./src/routes/ticketRoutes');
+
+// Mount the ticket router at the /api/tickets base path.
+app.use('/api/tickets', ticketRoutes);
+
 
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
