@@ -11,6 +11,8 @@ const authController = require('../controllers/authController');
 // The POST method is used for creating new resources (registration) and authenticating users (login
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/signout', authController.signOut);
+router.post('/session', authController.getSession);
 
 // Export the router so it can be used in the main application file
 module.exports = router;
