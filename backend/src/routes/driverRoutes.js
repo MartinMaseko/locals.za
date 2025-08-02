@@ -25,15 +25,20 @@ router.post('/deliveries/:id/proof', authenticateToken, async (req, res) => {
   res.json({ message: 'Proof of delivery uploaded (implement storage logic)' });
 });
 
-// Driver Earnings
+// Driver Earnings (based on delivered & paid orders)
 router.get('/me/earnings', authenticateToken, async (req, res) => {
   const { id } = req.user;
   const { data, error } = await supabase
-    .from('deliveries')
-    .select('id, status')
+    .from('orders')
+    .select('delivery_fee')
     .eq('driver_id', id)
-    .eq('status', 'delivered');
-  res.json({ deliveredCount: data.length });
+    .eq('status', 'delivered')
+    .eq('payment_status', 'paid');
+  if (error) return res.status(400).json({ error: error.message });
+
+  const totalEarnings = data.reduce((sum, o) => sum + Number(o.delivery_fee || 0), 0);
+
+  res.json({ totalEarnings, deliveries: data.length });
 });
 
 // Update Driver/Vehicle Info
