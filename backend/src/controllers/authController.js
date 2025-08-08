@@ -1,42 +1,32 @@
-// Import the Supabase client to interact with the database
-const supabase = require('../utils/supabaseClient');
+// Import the Firebase admin SDK for server-side operations
+const admin = require('../../firebase');
 
-// Import the JSON Web Token library for creating tokens
-const jwt = require('jsonwebtoken');
-
-// Controller functions for handling user registration and login
+// Registration (handled on frontend with Firebase Auth)
 exports.register = async (req, res) => {
-  const { email, password } = req.body;
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) return res.status(400).json({ error: error.message });
-  res.json({ user: data.user });
+  // Registration is handled on frontend with Firebase Auth
+  res.status(501).json({ error: "Registration is handled on the frontend with Firebase Auth." });
 };
 
+// Login (handled on frontend with Firebase Auth)
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return res.status(400).json({ error: error.message });
-
-  const token = jwt.sign({ id: data.user.id, email: data.user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  res.json({ user: data.user, token });
+  // Login is handled on frontend with Firebase Auth
+  res.status(501).json({ error: "Login is handled on the frontend with Firebase Auth." });
 };
 
-// Sign out the current user (requires Supabase access token from frontend)
+// Sign out (handled on frontend with Firebase Auth)
 exports.signOut = async (req, res) => {
-  const { access_token } = req.body;
-  if (!access_token) return res.status(400).json({ error: 'Access token required' });
-
-  const { error } = await supabase.auth.signOut(access_token);
-  if (error) return res.status(400).json({ error: error.message });
-  res.json({ message: 'Signed out successfully' });
+  res.status(501).json({ error: "Sign out is handled on the frontend with Firebase Auth." });
 };
 
-// Helper to get the current user session (requires Supabase access token from frontend)
+// Get current user session (verify Firebase token)
 exports.getSession = async (req, res) => {
   const { access_token } = req.body;
   if (!access_token) return res.status(400).json({ error: 'Access token required' });
 
-  const { data, error } = await supabase.auth.getUser(access_token);
-  if (error) return res.status(400).json({ error: error.message });
-  res.json({ user: data.user });
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(access_token);
+    res.json({ user: decodedToken });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
