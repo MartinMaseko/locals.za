@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../utils/supabaseClient');
+const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
 
 // Generate delivery reports 
 router.get('/deliveries', authenticateToken, async (req, res) => {
-  const { data, error } = await supabase
-    .from('deliveries')
-    .select('*')
-    .eq('status', 'delivered');
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data);
+  try {
+    const snapshot = await admin.firestore().collection('deliveries')
+      .where('status', '==', 'delivered')
+      .get();
+    const deliveries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(deliveries);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 module.exports = router;
