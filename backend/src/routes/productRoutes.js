@@ -1,47 +1,61 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../utils/supabaseClient');
+const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
 
 // Add Product (Internal Team/Admin)
 router.post('/', authenticateToken, async (req, res) => {
-  // Check if user is admin 
-  const { data, error } = await supabase.from('products').insert([req.body]).single();
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data);
+  try {
+    const ref = await admin.firestore().collection('products').add(req.body);
+    res.json({ id: ref.id, ...req.body });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Get All Products (public)
 router.get('/', async (req, res) => {
-  const { data, error } = await supabase.from('products').select('*');
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data);
+  try {
+    const snapshot = await admin.firestore().collection('products').get();
+    const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(products);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Get Product by ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data);
+  try {
+    const doc = await admin.firestore().collection('products').doc(id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Update Product (Admin)
 router.put('/:id', authenticateToken, async (req, res) => {
-  // Check if user is admin
   const { id } = req.params;
-  const { data, error } = await supabase.from('products').update(req.body).eq('id', id).single();
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data);
+  try {
+    await admin.firestore().collection('products').doc(id).set(req.body, { merge: true });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Delete Product (Admin)
 router.delete('/:id', authenticateToken, async (req, res) => {
-  // Check if user is admin
   const { id } = req.params;
-  const { data, error } = await supabase.from('products').delete().eq('id', id).single();
-  if (error) return res.status(400).json({ error: error.message });
-  res.json({ message: 'Product deleted', data });
+  try {
+    await admin.firestore().collection('products').doc(id).delete();
+    res.json({ message: 'Product deleted' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 module.exports = router;
