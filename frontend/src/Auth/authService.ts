@@ -6,8 +6,11 @@ const auth = getAuth(app);
 export const signUp = (email: string, password: string) =>
   createUserWithEmailAndPassword(auth, email, password);
 
-export const signIn = (email: string, password: string) =>
-  signInWithEmailAndPassword(auth, email, password);
+export const signIn = async (email: string, password: string) => {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const access_token = await userCredential.user.getIdToken();
+  return { access_token, user: userCredential.user };
+};
 
 export const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();

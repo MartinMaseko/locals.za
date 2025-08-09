@@ -7,7 +7,7 @@ import DriversDash from './components/pages/drivers/driversDash';
 import AdminLogin from './components/pages/dashboard/adminLogin'
 import AdminDashboard from './components/pages/dashboard/adminDashboard';
 import UserRegistration from './components/pages/userpages/userReg'; 
-import HomePage from './components/pages/storepages/homePage';
+import HomePage from './components/pages/storepages/homepage';
 function App() {
 
   return (
