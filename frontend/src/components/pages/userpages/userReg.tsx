@@ -47,10 +47,10 @@ const UserRegistration = () => {
       const user = result.user;
       const token = await user.getIdToken();
 
-      // Save extra profile info to backend (if needed, you can prompt for full_name/phone_number after Google sign up)
+      // Save extra profile info to backend 
       await axios.post('/api/users/register', {
         full_name: user.displayName || '',
-        phone_number: '', // You may want to prompt for this if not available
+        phone_number: '', 
         user_type: 'customer',
       }, {
         headers: { Authorization: `Bearer ${token}` }
