@@ -30,3 +30,17 @@ exports.getSession = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// Promote user to admin (set custom claim)
+exports.promoteToAdmin = async (req, res) => {
+  const { uid } = req.body; // Firebase UID of the user to promote
+  if (!uid) return res.status(400).json({ error: 'UID required' });
+
+  try {
+    await admin.auth().setCustomUserClaims(uid, { admin: true });
+    res.json({ message: 'User promoted to admin.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

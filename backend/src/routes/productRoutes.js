@@ -1,28 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const admin = require('../../firebase');
-const authenticateToken = require('../middleware/auth');
+const productController = require('../controllers/productController');
+const auth = require('../middleware/auth');
+const requireAdmin = auth.requireAdmin;
+const authenticateToken = auth;
 
-// Add Product (Internal Team/Admin)
-router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const ref = await admin.firestore().collection('products').add(req.body);
-    res.json({ id: ref.id, ...req.body });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+// Protect product creation with admin check
+router.post('/', requireAdmin, productController.createProduct);
 
 // Get All Products (public)
-router.get('/', async (req, res) => {
-  try {
-    const snapshot = await admin.firestore().collection('products').get();
-    const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(products);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.get('/', productController.getAllProducts);
 
 // Get Product by ID
 router.get('/:id', async (req, res) => {

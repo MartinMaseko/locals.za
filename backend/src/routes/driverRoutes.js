@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase'); // Update path if needed
 const authenticateToken = require('../middleware/auth');
+const driverController = require('../controllers/driverController');
+
+// Register a new driver
+router.post('/register', driverController.register);
 
 // Get Assigned Deliveries (Driver)
 router.get('/me/deliveries', authenticateToken, async (req, res) => {
