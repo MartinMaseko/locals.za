@@ -1,0 +1,43 @@
+.reg-logo {
+    max-width: 250px;
+    max-height: 250px;
+}
+
+.app-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;  
+}
+
+.app-form input{
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 1em 1em;
+    box-shadow: 0 0 5px #dee2e6;
+    color: #212529;
+}
+
+.app-form input:focus {
+    outline: none;
+    box-shadow: 0 0 5px #6b6b6b;
+}
+
+button {
+    background-color: #ffb703;
+    color: #262626;
+    margin-top: 1em;
+    border: none;
+}
+
+button:hover {
+    background-color: #fb8500;
+    color: #f8f9fa;
+}
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
