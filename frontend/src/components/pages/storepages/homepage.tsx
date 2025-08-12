@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
+import LogoAnime from '../../assets/logos/locals-svg.gif';
 
 const HomePage = () => {
   const [name, setName] = useState('');
@@ -48,7 +49,15 @@ const HomePage = () => {
     fetchProducts();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  // Conditional rendering for the products loading state
+  if (loading || productsLoading) {
+    return (
+      <div className='loading-container'>
+        <img src={LogoAnime} alt="Loading..." className="loading-gif" />
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div style={{ textAlign: 'center', marginTop: '3rem' }}>
@@ -72,7 +81,7 @@ const HomePage = () => {
                 <p>{product.description}</p>
                 <p><strong>Brand:</strong> {product.brand}</p>
                 <p><strong>Category:</strong> {product.category}</p>
-                <p><strong>Price:</strong> {product.price}</p>
+                <p><strong>Price: R</strong>{product.price}</p>
                 {product.image_url && (
                   <img src={product.image_url} alt={product.name} style={{ maxWidth: 200, marginTop: 10 }} />
                 )}
