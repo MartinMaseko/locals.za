@@ -3,10 +3,13 @@ import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
 import LogoAnime from '../../assets/logos/locals-svg.gif';
+import './storefront.css';
+import NavBar from './navbar/navbar';
 
 const HomePage = () => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   // New: Products state
   const [products, setProducts] = useState<any[]>([]);
@@ -60,23 +63,36 @@ const HomePage = () => {
   }
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+    <>
+    <NavBar />
+    {/* Search Bar */}
+    <div className="homepage-searchbar">
+      <input
+        type="text"
+        placeholder="Search products..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="homepage-search-input"
+      />
+    </div>
+    {/*Homepage Page*/}
+    <div className='homepage-container'>
       <h1>
         Welcome{ name ? `, ${name}` : '' }!
       </h1>
       <p>This is your home page.</p>
 
       {/* New: Display products */}
-      <div style={{ marginTop: '2rem' }}>
+      <div className='products-section'>
         <h2>All Products</h2>
         {productsLoading ? (
           <div>Loading products...</div>
         ) : products.length === 0 ? (
           <p>No products found.</p>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul className='products-list'>
             {products.map(product => (
-              <li key={product.id} style={{ marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
+              <li key={product.id} className='products-list-item'>
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
                 <p><strong>Brand:</strong> {product.brand}</p>
@@ -91,6 +107,7 @@ const HomePage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

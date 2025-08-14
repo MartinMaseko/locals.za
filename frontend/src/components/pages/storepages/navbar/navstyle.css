@@ -1,0 +1,112 @@
+/* NavBar styles */
+.navbar {
+  width: 100%;
+  height: fit-content;
+  background: #454E50;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.navbar-logo {
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.navbar-logo img {
+  height: 45px;
+  max-width: 120px;
+}
+.navbar-menu {
+  position: absolute;
+  right: 1rem;
+  top: 45%;
+  transform: translateY(-50%);
+}
+.navbar-fullscreen-dropdown {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(34, 34, 34, 0.98);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(.77,0,.18,1);
+  opacity: 0;
+  pointer-events: none;
+}
+.navbar-fullscreen-dropdown.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.navbar-close {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: #FFB803;
+  font-size: 2.5rem;
+  cursor: pointer;
+  z-index: 101;
+}
+.navbar-fullscreen-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+.navbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: none;
+  text-align: left;
+}
+.navbar-fullscreen-dropdown .navbar-dropdown-item {
+  font-size: 1rem;
+  color: #DEDEDE;
+  background: none;
+  border: none;
+  text-align: center;
+  width: 100%;
+  cursor: pointer;
+  padding: 1rem 0;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.navbar-fullscreen-dropdown .navbar-dropdown-item:hover {
+  color: #FFB803;
+}
+.navbar-dropdown-icon{
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+}
+.navbar-logout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  background: none;
+  color: #DEDEDE;
+  font-size: 1rem;
+}
+.navbar-logout:hover {
+  color: #FFB803;
+  background: none;
+}
