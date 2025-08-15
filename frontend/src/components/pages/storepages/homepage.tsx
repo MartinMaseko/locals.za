@@ -5,6 +5,7 @@ import { app } from '../../../Auth/firebaseClient';
 import LogoAnime from '../../assets/logos/locals-svg.gif';
 import './storefront.css';
 import NavBar from './navbar/navbar';
+import AppNav from './appnav/appnav';
 
 const HomePage = () => {
   const [name, setName] = useState('');
@@ -107,6 +108,7 @@ const HomePage = () => {
         )}
       </div>
     </div>
+    <AppNav />
     </>
   );
 };
