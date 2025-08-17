@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-
+import LayOut from './components/pages/LayOut';
 import UserProfile from './components/pages/userpages/userProfile';
 import LoginPage from './components/pages/storepages/loginPage';
 import DriversDash from './components/pages/drivers/driversDash';
@@ -13,16 +13,18 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} /> 
         <Route path="/register" element={<UserRegistration />} /> 
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/userprofile" element={<UserProfile />} />
-        <Route path="/driversdashboard" element={<DriversDash />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
+        <Route path="/driversdashboard" element={<DriversDash />} />
+        <Route path="/" element={<LayOut />}>
+          <Route index element={<HomePage />} /> 
+          <Route path="/userprofile" element={<UserProfile />} />
+        </Route>
       </Routes>
     </Router>
   )
 }
 
-export default App
+export default App;

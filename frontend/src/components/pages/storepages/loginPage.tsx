@@ -94,10 +94,8 @@ const UserLogin = () => {
         }
       } else if (profile.user_type === 'driver') {
         navigate('/driversdashboard');
-      } else if (profile.user_type === 'admin') {
-        navigate('/admindashboard');
       } else {
-        setError('Only customers, drivers, and admins can log in here.');
+        setError('Only customers and drivers can log in here.');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');
@@ -126,7 +124,7 @@ const UserLogin = () => {
           onChange={handleChange}
           required
         />
-        <button type="submit" disabled={loading} >
+        <button className='app-btn' type="submit" disabled={loading} >
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>

@@ -32,7 +32,11 @@ body {
 
 .loading-gif {
   width: 250px;
-  height: 250px;  
+  height: 250px;
+}
+
+li {
+  list-style: none;
 }
 
 @media (prefers-color-scheme: light) {

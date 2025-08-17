@@ -1,14 +1,27 @@
+.registerLogin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem;
+    box-sizing: border-box;
+    min-height: 100vh;
+    text-align: center;
+    background: transparent;
+}
+
 .reg-logo {
     max-width: 250px;
     max-height: 250px;
 }
-
 .app-form {
     display: flex;
     flex-direction: column;
     gap: 12px;  
 }
-
 .app-form input{
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -16,28 +29,37 @@
     padding: 1em 1em;
     box-shadow: 0 0 5px #dee2e6;
     color: #212529;
+    min-width: 300px;
 }
-
 .app-form input:focus {
     outline: none;
     box-shadow: 0 0 5px #6b6b6b;
 }
 
-button {
-    background-color: #ffb703;
-    color: #262626;
-    margin-top: 1em;
+.app-btn,
+.google-btn {
+    background-color: #FFB803;
+    color: #212529;
     border: none;
-}
-
-button:hover {
-    background-color: #fb8500;
-    color: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    padding: 0.75rem 0.5rem;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: large;
 }
 
 .google-btn {
-    display: flex;
+    margin-top: 0.75rem;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100%;
+}
+
+.app-btn:hover ,
+.google-btn:hover {
+    background-color: #212529;
+    color: #FFB803;
 }
