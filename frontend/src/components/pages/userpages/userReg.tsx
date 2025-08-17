@@ -119,7 +119,7 @@ const UserRegistration = () => {
           onChange={handleChange}
           required
         />
-        <button type="submit" disabled={loading}>
+        <button className='app-btn' type="submit" disabled={loading}>
           {loading ? 'Registering...' : 'Register'}
       </button>
       </form>

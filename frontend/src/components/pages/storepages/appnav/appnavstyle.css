@@ -6,7 +6,7 @@
   padding: 1rem 0;
   position: sticky;
   bottom: 0;
-  z-index: 10;
+  z-index: 40;
 }
 .appnav-icon {
   display: flex;
