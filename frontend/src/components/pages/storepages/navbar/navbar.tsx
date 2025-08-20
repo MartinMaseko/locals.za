@@ -41,13 +41,9 @@ const Navbar = () => {
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios/35/ffb803/login-rounded-right--v1.png" alt="login-rounded-right--v1"/>
             Login
           </Link>
-          <Link to="/account" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
+          <Link to="/useraccount" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/pulsar-line/35/ffb803/guest-male.png" alt="guest-male"/>
             Account
-          </Link>
-          <Link to="/profile" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/name.png" alt="name"/>
-            Profile
           </Link>
           <Link to="/cart" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/lift-cart-here.png" alt="lift-cart-here"/>

@@ -1,0 +1,112 @@
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+    min-height: 100vh;
+    text-align: center;
+    background: transparent;
+}
+.profile-heading{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+.profile-picture {
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+}
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;             
+    width: 100%;
+    max-width: 520px;      
+    align-items: stretch;   
+    padding: 0.5rem 0;      
+    box-sizing: border-box;
+}
+.profile-form input {
+    width: 100%;
+    max-width: 520px;
+    box-sizing: border-box;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 0.9rem 0.75rem;
+    font-size: 1.125rem;
+    color: #212529;
+    outline: none;
+}
+.profile-form input:focus {
+    box-shadow: 0 0 0 3px rgba(255,184,3,0.12);
+    border-color: rgba(255,184,3,0.6);
+}
+.profile-save-button {
+    background-color: #FFB803;
+    color: #212529;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    padding: 0.75rem 0.5rem;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: large;
+}
+.profile-save-button:hover {
+    background-color: #212529;
+    color: #FFB803;
+}
+.notification{
+    color: #212529;
+}
+input[type="file"] {
+    margin: 1.25rem;
+    display: inline-block;
+    vertical-align: middle;
+    font: inherit;
+    color: #FFB803;
+    background: transparent;
+    border: none;
+    padding: 0;
+    }
+
+/* modern browsers */
+input[type="file"]::file-selector-button {
+  background-color: #212529;
+  color: #FFB803;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  margin-right: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* WebKit fallback */
+input[type="file"]::-webkit-file-upload-button {
+  background-color: #212529;
+  color: #FFB803;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  margin-right: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* focus state */
+input[type="file"]::file-selector-button:focus,
+input[type="file"]::-webkit-file-upload-button:focus {
+  outline: 3px solid rgba(255,184,3,0.16);
+  outline-offset: 2px;
+}
