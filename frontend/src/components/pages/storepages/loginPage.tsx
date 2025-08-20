@@ -4,12 +4,15 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
+import '../../assets/UI/loginReg.css';
+import Logo from '../../assets/logos/LZABLKTRP.webp';
 
 const UserLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,10 +94,8 @@ const UserLogin = () => {
         }
       } else if (profile.user_type === 'driver') {
         navigate('/driversdashboard');
-      } else if (profile.user_type === 'admin') {
-        navigate('/admindashboard');
       } else {
-        setError('Only customers, drivers, and admins can log in here.');
+        setError('Only customers and drivers can log in here.');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');
@@ -103,9 +104,10 @@ const UserLogin = () => {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto' }}>
+    <div className='registerLogin-container'>
+      <img src={Logo} alt="Logo" className='reg-logo' />
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form className='app-form' onSubmit={handleSubmit}>
         <input
           name="email"
           type="email"
@@ -113,7 +115,6 @@ const UserLogin = () => {
           value={form.email}
           onChange={handleChange}
           required
-          style={{ display: 'block', marginBottom: 10, width: '100%' }}
         />
         <input
           name="password"
@@ -122,26 +123,18 @@ const UserLogin = () => {
           value={form.password}
           onChange={handleChange}
           required
-          style={{ display: 'block', marginBottom: 10, width: '100%' }}
         />
-        <button type="submit" disabled={loading} style={{ width: '100%' }}>
+        <button className='app-btn' type="submit" disabled={loading} >
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
       <button
+        className='google-btn'
         type="button"
         onClick={handleGoogleSignIn}
-        style={{
-          width: '100%',
-          marginTop: 10,
-          background: '#4285F4',
-          color: '#fff',
-          border: 'none',
-          padding: 10,
-          borderRadius: 4,
-        }}
       >
-        Sign in with Google
+        <img width="35" height="35" src="https://img.icons8.com/fluency/48/google-logo.png" alt="google-logo"/>
+        oogle Sign In
       </button>
       {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
     </div>
