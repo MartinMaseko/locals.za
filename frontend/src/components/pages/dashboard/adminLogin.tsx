@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { signIn } from '../../../Auth/authService';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../../assets/logos/LZABLKTRP.webp';
+import '../../assets/UI/loginReg.css'
 
 const AdminLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -40,9 +42,10 @@ const AdminLogin = () => {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto' }}>
+    <div className='registerLogin-container'>
+      <img src={Logo} className='reg-logo' alt="Logo" />
       <h2>Admin Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form className='app-form' onSubmit={handleSubmit}>
         <input
           name="email"
           type="email"
@@ -50,7 +53,6 @@ const AdminLogin = () => {
           value={form.email}
           onChange={handleChange}
           required
-          style={{ display: 'block', marginBottom: 10, width: '100%' }}
         />
         <input
           name="password"
@@ -59,9 +61,8 @@ const AdminLogin = () => {
           value={form.password}
           onChange={handleChange}
           required
-          style={{ display: 'block', marginBottom: 10, width: '100%' }}
         />
-        <button type="submit" disabled={loading} style={{ width: '100%' }}>
+        <button className='app-btn' type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>

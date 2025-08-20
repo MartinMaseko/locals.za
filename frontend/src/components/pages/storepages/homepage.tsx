@@ -1,15 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
+import LoadingContext from './LoadingContext';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
+import './storefront.css';
+import ProductCard from './productview/productsCard';
+import LogoAnime from '../../assets/logos/locals-svg.gif';
+import AppBanner from '../../assets/images/appbanner.webp';
+
+const productCategories = [
+  'Hair Extensions','Wigs','Conditioners','Shampoos','Hair Tools',
+  'Hair Care','Hair Coloring','Hair Food','Hair Loss Treatments',
+  'Hair Styling Products','Moisturizers','Relaxers','Hair Accessories','Hair Growth Products'
+];
 
 const HomePage = () => {
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  // New: Products state
-  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true); 
   const [productsLoading, setProductsLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  // New states for category UI
+  const [showCategories, setShowCategories] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  // New: Products state (keep your existing fetch logic)
+  const [products, setProducts] = useState<any[]>([]);
+
+  // access global loading setter from context
+  const { setLoading: setGlobalLoading } = useContext(LoadingContext);
+
+  useEffect(() => {
+    setGlobalLoading(loading || productsLoading);
+  }, [loading, productsLoading, setGlobalLoading]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -48,40 +71,217 @@ const HomePage = () => {
     fetchProducts();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  // filter products by search and selectedCategory
+  const filteredProducts = products.filter(p => {
+    const nameMatch = (p.name || '').toLowerCase().includes(search.toLowerCase());
+    const categoryMatch = (p.category || '').toLowerCase().includes(search.toLowerCase());
+    const searchMatch = search ? (nameMatch || categoryMatch) : true;
+    const categoryFilter = selectedCategory ? (p.category || '').toLowerCase() === selectedCategory.toLowerCase() : true;
+    return searchMatch && categoryFilter;
+  });
+
+  // group products by category for rendering
+  const groupedProducts = filteredProducts.reduce((acc: Record<string, any[]>, prod) => {
+    const cat = (prod.category && prod.category.trim()) || 'Uncategorized';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(prod);
+    return acc;
+  }, {});
+
+  // listen for appnav toggle event
+  useEffect(() => {
+    const handleToggle = () => setShowCategories(prev => !prev);
+    window.addEventListener('toggleCategories', handleToggle);
+    return () => window.removeEventListener('toggleCategories', handleToggle);
+  }, []);
+
+  // Conditional rendering for the products loading state
+  if (loading || productsLoading) {
+    return (
+      <div className='loading-container'>
+        <img src={LogoAnime} alt="Loading..." className="loading-gif" />
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-      <h1>
-        Welcome{ name ? `, ${name}` : '' }!
-      </h1>
-      <p>This is your home page.</p>
+    <>
+      <div className='homepage-container'>
+        {/* SearchBar container*/}
+        <div className="homepage-searchbar">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="homepage-search-input"
+          />
 
-      {/* New: Display products */}
-      <div style={{ marginTop: '2rem' }}>
-        <h2>All Products</h2>
-        {productsLoading ? (
-          <div>Loading products...</div>
-        ) : products.length === 0 ? (
-          <p>No products found.</p>
-        ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {products.map(product => (
-              <li key={product.id} style={{ marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
-                <p><strong>Brand:</strong> {product.brand}</p>
-                <p><strong>Category:</strong> {product.category}</p>
-                <p><strong>Price:</strong> {product.price}</p>
-                {product.image_url && (
-                  <img src={product.image_url} alt={product.name} style={{ maxWidth: 200, marginTop: 10 }} />
-                )}
+          {/* clickable "Category" word under the input */}
+          <div className="homepage-category-toggle-wrapper">
+            <button
+              type="button"
+              className="homepage-category-toggle"
+              onClick={() => setShowCategories(prev => !prev)}
+              aria-expanded={showCategories}
+            >
+              <img className='category-icon' src="https://img.icons8.com/ios/40/ffb803/sorting-answers.png" alt="categories"/>
+              Category {selectedCategory ? `: ${selectedCategory}` : ''}
+            </button>
+          </div>
+          {/* sliding dropdown - shown only when showCategories is true */}
+          <div className={`homepage-category-dropdown${showCategories ? ' open' : ''}`} aria-hidden={!showCategories}>
+            <ul>
+              <li
+                className="homepage-category-item"
+                onClick={() => { setSelectedCategory(''); setShowCategories(false); }}
+              >
+                All Categories
               </li>
-            ))}
-          </ul>
-        )}
+              {productCategories.map(cat => (
+                <li
+                  key={cat}
+                  className="homepage-category-item"
+                  onClick={() => { setSelectedCategory(cat); setShowCategories(false); }}
+                >
+                  {cat}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="homepage-welcome">
+          <img src={AppBanner} alt="App banner" className="homepage-appbanner" />
+          <h2 className='user-welcome-text'>Welcome{ name ? `, ${name}` : '' }!</h2>
+          {/* Category Suggestions */}
+          <div className='categories-suggestions'>
+            <div
+              className='category-item'
+              role="button"
+              tabIndex={0}
+              onClick={() => { setSelectedCategory('Hair Extensions'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Extensions'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            >
+              <div className='suggestion-icon'>
+                <img width="35" height="35" src="https://img.icons8.com/metro/35/ffb803/womans-hair.png" alt="womans-hair"/>
+              </div>
+              <div className="category-label">
+                <span className="category-line1">Hair</span>
+                <span className="category-line2">Extensions</span>
+              </div>
+            </div>
+
+            <div
+              className='category-item'
+              role="button"
+              tabIndex={0}
+              onClick={() => { setSelectedCategory('Shampoos'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Shampoos'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            >
+              <div className='suggestion-icon'>
+                <img width="35" height="35" src="https://img.icons8.com/ios-filled/35/ffb803/shampoo-dispenser.png" alt="shampoo-dispenser"/>
+              </div>
+              <div className="category-label">
+                <span className="category-line1">Shampoo</span>
+              </div>
+            </div>
+
+            <div
+              className='category-item'
+              role="button"
+              tabIndex={0}
+              onClick={() => { setSelectedCategory('Hair Coloring'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Coloring'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            >
+              <div className='suggestion-icon'>
+                <img width="35" height="35" src="https://img.icons8.com/ios/35/ffb803/hair-colouring.png" alt="hair-colouring"/>
+              </div>
+              <div className="category-label">
+                <span className="category-line1">Hair</span>
+                <span className="category-line1">Coloring</span>
+              </div>
+            </div>
+
+            <div
+              className='category-item'
+              role="button"
+              tabIndex={0}
+              onClick={() => { setSelectedCategory('Hair Tools'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Tools'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            >
+              <div className='suggestion-icon'>
+                <img width="35" height="35" src="https://img.icons8.com/ios-filled/35/ffb803/hair-dryer.png" alt="hair-dryer"/>
+              </div>
+              <div className="category-label">
+                <span className="category-line1">Hair</span>
+                <span className="category-line2">Tools</span>
+              </div>
+            </div>
+
+            <div
+              className='category-item'
+              role="button"
+              tabIndex={0}
+              onClick={() => { setSelectedCategory('Hair Accessories'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Accessories'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            >
+              <div className='suggestion-icon'>
+                <img width="35" height="35" src="https://img.icons8.com/fluency-systems-regular/35/ffb803/hair-clip.png" alt="hair-clip"/>
+              </div>
+              <div className="category-label">
+                <span className="category-line1">Hair</span>
+                <span className="category-line1">accessories</span>
+              </div>
+            </div>
+
+            <div
+              className='category-item'
+              role="button"
+              tabIndex={0}
+              onClick={() => { setSelectedCategory('Hair Care'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Care'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            >
+              <div className='suggestion-icon'>
+                <img width="35" height="35" src="https://img.icons8.com/ios/35/ffb803/cream-tube.png" alt="cream-tube"/>
+              </div>
+              <div className="category-label">
+                <span className="category-line1">Hair</span>
+                <span className="category-line1">Care</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* products section uses filteredProducts */}
+        <div className='products-section'>
+          <h2 className="products-section-title">{ selectedCategory ? '' : 'Browse Products' }</h2>
+
+          {productsLoading ? (
+            <div>Loading products...</div>
+          ) : Object.keys(groupedProducts).length === 0 ? (
+            <p>No products found.</p>
+          ) : (
+            <>
+              {Object.keys(groupedProducts).map(category => (
+                <section key={category} className="products-category-group">
+                  <h4 className="products-category-title">{category}</h4>
+                  <ul className='products-list'>
+                    {groupedProducts[category].map(product => (
+                      <li key={product.id} className='products-list-item'>
+                        {/* no onClick prop — ProductCard will navigate to product page by default */}
+                        <ProductCard product={product} />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
