@@ -6,7 +6,7 @@
     width: 100%;
     max-width: 450px;
     margin: 0 auto;
-    padding: 2rem 1.25rem;
+    padding: 2rem 1rem;
     box-sizing: border-box;
     min-height: 100vh;
     text-align: center;
@@ -26,10 +26,13 @@
     border: 1px solid #dee2e6;
     border-radius: 8px;
     background-color: #f8f9fa;
-    padding: 1em 1em;
+    padding: 1em 0em;
     box-shadow: 0 0 5px #dee2e6;
     color: #212529;
     min-width: 300px;
+    font-size: 1.125rem;
+    padding: 1rem 1rem;
+
 }
 .app-form input:focus {
     outline: none;
