@@ -219,38 +219,6 @@ const HomePage = () => {
                 <span className="category-line2">Tools</span>
               </div>
             </div>
-
-            <div
-              className='category-item'
-              role="button"
-              tabIndex={0}
-              onClick={() => { setSelectedCategory('Hair Accessories'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Accessories'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
-            >
-              <div className='suggestion-icon'>
-                <img width="35" height="35" src="https://img.icons8.com/fluency-systems-regular/35/ffb803/hair-clip.png" alt="hair-clip"/>
-              </div>
-              <div className="category-label">
-                <span className="category-line1">Hair</span>
-                <span className="category-line1">accessories</span>
-              </div>
-            </div>
-
-            <div
-              className='category-item'
-              role="button"
-              tabIndex={0}
-              onClick={() => { setSelectedCategory('Hair Care'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Care'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
-            >
-              <div className='suggestion-icon'>
-                <img width="35" height="35" src="https://img.icons8.com/ios/35/ffb803/cream-tube.png" alt="cream-tube"/>
-              </div>
-              <div className="category-label">
-                <span className="category-line1">Hair</span>
-                <span className="category-line1">Care</span>
-              </div>
-            </div>
           </div>
         </div>
 

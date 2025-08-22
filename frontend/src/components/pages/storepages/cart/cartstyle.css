@@ -1,4 +1,5 @@
-.cart-container {
+.cart-container,
+.checkout-page {
     min-height: 100vh;
     min-width: 100vw;
 }
@@ -88,3 +89,90 @@
   font-size: 0.75rem;
 }
 .favorites-remove:hover { background: #ffb803; color: #191919; }
+
+/* Checkout Page Styling */
+.checkout-page h1 {
+  text-align: center;
+  color: #ffb803;
+}
+
+.checkout-items h2,
+.checkout-form h2 {
+  text-align: center;
+}
+
+.checkout-list,
+.checkout-item,
+.billing-summary {
+  margin: 0 auto;
+  padding: 0.5rem;
+}
+
+.total-bill {
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffb803;
+  text-align: center;
+}
+
+
+.checkout-form {
+  margin: 0 auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-form label{
+  text-align: center;
+  padding: 0.5rem 0rem;
+}
+
+.checkout-form input {
+  width: 100%;
+    max-width: 520px;
+    box-sizing: border-box;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 0.9rem 0.75rem;
+    font-size: 1.125rem;
+    color: #212529;
+    outline: none;
+}
+
+.checkout-form input:focus {
+  box-shadow: 0 0 0 3px rgba(255,184,3,0.12);
+  border-color: rgba(255,184,3,0.6);
+}
+
+
+.checkout-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.place-order-button,
+.cancel-button {
+  background-color: #212529;
+  color: #FFB803;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  padding: 0.75rem 0.5rem;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: large;
+}
+
+.place-order-button:hover,
+.cancel-button:hover,
+.place-order-button:focus,
+.cancel-button:focus {
+  background: #FFB803;
+  color: #212529;
+}

@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import LayOut from './components/pages/LayOut';
 import UserAccount from './components/pages/userpages/userAccount';
-import UserProfile from './components/pages/userpages/userProfile'
+import UserProfile from './components/pages/userpages/userProfile';
+import UserOrders from './components/pages/userpages/userOrders';
 import LoginPage from './components/pages/storepages/loginPage';
 import DriversDash from './components/pages/drivers/driversDash';
 import AdminLogin from './components/pages/dashboard/adminLogin'
@@ -33,6 +34,7 @@ function App() {
               <Route index element={<HomePage />} /> 
               <Route path="/useraccount" element={<UserAccount />} />
               <Route path="/userprofile" element={<UserProfile />} />
+              <Route path="/userorders" element={<UserOrders />} />
               <Route path="product/:id" element={<ProductDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />

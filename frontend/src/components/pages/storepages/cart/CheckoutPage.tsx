@@ -73,9 +73,9 @@ const CheckoutPage: React.FC = () => {
         <h2>Order details</h2>
         {cart.length === 0 ? <p>Your cart is empty.</p> : (
           <>
-            <ul className='order-list'>
+            <ul className='checkout-list'>
               {cart.map(it => (
-                <li key={it.product.id} className='order-item'>
+                <li key={it.product.id} className='checkout-item'>
                   <ProductCard product={it.product} />
                   <div>Qty: {it.qty}</div>
                 </li>
@@ -85,7 +85,7 @@ const CheckoutPage: React.FC = () => {
             <div className='billing-summary'>
               <div>Subtotal: R {subtotal.toFixed(2)}</div>
               <div>Service fee: R {SERVICE_FEE.toFixed(2)}</div>
-              <div><strong>Total: R {total.toFixed(2)}</strong></div>
+              <div className='total-bill'><strong>Total: R {total.toFixed(2)}</strong></div>
             </div>
           </>
         )}
@@ -96,24 +96,24 @@ const CheckoutPage: React.FC = () => {
         {error && <div className="error">{error}</div>}
         <label>
           Full name
-          <input value={name} onChange={e => setName(e.target.value)} />
         </label>
+          <input value={name} onChange={e => setName(e.target.value)} />
         <label>
           Phone
-          <input value={phone} onChange={e => setPhone(e.target.value)} />
         </label>
+          <input value={phone} onChange={e => setPhone(e.target.value)} />
         <label>
           Address
-          <input value={addressLine} onChange={e => setAddressLine(e.target.value)} />
         </label>
+          <input value={addressLine} onChange={e => setAddressLine(e.target.value)} />
         <label>
           City
-          <input value={city} onChange={e => setCity(e.target.value)} />
         </label>
+          <input value={city} onChange={e => setCity(e.target.value)} />
         <label>
           Postal code
-          <input value={postal} onChange={e => setPostal(e.target.value)} />
         </label>
+          <input value={postal} onChange={e => setPostal(e.target.value)} />
 
         <div className='checkout-actions'>
           <button className='place-order-button' type="button" disabled={loading} onClick={placeOrder}>
