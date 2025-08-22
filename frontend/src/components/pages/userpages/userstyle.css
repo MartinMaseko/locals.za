@@ -1,4 +1,5 @@
-.profile-container {
+.profile-container,
+.user-orders-page {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11,7 +12,7 @@
     text-align: center;
     background: transparent;
 }
-.profile-heading{
+.profile-heading {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -109,4 +110,45 @@ input[type="file"]::file-selector-button:focus,
 input[type="file"]::-webkit-file-upload-button:focus {
   outline: 3px solid rgba(255,184,3,0.16);
   outline-offset: 2px;
+}
+
+/* Order Page Styling */
+.user-orders-page h1,
+.order-items h3,
+.order-total {
+    color: #FFB803;
+}
+
+.order-costs {
+    margin-top: 0.5rem;
+    text-align: start;
+}
+
+.order-total{
+    margin-top: 0.5rem;
+    font-size:1.25rem;
+}
+
+.orders-list {
+    padding: 0;
+}
+
+.order-no {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.order-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: start;
+    margin-bottom: 1rem;
+}
+
+
+.order-item-quantity {
+    text-align: start;
+    margin-bottom: 0.5rem;
 }

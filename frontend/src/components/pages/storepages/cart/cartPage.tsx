@@ -4,8 +4,10 @@ import { useFavorites } from '../../../contexts/FavoritesContext';
 import type { Product } from '../../../contexts/FavoritesContext';
 import ProductCard from '../productview/productsCard';
 import { useCart } from '../../../contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const CartPage: React.FC = () => {
+  const navigate = useNavigate();
   // favorites functionality
   const { favorites, removeFavorite } = useFavorites();
 
@@ -30,23 +32,23 @@ const CartPage: React.FC = () => {
               {cart.map((item) => (
                 <li key={item.product.id} className="cart-item">
                   <ProductCard product={item.product} />
-                    <div className='cart-item-details'>
-                      <div className='cart-item-qty'>
-                        <div>Quantity: {item.qty}</div>
-                      </div>
-                      <div className='cart-item-actions'>
-                        <button className='cart-item-action' onClick={() => decreaseQty(item.product.id)} type="button" aria-label="Decrease quantity">−</button>
-                        <button className='cart-item-action' onClick={() => increaseQty(item.product.id)} type="button" aria-label="Increase quantity">+</button>
-                        <button className='cart-item-action' onClick={() => removeFromCart(item.product.id)} type="button">Remove</button>
-                      </div>
+                  <div className='cart-item-details'>
+                    <div className='cart-item-qty'>
+                      <div>Quantity: {item.qty}</div>
                     </div>
+                    <div className='cart-item-actions'>
+                      <button className='cart-item-action' onClick={() => decreaseQty(item.product.id)} type="button" aria-label="Decrease quantity">−</button>
+                      <button className='cart-item-action' onClick={() => increaseQty(item.product.id)} type="button" aria-label="Increase quantity">+</button>
+                      <button className='cart-item-action' onClick={() => removeFromCart(item.product.id)} type="button">Remove</button>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
 
             <div className='cart-summary'>
               <div className='cart-summary-total'><strong>Total:</strong> R {Number.isFinite(total) ? total.toFixed(2) : '0.00'}</div>
-              <button className='checkout-btn'>Checkout</button>
+              <button className='checkout-btn' onClick={() => navigate('/checkout')}>Checkout</button>
               <button className='clearcart-btn' onClick={() => clearCart()} type="button">Clear cart</button>
             </div>
           </>
