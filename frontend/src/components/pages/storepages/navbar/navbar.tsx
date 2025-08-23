@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom';
+import { getAuth, signOut } from 'firebase/auth';
+import { app } from '../../../../Auth/firebaseClient';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../../../assets/logos/LZAWHTTRP.webp';
@@ -5,6 +8,19 @@ import './navstyle.css';
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+  const auth = getAuth(app);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      console.log('Signed Out');
+      setDropdownOpen(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <nav className="navbar">
@@ -53,7 +69,7 @@ const Navbar = () => {
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/lift-cart-here.png" alt="lift-cart-here"/>
             Cart
           </Link>
-          <button className="navbar-logout" onClick={() => {/* handle logout */ setDropdownOpen(false);}}>
+          <button className="navbar-logout" onClick={handleSignOut}>
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/logout-rounded-left.png" alt="logout-rounded-left"/>
             Sign Out
           </button>

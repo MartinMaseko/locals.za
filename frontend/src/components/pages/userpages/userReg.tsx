@@ -132,6 +132,9 @@ const UserRegistration = () => {
         oogle Sign Up
       </button>
       {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
+      <div className='login-redirect-user'>
+              Already have an account? <a href="/login">Login here</a>
+            </div>
     </div>
   );
 };

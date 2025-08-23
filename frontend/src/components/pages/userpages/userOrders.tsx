@@ -6,6 +6,7 @@ import './userstyle.css';
 import ProductCard from '../storepages/productview/productsCard';
 import LoadingContext from '../storepages/LoadingContext';
 import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
+import { Link } from 'react-router-dom';
 
 type OrderItem = {
   productId?: string;
@@ -136,7 +137,12 @@ const UserOrders: React.FC = () => {
     <div className="user-orders-page">
       <h1>Your Orders</h1>
       {orders.length === 0 ? (
-        <p>You have no orders yet.</p>
+        <><div className='empty-orders-wrapper'>
+            <img width="100" height="100" src="https://img.icons8.com/clouds/100/shopping-cart.png" alt="shopping-cart"/>
+            <p>You have no orders yet.</p>
+            <Link to="/" className="start-shopping-link">Start Shopping</Link>
+          </div>
+        </>
       ) : (
         <ul className="orders-list">
           {orders.map((o) => (
