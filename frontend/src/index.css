@@ -16,7 +16,7 @@
 body {
   margin: 0;
   display: flex;
-  min-width: 320px;
+  min-width: 100vw;
   min-height: 100vh;
   color: #454E50;
   background-color: #f8f9fa;

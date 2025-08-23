@@ -17,6 +17,7 @@ import ScrollToTop from './components/ScrollToTop';
 import { FavoritesProvider } from './components/contexts/FavoritesContext';
 import { CartProvider } from './components/contexts/CartContext';
 import CheckoutPage from './components/pages/storepages/cart/CheckoutPage';
+import OrderConfirmationPage from './components/pages/storepages/cart/OrderConfirmationPage';
 
 function App() {
   return (
@@ -38,7 +39,7 @@ function App() {
               <Route path="product/:id" element={<ProductDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/order-confirmation/:id" element={<div>Order confirmed</div>} />
+              <Route path="/order-confirmation/:id" element={<OrderConfirmationPage />} />
               <Route path="/support" element={<SupportPage />} />
             </Route>
           </Routes>
