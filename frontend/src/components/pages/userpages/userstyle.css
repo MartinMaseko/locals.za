@@ -119,6 +119,16 @@ input[type="file"]::-webkit-file-upload-button:focus {
     color: #FFB803;
 }
 
+.start-shopping-link {
+    text-decoration: none;
+    font-size: 1.5rem;
+    color: #212529;
+}
+
+.start-shopping-link:hover {
+    color: #FFB803;
+}
+
 .order-costs {
     margin-top: 0.5rem;
     text-align: start;
@@ -151,4 +161,9 @@ input[type="file"]::-webkit-file-upload-button:focus {
 .order-item-quantity {
     text-align: start;
     margin-bottom: 0.5rem;
+}
+
+
+.order-card {
+    margin-top: 1rem;
 }

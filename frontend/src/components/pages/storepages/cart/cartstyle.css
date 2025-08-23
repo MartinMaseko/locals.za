@@ -1,11 +1,15 @@
+/* Cart Styling */
+
 .cart-container,
-.checkout-page {
+.checkout-page,
+.order-confirmation-wrapper {
     min-height: 100vh;
     min-width: 100vw;
 }
 
 .favorites-section,
-.cart-section {
+.cart-section,
+.order-confirmation-content {
   padding: 0rem 1rem;
 }
 
@@ -64,6 +68,12 @@
   color: #191919;
 }
 
+.cart-section h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #ffb803;
+}
+
 .cart-summary {
   display: flex;
   flex-direction: column;
@@ -75,6 +85,13 @@
   font-weight: 900;
   color: #ffb803;
   text-align: center;
+}
+
+.empty-cart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
 }
 
 .favorites-remove {
@@ -97,7 +114,9 @@
 }
 
 .checkout-items h2,
-.checkout-form h2 {
+.checkout-form h2,
+.order-details-section h2,
+.order-details-section h2 {
   text-align: center;
 }
 
@@ -108,7 +127,8 @@
   padding: 0.5rem;
 }
 
-.total-bill {
+.total-bill,
+.cost-row.total {
   margin-top: 0.5rem;
   font-size: 1.5rem;
   font-weight: 900;
@@ -175,4 +195,54 @@
 .cancel-button:focus {
   background: #FFB803;
   color: #212529;
+}
+
+/* Order Confirmation Page */
+
+.order-confirmation-wrapper h1{
+  text-align: center;
+  color: #ffb803;
+}
+
+.order-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.continue-shopping-btn,
+.view-orders-button,
+.shop-link {
+  text-decoration: none;
+  font-size: 1.125rem;
+  color: #191919;
+}
+
+.continue-shopping-btn:hover,
+.view-orders-button:hover,
+.continue-shopping-btn:focus,
+.view-orders-button:focus,
+.shop-link:focus,
+.shop-link:hover {
+  color: #ffb803;
+}
+.error-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50%;
+  padding: 1rem 0.5rem;
+}
+
+.redirect-button {
+  text-decoration: none;
+  color: #ffb803;
+}
+
+.redirect-button:focus,
+.redirect-button:hover {
+  font-size: 1.125rem;
 }

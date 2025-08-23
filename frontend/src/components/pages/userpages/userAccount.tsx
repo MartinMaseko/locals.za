@@ -5,6 +5,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
 import { app } from '../../../Auth/firebaseClient';
 import './userstyle.css';
+import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
 
 interface UserProfile {
   full_name: string;
@@ -21,96 +22,96 @@ const UserAccount = () => {
     email: '',
   });
 
-  // Removed unused loading state
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Use global loading context
-  const loadingContext = useContext(LoadingContext);
-
-  // NEW: preview URL state
+  const { setLoading: setGlobalLoading } = useContext(LoadingContext);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Keep track of auth state so we can require uid for storage rules
+  // Sync local loading state with global loading context
   useEffect(() => {
-    const unsub = onAuthStateChanged(getAuth(app), (user) => {
+    setGlobalLoading(loading);
+    return () => setGlobalLoading(false); // Cleanup on unmount
+  }, [loading, setGlobalLoading]);
+
+  // First, ensure auth is initialized and we have a user
+  useEffect(() => {
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthUser(user);
+
       if (user) {
-        setProfile((p) => ({ ...p, email: p.email || user.email || '' }));
+        fetchProfile(user); // Pass the user directly to fetchProfile
+      } else {
+        setLoading(false); // Make sure to set loading to false when no user
       }
     });
-    return () => unsub();
+
+    return () => unsubscribe();
   }, []);
 
-  // Fetch current user profile on mount
-  useEffect(() => {
-    const fetchProfile = async () => {
-      // set both local and global loading
-      if (loadingContext && 'setGlobalLoading' in loadingContext) {
-        (loadingContext as any).setGlobalLoading(true);
+  // Separate fetchProfile function to be reusable
+  const fetchProfile = async (user: any) => {
+    if (!user) return;
+
+    setLoading(true); // Set loading to true when fetching profile
+    setError('');
+
+    try {
+      // Force a fresh token
+      const token = await user.getIdToken(true);
+
+      const { data } = await axios.get<UserProfile>('/api/users/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Handle profile picture URL
+      let profilePic = data.profile_picture_url || '';
+
+      // If backend returned a non-http path, try to resolve it
+      if (profilePic && !/^https?:\/\//i.test(profilePic)) {
+        try {
+          const storage = getStorage(app);
+          const refPath = profilePic.replace(/^\/+/, '');
+          profilePic = await getDownloadURL(ref(storage, refPath));
+        } catch (urlErr) {
+          // Silent failure for image resolution
+        }
       }
-      setError('');
-      try {
-        const auth = getAuth(app);
-        const user = auth.currentUser;
-        let token = '';
-        if (user) token = await user.getIdToken();
 
-        const { data } = await axios.get<UserProfile>('/api/users/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        // backend value (may be undefined)
-        let profilePic = (data as any).profile_picture_url || '';
-
-        // If backend returned a non-http path, try to resolve it
-        if (profilePic && !/^https?:\/\//i.test(profilePic)) {
-          try {
-            const storage = getStorage(app);
-            const refPath = profilePic.replace(/^\/+/, '');
-            profilePic = await getDownloadURL(ref(storage, refPath));
-          } catch (urlErr) {
-            console.warn('Could not resolve profile_picture_url to download URL:', urlErr);
+      // FALLBACK: if backend didn't provide a picture, try listing user's profile-images folder
+      if ((!profilePic || profilePic === '') && user) {
+        try {
+          const storage = getStorage(app);
+          const userFolderRef = ref(storage, `profile-images/${user.uid}`);
+          const listResult = await listAll(userFolderRef);
+          if (listResult.items && listResult.items.length > 0) {
+            const lastItem = listResult.items[listResult.items.length - 1];
+            profilePic = await getDownloadURL(lastItem);
           }
+        } catch (listErr) {
+          // Silent failure for image resolution
         }
-
-        // FALLBACK: if backend didn't provide a picture, try listing user's profile-images folder
-        if ((!profilePic || profilePic === '') && user) {
-          try {
-            const storage = getStorage(app);
-            const userFolderRef = ref(storage, `profile-images/${user.uid}`);
-            const listResult = await listAll(userFolderRef);
-            if (listResult.items && listResult.items.length > 0) {
-              const lastItem = listResult.items[listResult.items.length - 1];
-              profilePic = await getDownloadURL(lastItem);
-            } else {
-              console.log('no files found in profile-images folder for user:', user.uid);
-            }
-          } catch (listErr) {
-            console.warn('Could not list/resolve profile images from storage:', listErr);
-          }
-        }
-
-        setProfile({
-          full_name: data.full_name || '',
-          phone_number: data.phone_number || '',
-          profile_picture_url: profilePic,
-          email: data.email || (user && user.email ? user.email : ''),
-        });
-      } catch (err: any) {
-        console.error('Failed to load profile:', err);
-        setError('Failed to load profile');
-      } finally {
-        if (loadingContext && 'setGlobalLoading' in loadingContext) {
-          (loadingContext as any).setGlobalLoading(false);
-        }
-        // setGlobalLoading(false); // Removed: not defined
       }
-    };
 
-    fetchProfile();
-  }, []);
+      setProfile({
+        full_name: data.full_name || '',
+        phone_number: data.phone_number || '',
+        profile_picture_url: profilePic,
+        email: data.email || user.email || '',
+      });
+    } catch (err: any) {
+      setError('Failed to load profile: ' + (err?.response?.data?.error || err?.message || 'Unknown error'));
+    } finally {
+      setLoading(false); // Set loading to false when done
+    }
+  };
+
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -130,7 +131,7 @@ const UserAccount = () => {
     }
   };
 
-  // revoke object URL when component unmounts or preview changes
+  // Clean up object URLs
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -148,68 +149,86 @@ const UserAccount = () => {
     let imageUrl = profile.profile_picture_url;
 
     try {
-      const auth = getAuth(app);
-      const user = auth.currentUser;
-
-      // require authenticated user for upload (rules expect uid folder)
-      if (!user && imageFile) {
-        setError('You must be signed in to upload a profile image.');
-        setSaving(false);
-        return;
+      if (!authUser) {
+        throw new Error('You must be signed in to update your profile.');
       }
 
-      // If a new image is selected, upload it to Firebase Storage (into user uid folder)
-      if (imageFile && user) {
-        const uid = user.uid;
+      // If a new image is selected, upload it to Firebase Storage
+      if (imageFile) {
+        const uid = authUser.uid;
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${uid}_${Date.now()}.${fileExt}`;
         const storage = getStorage(app);
         const imageRef = ref(storage, `profile-images/${uid}/${fileName}`);
-        try {
-          await uploadBytes(imageRef, imageFile);
-          imageUrl = await getDownloadURL(imageRef);
-        } catch (upErr: any) {
-          console.error('Firebase upload failed:', upErr);
-          throw upErr;
-        }
+
+        await uploadBytes(imageRef, imageFile);
+        imageUrl = await getDownloadURL(imageRef);
       }
 
-      // Update user profile in your backend
-      let token = '';
-      if (user) token = await user.getIdToken();
+      // Get a fresh token
+      const token = await authUser.getIdToken(true);
 
+      // Update the profile directly
       await axios.put(
         '/api/users/me',
         {
           full_name: profile.full_name,
           phone_number: profile.phone_number,
           profile_picture_url: imageUrl,
+          display_name: authUser.displayName || profile.full_name,
+          email: authUser.email || profile.email,
+          auth_provider: authUser.providerData?.[0]?.providerId || 'unknown',
+          uid: authUser.uid, 
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
+      // Update the local state immediately
+      setProfile({
+        ...profile,
+        full_name: profile.full_name,
+        phone_number: profile.phone_number,
+        profile_picture_url: imageUrl,
+      });
+
+      // Force re-fetch profile from server to confirm changes
+      await fetchProfile(authUser);
+
       setSuccess('Profile updated successfully!');
-      setProfile((prev) => ({ ...prev, profile_picture_url: imageUrl }));
       setImageFile(null);
 
-      // clear preview after successful upload (and revoke)
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
         setImagePreview(null);
       }
     } catch (err: any) {
-      console.error('Failed to update profile:', err);
-      setError('Failed to update profile: ' + (err?.message || 'unknown error'));
+      setError('Failed to update profile: ' + (err?.response?.data?.error || err?.message || 'Unknown error'));
     }
     setSaving(false);
   };
 
   const isIncomplete = !profile.full_name || !profile.phone_number || !profile.profile_picture_url;
 
-  // NOTE: remove the early return `if (loading) return <div>Loading profile...</div>;`
-  // so the Layout/global loading UI is used instead.
+  // Use the same loading UI as homepage
+  if (loading) {
+    return (
+      <div className='loading-container'>
+        <img src={LogoAnime} alt="Loading..." className="loading-gif" />
+        Loading...
+      </div>
+    );
+  }
+
+  // Show login prompt if no user
+  if (!authUser) {
+    return (
+      <div className="profile-container">
+        <div className="profile-error">Please log in to view your profile.</div>
+      </div>
+    );
+  }
 
   // choose heading image: preview -> uploaded url -> default icon
   const headingImageSrc =

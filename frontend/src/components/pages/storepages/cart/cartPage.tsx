@@ -4,7 +4,7 @@ import { useFavorites } from '../../../contexts/FavoritesContext';
 import type { Product } from '../../../contexts/FavoritesContext';
 import ProductCard from '../productview/productsCard';
 import { useCart } from '../../../contexts/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +25,13 @@ const CartPage: React.FC = () => {
       <section className="cart-section">
         <h2>Cart</h2>
         {cart.length === 0 ? (
-          <p>Your cart is empty.</p>
+          <>
+          <div className='empty-cart-wrapper'>
+            <img width="100" height="100" src="https://img.icons8.com/bubbles/100/shopping-cart.png" alt="shopping-cart"/>
+            <p>Your cart is empty.</p>
+            <Link to="/" className="shop-link">Go to Store</Link>
+          </div>
+          </>
         ) : (
           <>
             <ul className="cart-list">
