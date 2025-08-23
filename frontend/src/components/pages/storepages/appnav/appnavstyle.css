@@ -20,6 +20,15 @@
   border: none;
   cursor: pointer;
 }
+.appnav-bar button{
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #DEDEDE;
+  font-size: 0.75rem;
+  text-decoration: none;
+  font-family: inherit;
+}
 .appnav-icon:hover {
   color: #FFB803;
 }

@@ -173,7 +173,16 @@ router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const doc = await admin.firestore().collection('orders').doc(id).get();
     if (!doc.exists) return res.status(404).json({ error: "Order not found" });
-    res.json({ id: doc.id, ...doc.data() });
+    
+    const orderData = { id: doc.id, ...doc.data() };
+    
+    // Security check: ensure user can only view their own orders unless they're an admin
+    if (req.user.uid !== orderData.userId && req.user.role !== 'admin' && 
+        req.user.user_type !== 'admin' && req.user.uid !== orderData.salon_id) {
+      return res.status(403).json({ error: "You don't have permission to view this order" });
+    }
+    
+    res.json(orderData);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

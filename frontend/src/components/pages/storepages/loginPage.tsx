@@ -46,7 +46,7 @@ const UserLogin = () => {
       // Redirect based on user_type
       if (profile.user_type === 'customer') {
         if (!profile.full_name || !profile.phone_number) {
-          navigate('/userprofile');
+          navigate('/useraccount');
         } else {
           navigate('/');
         }
@@ -137,6 +137,9 @@ const UserLogin = () => {
         oogle Sign In
       </button>
       {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
+      <div className='register-user'>
+        New user? <a href="/register">Register here</a>
+      </div>
     </div>
   );
 };
