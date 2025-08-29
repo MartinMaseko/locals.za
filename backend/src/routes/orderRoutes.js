@@ -100,6 +100,73 @@ router.get('/incoming', authenticateToken, async (req, res) => {
   }
 });
 
+// Get all orders (admin only)
+router.get('/all', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get query parameters for filtering/pagination
+    const { status, limit = 100, offset = 0 } = req.query;
+    
+    let orders = [];
+    
+    try {
+      let query = admin.firestore().collection('orders');
+      
+      // Add filters if provided
+      if (status) {
+        query = query.where('status', '==', status);
+      }
+      
+      // Order by creation date (newest first)
+      query = query.orderBy('createdAt', 'desc');
+      
+      // Apply pagination
+      query = query.limit(parseInt(limit)).offset(parseInt(offset));
+      
+      const snapshot = await query.get();
+      orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+    } catch (indexError) {
+      // Handle missing index error (code 9 is Firestore's missing index error)
+      if (indexError.code === 9 || 
+          indexError.message.includes('index') || 
+          indexError.message.includes('Index')) {
+        console.log('Missing index error, using client-side filtering instead');
+        
+        // Fallback to getting all orders and filtering in memory
+        const snapshot = await admin.firestore()
+          .collection('orders')
+          .orderBy('createdAt', 'desc')
+          .limit(1000) // Set a reasonable limit
+          .get();
+        
+        // Filter in memory
+        orders = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(order => !status || order.status === status)
+          .slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+      } else {
+        // If it's not an index error, rethrow
+        throw indexError;
+      }
+    }
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    console.error('Error details:', error.code, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get Orders for a specific user (frontend / checkout uses userId)
 router.get('/user/:userId', authenticateToken, async (req, res) => {
   const { userId } = req.params;
@@ -205,11 +272,68 @@ router.put('/:id/assign-driver', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { driver_id } = req.body;
   try {
-    await admin.firestore().collection('orders').doc(id).set({ driver_id }, { merge: true });
-    res.json({ success: true });
+    const orderRef = admin.firestore().collection('orders').doc(id);
+    
+    if (driver_id === null) {
+      // Remove driver assignment
+      await orderRef.update({
+        driver_id: admin.firestore.FieldValue.delete(), // This removes the field
+        updatedAt: new Date().toISOString()
+      });
+      res.json({ success: true, message: "Driver removed successfully" });
+    } else {
+      // Assign driver
+      await orderRef.update({
+        driver_id,
+        updatedAt: new Date().toISOString()
+      });
+      res.json({ success: true, message: "Driver assigned successfully" });
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
+
+// Get orders for a specific driver
+router.get('/driver/:driverId', authenticateToken, async (req, res) => {
+  const { driverId } = req.params;
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    // Allow access if the user is an admin
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all orders assigned to this driver
+    let orders = [];
+    
+    try {
+      // Try to get orders with driver_id match
+      const snapshot = await admin.firestore()
+        .collection('orders')
+        .where('driver_id', '==', driverId)
+        .get();
+        
+      orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (indexError) {
+      // If index error, do unfiltered query and filter in memory
+      console.log('Index error or missing field, fetching all orders:', indexError.message);
+      const snapshot = await admin.firestore().collection('orders').get();
+      orders = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(order => order.driver_id === driverId);
+    }
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching driver orders:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 module.exports = router;

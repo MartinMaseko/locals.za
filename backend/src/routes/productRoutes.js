@@ -2,8 +2,12 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const auth = require('../middleware/auth');
-const requireAdmin = auth.requireAdmin;
-const authenticateToken = auth;
+
+// Use the correct exported middleware functions from your auth module
+const { requireAdmin, authenticateToken } = auth;
+
+// Import Firebase admin (ensure backend/src/firebase or similar exports admin)
+const admin = require('../../firebase');
 
 // Protect product creation with admin check
 router.post('/', requireAdmin, productController.createProduct);
@@ -24,10 +28,31 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update Product (Admin)
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    await admin.firestore().collection('products').doc(id).set(req.body, { merge: true });
+    // Validate required fields
+    const { name, price } = req.body;
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Product name is required' });
+    }
+    
+    if (price === undefined || price === null || isNaN(Number(price))) {
+      return res.status(400).json({ error: 'Valid product price is required' });
+    }
+    
+    // Sanitize and prepare data
+    const productData = {
+      name: name.trim(),
+      price: Number(price),
+      ...(req.body.description && { description: req.body.description.trim() }),
+      ...(req.body.brand && { brand: req.body.brand.trim() }),
+      ...(req.body.category && { category: req.body.category.trim() }),
+      ...(req.body.image_url && { image_url: req.body.image_url }),
+      updated_at: new Date().toISOString()
+    };
+
+    await admin.firestore().collection('products').doc(id).set(productData, { merge: true });
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,7 +60,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete Product (Admin)
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     await admin.firestore().collection('products').doc(id).delete();

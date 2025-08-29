@@ -21,7 +21,6 @@ const AdminLogin = () => {
     setError('');
     try {
       const userCredential = await signIn(form.email, form.password);
-      console.log('userCredential:', userCredential); // Debug line
       const access_token = (userCredential as any).access_token || (userCredential as any).accessToken;
       if (!access_token) throw new Error('Login failed. No access token returned.');
 
