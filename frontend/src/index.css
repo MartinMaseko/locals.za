@@ -20,6 +20,11 @@ body {
   min-height: 100vh;
   color: #454E50;
   background-color: #f8f9fa;
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .loading-container {

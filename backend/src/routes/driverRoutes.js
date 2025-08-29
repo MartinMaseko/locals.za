@@ -7,6 +7,68 @@ const driverController = require('../controllers/driverController');
 // Register a new driver
 router.post('/register', driverController.register);
 
+// Get all drivers (admin only)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all drivers from Firestore
+    const snapshot = await admin.firestore().collection('drivers').get();
+    const drivers = snapshot.docs.map(doc => ({
+      id: doc.id,
+      driver_id: doc.data().driver_id || doc.id,
+      full_name: doc.data().full_name || '',
+      email: doc.data().email || '',
+      phone_number: doc.data().phone_number || '',
+      vehicle_type: doc.data().vehicle_type || '',
+      vehicle_model: doc.data().vehicle_model || ''
+    }));
+    
+    res.json(drivers);
+  } catch (error) {
+    console.error('Error fetching drivers:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all drivers with full details (admin only)
+router.get('/all', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all drivers with complete details
+    const snapshot = await admin.firestore().collection('drivers').get();
+    const drivers = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      // Ensure critical fields always exist
+      driver_id: doc.data().driver_id || doc.id,
+      full_name: doc.data().full_name || '',
+      email: doc.data().email || '',
+      phone_number: doc.data().phone_number || '',
+    }));
+    
+    res.json(drivers);
+  } catch (error) {
+    console.error('Error fetching all drivers:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get Assigned Deliveries (Driver)
 router.get('/me/deliveries', authenticateToken, async (req, res) => {
   const { uid } = req.user;
