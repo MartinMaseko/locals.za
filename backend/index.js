@@ -75,6 +75,11 @@ const ticketRoutes = require('./src/routes/ticketRoutes');
 // Mount the ticket router at the /api/tickets base path.
 app.use('/api/tickets', ticketRoutes);
 
+// Mount the admin router at the /api/admin base path.  
+const adminRoutes = require('./src/routes/adminRoutes');
+
+// Mount the admin router at the /api/admin base path.
+app.use('/api/admin', adminRoutes);
 
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;

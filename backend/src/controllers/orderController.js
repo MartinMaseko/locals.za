@@ -90,3 +90,43 @@ exports.getUserOrders = async (req, res) => {
     return res.status(500).json({ message: 'Failed to fetch user orders', error: err?.message || String(err) });
   }
 };
+
+exports.getDriverOrders = async (req, res) => {
+  const { driverId } = req.params;
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    // Allow access if the user is an admin
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all orders assigned to this driver
+    let orders = [];
+    
+    try {
+      // Try to get orders with driver_id match
+      const snapshot = await admin.firestore()
+        .collection('orders')
+        .where('driver_id', '==', driverId)
+        .get();
+        
+      orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (indexError) {
+      // If index error, do unfiltered query and filter in memory
+      console.log('Index error or missing field, fetching all orders:', indexError.message);
+      const snapshot = await admin.firestore().collection('orders').get();
+      orders = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(order => order.driver_id === driverId);
+    }
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching driver orders:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
