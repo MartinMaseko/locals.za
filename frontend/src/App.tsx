@@ -5,7 +5,6 @@ import UserAccount from './components/pages/userpages/userAccount';
 import UserProfile from './components/pages/userpages/userProfile';
 import UserOrders from './components/pages/userpages/userOrders';
 import LoginPage from './components/pages/storepages/loginPage';
-import DriversDash from './components/pages/drivers/driversDash';
 import AdminLogin from './components/pages/dashboard/adminLogin'
 import AdminDashboard from './components/pages/dashboard/adminDashboard';
 import UserRegistration from './components/pages/userpages/userReg'; 
@@ -18,6 +17,8 @@ import { FavoritesProvider } from './components/contexts/FavoritesContext';
 import { CartProvider } from './components/contexts/CartContext';
 import CheckoutPage from './components/pages/storepages/cart/CheckoutPage';
 import OrderConfirmationPage from './components/pages/storepages/cart/OrderConfirmationPage';
+import DriverLayout from './components/pages/drivers/layout/DriverLayout';
+import DriversDash from './components/pages/drivers/driversDash';
 
 function App() {
   return (
@@ -30,7 +31,14 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/adminlogin" element={<AdminLogin />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
-            <Route path="/driversdashboard" element={<DriversDash />} />
+            
+
+
+            {/* Legacy route for backward compatibility */}
+            <Route path="/driversdashboard" element={<DriverLayout />}>
+              <Route index element={<DriversDash />} />
+            </Route>
+            
             <Route path="/" element={<LayOut />}>
               <Route index element={<HomePage />} /> 
               <Route path="/useraccount" element={<UserAccount />} />

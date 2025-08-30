@@ -1,86 +1,75 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
-
-interface UserProfile {
-  full_name: string;
-  phone_number: string;
-  profile_picture_url: string;
-  email: string;
-}
-
-interface DriverProfile {
-  vehicle_type: string;
-  vehicle_registration: string;
-  bank_account_details: string;
-}
+import './driverStyles.css';
 
 const DriversDash = () => {
+  const [driver, setDriver] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [driverProfile, setDriverProfile] = useState<DriverProfile | null>(null);
-  const navigate = useNavigate();
+  const auth = getAuth(app);
 
   useEffect(() => {
-    const auth = getAuth(app);
-    const user = auth.currentUser;
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    const checkProfiles = async () => {
+    const fetchDriverData = async () => {
       try {
-        const token = await user.getIdToken();
-
-        // Fetch user profile
-        const { data: userData } = await axios.get<UserProfile>('/api/users/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!userData.full_name || !userData.phone_number || !userData.profile_picture_url) {
-          navigate('/userprofile');
-          return;
+        const user = auth.currentUser;
+        if (user) {
+          setDriver({
+            name: user.displayName || 'Driver',
+            email: user.email,
+          });
         }
-        setUserProfile(userData);
-
-        // Fetch driver profile
-        const { data: driverData } = await axios.get<DriverProfile>('/api/drivers/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (
-          !driverData.vehicle_type ||
-          !driverData.vehicle_registration ||
-          !driverData.bank_account_details
-        ) {
-          navigate('/driverprofile');
-          return;
-        }
-        setDriverProfile(driverData);
-
+      } catch (error) {
+        console.error('Error fetching driver data:', error);
+      } finally {
         setLoading(false);
-      } catch (err) {
-        navigate('/login');
       }
     };
+    
+    fetchDriverData();
+  }, [auth]);
 
-    checkProfiles();
-  }, [navigate]);
-
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-      <h1>
-        Welcome to the Driver Dashboard{userProfile?.full_name ? `, ${userProfile.full_name}` : ''}
-      </h1>
-      <p>Your driver profile is complete. You can now access all driver features.</p>
-      {driverProfile && (
-        <div style={{ marginTop: 20 }}>
-          <strong>Vehicle Type:</strong> {driverProfile.vehicle_type}
+    <div className="driver-dashboard">
+      <div className="driver-welcome">
+        <h1>Welcome, {driver?.name}</h1>
+      </div>
+      
+      <div className="driver-stats-cards">
+        <div className="driver-stat-card">
+          <h3>Today's Orders</h3>
+          <p className="stat-number">0</p>
         </div>
-      )}
+        <div className="driver-stat-card">
+          <h3>Completed</h3>
+          <p className="stat-number">0</p>
+        </div>
+        <div className="driver-stat-card">
+          <h3>Revenue</h3>
+          <p className="stat-number">R0.00</p>
+        </div>
+      </div>
+
+      <div className="driver-section">
+        <h2>Assigned Orders</h2>
+        <div className="no-orders-message">
+          <img 
+            src="https://img.icons8.com/ios-filled/100/999999/delivery.png" 
+            alt="No orders"
+            className="no-orders-icon"
+          />
+          <p>No orders assigned yet</p>
+          <p className="no-orders-subtext">New deliveries will appear here</p>
+        </div>
+      </div>
     </div>
   );
 };
