@@ -8,6 +8,16 @@ import LoadingContext from '../storepages/LoadingContext';
 import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
 import { Link } from 'react-router-dom';
 
+// Add this interface for missing items
+interface MissingItem {
+  productId: string;
+  productName?: string;
+  originalQty?: number;
+  availableQty?: number;
+  missingQuantity: number;
+  reason?: string;
+}
+
 type OrderItem = {
   productId?: string;
   qty: number;
@@ -19,6 +29,7 @@ type OrderItem = {
   };
 };
 
+// Update the Order interface to include ETA fields
 type Order = {
   id: string;
   items: OrderItem[];
@@ -28,6 +39,16 @@ type Order = {
   status?: string;
   createdAt?: string;
   deliveryAddress?: Record<string, any>;
+  // Add these new properties for missing items functionality
+  missingItems?: MissingItem[];
+  refundAmount?: number;
+  adjustedTotal?: number;
+  refundStatus?: 'pending' | 'processed' | 'credited';
+  driverNote?: string;
+  // Add these ETA properties
+  eta?: string;
+  etaArrivalTime?: string;
+  etaUpdatedAt?: string;
 };
 
 const UserOrders: React.FC = () => {
@@ -99,6 +120,16 @@ const UserOrders: React.FC = () => {
             status: o.status || 'unknown',
             createdAt: createdAtIso,
             deliveryAddress: o.deliveryAddress || {},
+            // Add these new properties
+            missingItems: o.missingItems || [],
+            refundAmount: typeof o.refundAmount === 'number' ? o.refundAmount : Number(o.refundAmount || 0),
+            adjustedTotal: typeof o.adjustedTotal === 'number' ? o.adjustedTotal : Number(o.adjustedTotal || 0),
+            refundStatus: o.refundStatus || 'pending',
+            driverNote: o.driverNote || '',
+            // Add ETA properties
+            eta: o.eta || null,
+            etaArrivalTime: o.etaArrivalTime || null,
+            etaUpdatedAt: o.etaUpdatedAt || null,
           };
         });
         
@@ -133,6 +164,17 @@ const UserOrders: React.FC = () => {
   
   if (error) return <div className="user-orders-error">{error}</div>;
 
+  // Add a helper function to check if ETA is recent (less than 30 minutes old)
+  const isETARecent = (etaUpdatedAt?: string) => {
+    if (!etaUpdatedAt) return false;
+    
+    const etaTime = new Date(etaUpdatedAt).getTime();
+    const now = new Date().getTime();
+    
+    // ETA is considered recent if less than 30 minutes old
+    return (now - etaTime) < 30 * 60 * 1000; // 30 minutes in milliseconds
+  };
+
   return (
     <div className="user-orders-page">
       <h1>Your Orders</h1>
@@ -149,7 +191,13 @@ const UserOrders: React.FC = () => {
             <li key={o.id} className="order-card">
               <div className="order-header">
                 <div className='order-no'>
-                  Order: #{o.id}
+                  Order: #<br />{o.id}
+                  {/* Display badge for missing items */}
+                  {o.missingItems && o.missingItems.length > 0 && (
+                    <span className="missing-items-badge">
+                      <br />{o.missingItems.length} item(s) unavailable
+                    </span>
+                  )}
                 </div>
                 <div className='order-date'>
                   Date: {o.createdAt ? new Date(o.createdAt).toLocaleString() : ''}
@@ -158,6 +206,16 @@ const UserOrders: React.FC = () => {
                   <span className={`order-status order-status-${(o.status || 'unknown').toLowerCase()}`}>
                     Status: {o.status || 'unknown'}
                   </span>
+                  
+                  {/* Add ETA display */}
+                  {o.status === 'in transit' && o.eta && o.etaArrivalTime && isETARecent(o.etaUpdatedAt) && (
+                    <div className="eta-display">
+                      <span className="eta-arrival">
+                        <img width="16" height="16" src="https://img.icons8.com/ios-filled/16/ffb803/time_2.png" alt="time"/>
+                        Expected arrival at {o.etaArrivalTime} ({o.eta} away)
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -165,22 +223,38 @@ const UserOrders: React.FC = () => {
                 <h3>Items</h3>
                 <div className="order-items-grid">
                   {o.items.map((it, idx) => {
+                    // Check if this item has missing quantities
+                    const missingItem = o.missingItems?.find((mi: any) => mi.productId === it.productId);
+                    
                     // Convert OrderItem to Product format for ProductCard
                     const product = {
                       id: it.productId || `product-${idx}`,
                       name: it.product?.name || `Product #${it.productId}`,
                       price: it.product?.price || 0,
                       image_url: it.product?.image_url || '',
-                      // Add any other required fields
                     };
                     
                     return (
-                      <div key={idx} className="order-item-wrapper">
+                      <div key={idx} className={`order-item-wrapper ${missingItem ? 'has-missing' : ''}`}>
                         <ProductCard 
                           product={product} 
                           onClick={handleProductClick}
                         />
-                        <div className="order-item-quantity">Qty: {it.qty}</div>
+                        <div className="order-item-quantity">
+                          Qty: {it.qty}
+                          {/* Show missing status if item is affected */}
+                          {missingItem && (
+                            <div className="item-availability">
+                              {missingItem.missingQuantity === it.qty ? (
+                                <span className="unavailable-status">Unavailable</span>
+                              ) : (
+                                <span className="partially-available-status">
+                                  {it.qty - missingItem.missingQuantity} of {it.qty} available
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -192,10 +266,38 @@ const UserOrders: React.FC = () => {
                   Subtotal: R {typeof o.subtotal === 'number' ? o.subtotal.toFixed(2) : Number(o.subtotal || 0).toFixed(2)}
                   <br />
                   Service fee: R {typeof o.serviceFee === 'number' ? o.serviceFee.toFixed(2) : Number(o.serviceFee || 0).toFixed(2)}
+                  
+                  {/* Show refund information if there are missing items */}
+                  {(o.refundAmount ?? 0) > 0 && (
+                    <>
+                      <br />
+                      <span className="refund-line">
+                        Refund for missing items: -R {Number(o.refundAmount).toFixed(2)}
+                      </span>
+                    </>
+                  )}
                 </div>
                 <div className="order-total">
-                  Total: R {typeof o.total === 'number' ? o.total.toFixed(2) : Number(o.total || 0).toFixed(2)}
+                  Total: R {
+                    o.adjustedTotal 
+                      ? Number(o.adjustedTotal).toFixed(2)
+                      : typeof o.total === 'number' 
+                        ? o.total.toFixed(2) 
+                        : Number(o.total || 0).toFixed(2)
+                  }
+                  
+                  {/* Show original price if adjusted */}
+                  {o.adjustedTotal && o.adjustedTotal !== o.total && (
+                    <span className="original-total">was R{Number(o.total || 0).toFixed(2)}</span>
+                  )}
                 </div>
+                
+                {/* Show credit message if refund applied */}
+                {(o.refundAmount ?? 0) > 0 && (
+                  <div className="refund-credit-note">
+                    A credit of R{Number(o.refundAmount).toFixed(2)} has been added to your account for your next order.
+                  </div>
+                )}
               </div>
             </li>
           ))}

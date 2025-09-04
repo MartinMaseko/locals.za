@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const admin = require('../../firebase'); // Update path if needed
+const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
 const driverController = require('../controllers/driverController');
 
 // Register a new driver
 router.post('/register', driverController.register);
+
+// Driver authentication endpoints
+router.post('/verify-credentials', driverController.verifyCredentials);
+router.post('/login-link', driverController.generateLoginCredentials);
+
+// Get driver profile (authenticated)
+router.get('/profile', authenticateToken, driverController.getProfile);
 
 // Get all drivers (admin only)
 router.get('/', authenticateToken, async (req, res) => {
@@ -126,6 +133,225 @@ router.put('/me/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+});
+
+// Handle driver cashout requests
+router.post('/cashout', authenticateToken, async (req, res) => {
+  try {
+    const { orderIds, amount, driverName, driverEmail, driverId } = req.body;
+    const userId = req.user.uid;
+    
+    // Verify the user is either the driver or an admin
+    const isDriverOrAdmin = await verifyDriverOrAdmin(userId, driverId);
+    
+    if (!isDriverOrAdmin) {
+      return res.status(403).json({ error: 'Unauthorized to perform this action' });
+    }
+    
+    // Verify these orders haven't been cashed out already
+    const batch = admin.firestore().batch();
+    const orderRefs = orderIds.map(id => admin.firestore().collection('orders').doc(id));
+    
+    // Get the orders to check if they're already cashed out
+    const orderDocs = await Promise.all(orderRefs.map(ref => ref.get()));
+    
+    // Check if any orders are already cashed out
+    const alreadyCashedOut = orderDocs.some(doc => doc.exists && doc.data().cashedOut === true);
+    
+    if (alreadyCashedOut) {
+      return res.status(400).json({ error: 'Some orders have already been cashed out' });
+    }
+    
+    // Mark all orders as cashed out
+    orderDocs.forEach((doc, index) => {
+      if (doc.exists) {
+        batch.update(orderRefs[index], { 
+          cashedOut: true,
+          cashedOutAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    });
+    
+    // Update the driver's last cashout date
+    const driverRef = admin.firestore().collection('drivers').doc(driverId);
+    batch.set(driverRef, {
+      lastCashoutDate: admin.firestore.FieldValue.serverTimestamp(),
+      lastCashoutAmount: amount
+    }, { merge: true });
+    
+    // Create a cashout record
+    const cashoutRef = admin.firestore().collection('cashouts').doc();
+    batch.set(cashoutRef, {
+      driverId,
+      driverName,
+      driverEmail,
+      amount,
+      orderIds,
+      orderCount: orderIds.length,
+      status: 'pending',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      // Store the email content for later use when email is set up
+      emailDetails: {
+        to: process.env.ADMIN_EMAIL || 'martinmasekodev@gmail.com',
+        subject: `Driver Cashout Request: ${driverName}`,
+        requestDetails: {
+          driver: driverName,
+          driverId: driverId,
+          driverEmail: driverEmail,
+          amount: amount.toFixed(2),
+          orderCount: orderIds.length,
+          orderIds: orderIds
+        }
+      }
+    });
+    
+    // Commit all the updates
+    await batch.commit();
+    
+    // Log the cashout request in the console instead of sending email
+    console.log('======= DRIVER CASHOUT REQUEST =======');
+    console.log(`Driver: ${driverName} (${driverId})`);
+    console.log(`Email: ${driverEmail}`);
+    console.log(`Amount: R${amount.toFixed(2)}`);
+    console.log(`Orders: ${orderIds.length}`);
+    console.log(`Order IDs: ${orderIds.join(', ')}`);
+    console.log('=====================================');
+    
+    // In future, this is where email will be sent
+    // await sendEmail(mailOptions);
+    
+    res.json({ 
+      success: true, 
+      message: 'Cashout request submitted successfully',
+      cashoutId: cashoutRef.id
+    });
+    
+  } catch (error) {
+    console.error('Error processing cashout request:', error);
+    res.status(500).json({ error: 'Failed to process cashout request' });
+  }
+});
+
+// Helper function to verify user is a driver or admin
+async function verifyDriverOrAdmin(userId, driverId) {
+  try {
+    // First check if user is admin from Auth custom claims
+    try {
+      const userRecord = await admin.auth().getUser(userId);
+      const customClaims = userRecord.customClaims || {};
+      
+      if (customClaims.admin || customClaims.role === 'admin') {
+        return true;
+      }
+      
+      // Check if user is the driver
+      if (userId === driverId || customClaims.driver_id === driverId) {
+        return true;
+      }
+    } catch (authError) {
+      console.log('Auth check failed, falling back to Firestore check:', authError);
+    }
+    
+    // If not found in Auth, check in Firestore users collection
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      if (userData.user_type === 'admin' || userData.role === 'admin') {
+        return true;
+      }
+    }
+    
+    // Last resort: check if this is the driver's own ID
+    if (userId === driverId) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error verifying driver or admin:', error);
+    return false;
+  }
+}
+
+// Helper function to get driver info
+router.get('/info', authenticateToken, async (req, res) => {
+  try {
+    const { driver_id } = req.query;
+    const userId = req.user.uid;
+    
+    // Verify the user is either the driver or an admin
+    const isDriverOrAdmin = await verifyDriverOrAdmin(userId, driver_id);
+    
+    if (!isDriverOrAdmin) {
+      return res.status(403).json({ error: 'Unauthorized to access driver information' });
+    }
+    
+    // Get driver data
+    const driverRef = admin.firestore().collection('drivers').doc(driver_id);
+    const driverDoc = await driverRef.get();
+    
+    // Also check user collection as fallback
+    let driverData = {};
+    if (driverDoc.exists) {
+      driverData = driverDoc.data();
+    } else {
+      // Try to get data from users collection as fallback
+      const userRef = admin.firestore().collection('users').doc(driver_id);
+      const userDoc = await userRef.get();
+      if (userDoc.exists) {
+        driverData = userDoc.data();
+      }
+    }
+    
+    // Return what we found
+    res.json({
+      name: driverData.name || driverData.full_name || driverData.displayName || null,
+      lastCashoutDate: driverData.lastCashoutDate ? driverData.lastCashoutDate.toDate().toISOString() : null,
+      lastCashoutAmount: driverData.lastCashoutAmount || 0,
+      email: driverData.email || null
+    });
+    
+  } catch (error) {
+    console.error('Error getting driver info:', error);
+    res.status(500).json({ error: 'Failed to get driver information' });
+  }
+});
+
+// Email sending functionality - commented out for future implementation
+/* 
+async function sendEmail(mailOptions) {
+  try {
+    const nodemailer = require('nodemailer');
+    
+    // Create a transporter using SMTP
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: process.env.EMAIL_PORT || 587,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    });
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Email sending failed:', error);
+    throw error;
+  }
+}
+*/
+
+// Simple test endpoint to verify routing
+router.get('/test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: "Driver routes are working correctly",
+    timestamp: new Date().toISOString()
+  });
 });
 
 module.exports = router;

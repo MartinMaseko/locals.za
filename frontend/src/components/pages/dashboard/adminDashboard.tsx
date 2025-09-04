@@ -22,12 +22,16 @@ const productCategories = [
   'Moisturizers','Relaxers','Hair Accessories','Hair Growth Products'
 ];
 
-// Enhanced date formatter to handle different date formats
+// FormatDate function to handle more data formats:
 function formatDate(dateValue: any): string {
   if (!dateValue) return 'N/A';
   
   try {
     // Handle Firestore timestamp objects
+    if (typeof dateValue === 'object' && dateValue?.toDate) {
+      return format(dateValue.toDate(), 'yyyy-MM-dd HH:mm');
+    }
+    
     if (typeof dateValue === 'object' && dateValue?.seconds) {
       return format(new Date(dateValue.seconds * 1000), 'yyyy-MM-dd HH:mm');
     }
@@ -39,7 +43,8 @@ function formatDate(dateValue: any): string {
     if (dateValue instanceof Date) return format(dateValue, 'yyyy-MM-dd HH:mm');
     
     return String(dateValue);
-  } catch {
+  } catch (error) {
+    console.log('Date formatting error:', error, 'Value:', dateValue);
     return 'Invalid Date';
   }
 }
@@ -60,9 +65,23 @@ interface Order {
   total: number;
   deliveryAddress: any;
   status: OrderStatus;
-  createdAt: any; // Allow different date formats
-  updatedAt: any; // Allow different date formats
+  createdAt: any; 
+  updatedAt: any; 
   driver_id?: string | null;
+  missingItems?: MissingItem[];
+  refundAmount?: number;
+  adjustedTotal?: number;
+  refundStatus?: 'pending' | 'processed' | 'credited';
+  driverNote?: string;
+}
+
+interface MissingItem {
+  productId: string;
+  productName?: string;
+  originalQty?: number;
+  availableQty?: number;
+  missingQuantity?: number;
+  reason?: string;
 }
 
 interface OrderItem {
@@ -71,7 +90,7 @@ interface OrderItem {
   qty: number;
 }
 
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+type OrderStatus = 'pending' | 'processing' | 'in transit' | 'delivered' | 'cancelled' | 'completed';
 
 // Active sections 
 const AdminDashboard: React.FC = () => {
@@ -138,11 +157,19 @@ const AdminDashboard: React.FC = () => {
 
   // drivers management
   const [driversList, setDriversList] = useState<any[]>([]);
-  const [driversLoading, setDriversLoading] = useState(false);
-  const [driversError, setDriversError] = useState('');
+  const [_driversLoading, setDriversLoading] = useState(false);
+  const [_driversError, setDriversError] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<any | null>(null);
   const [driverOrders, setDriverOrders] = useState<Order[]>([]);
-  const [driverOrdersLoading, setDriverOrdersLoading] = useState(false);
+  const [_driverOrdersLoading, setDriverOrdersLoading] = useState(false);
+
+  // cashouts management
+  const [cashoutList, setCashoutList] = useState<any[]>([]);
+  const [cashoutLoading, setCashoutLoading] = useState(false);
+  const [cashoutError, setCashoutError] = useState('');
+  const [selectedCashout, setSelectedCashout] = useState<any | null>(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
 
   // helpers
   const getToken = async () => {
@@ -511,7 +538,7 @@ const AdminDashboard: React.FC = () => {
     }
   }, [productsList, productSearchQuery]);
 
-  // Modify fetchDashboardStats in adminDashboard.tsx
+  // FetchDashboardStats for adminDashboard.tsx
   const fetchDashboardStats = useCallback(async () => {
     if (!admin) return;
     
@@ -700,19 +727,114 @@ const AdminDashboard: React.FC = () => {
     }
   }, []);
 
-  // load drivers when section is activated
+  // fetch payment history for a driver
+  const [driverPaymentHistory, setDriverPaymentHistory] = useState<any[]>([]);
+  const [paymentHistoryLoading, setPaymentHistoryLoading] = useState(false);
+
+  const fetchDriverPaymentHistory = async (driverId: string) => {
+    if (!driverId) return;
+    
+    setPaymentHistoryLoading(true);
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(`/api/admin/drivers/${driverId}/payments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDriverPaymentHistory(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching driver payment history:', err);
+      setDriverPaymentHistory([]);
+    } finally {
+      setPaymentHistoryLoading(false);
+    }
+  };
+
+  // fetch cashout requests
+  const fetchCashoutRequests = useCallback(async () => {
+    setCashoutLoading(true);
+    setCashoutError('');
+    try {
+      const token = await getToken();
+      const { data } = await axios.get('/api/admin/cashouts', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setCashoutList(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Error fetching cashout requests:', err);
+      setCashoutError(err?.response?.data?.error || err?.message || 'Failed to load cashout requests');
+    } finally {
+      setCashoutLoading(false);
+    }
+  }, []);
+
+  // process a driver payment
+  const processDriverPayment = async (cashoutId: string) => {
+    if (!cashoutId) return;
+    
+    setProcessingPayment(true);
+    try {
+      const token = await getToken();
+      await axios.put(`/api/admin/cashouts/${cashoutId}/complete`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Update the local state
+      setCashoutList(prev => prev.map(c => 
+        c.id === cashoutId ? { ...c, status: 'completed', paidAt: new Date().toISOString() } : c
+      ));
+      
+      // Also refresh the drivers list to show updated payment status
+      if (activeSection === 'ManageDrivers') {
+        fetchDriversList();
+      }
+      
+      // Show success message or notification here if needed
+    } catch (err: any) {
+      console.error('Error processing payment:', err);
+      // Show error message
+    } finally {
+      setProcessingPayment(false);
+      setSelectedCashout(null);
+    }
+  };
+
+  // fetch data when section is activated
   useEffect(() => {
     if (activeSection === 'ManageDrivers') {
       fetchDriversList();
+      fetchCashoutRequests();
     }
-  }, [activeSection, fetchDriversList]);
+  }, [activeSection, fetchDriversList, fetchCashoutRequests]);
 
   // fetch orders when a driver is selected
   useEffect(() => {
     if (selectedDriver) {
       fetchDriverOrders(selectedDriver.driver_id || selectedDriver.id);
+      
+      // Also fetch payment history for this driver
+      fetchDriverPaymentHistory(selectedDriver.driver_id || selectedDriver.id);
     }
   }, [selectedDriver, fetchDriverOrders]);
+
+  // auth check
+  useEffect(() => {
+    const auth = getAuth(app);
+    setLoading(true);
+    const unsub = auth.onAuthStateChanged(async (user) => {
+      if (!user) { navigate('/adminlogin'); return; }
+      try {
+        const token = await user.getIdToken();
+        const { data } = await axios.get<AdminProfile>('/api/users/me', { headers: { Authorization: `Bearer ${token}` } });
+        if (data?.user_type !== 'admin') { navigate('/adminlogin'); return; }
+        setAdmin(data);
+      } catch (err) {
+        navigate('/adminlogin');
+      } finally { setLoading(false); }
+    });
+    return () => unsub();
+  }, [navigate]);
 
   if (loading) return <div className="admin-loading">Loading dashboard...</div>;
 
@@ -747,7 +869,7 @@ const AdminDashboard: React.FC = () => {
                 <div className='dashboard-overview-title'>Dashboard Overview</div>
                 <div className="welcome-message">User: {admin?.full_name || admin?.email}</div>
                 
-                {/* Add time period filters */}
+                {/* Time period filters */}
                 <div className="stats-period-filter">
                   <label>Period: </label>
                   <div className="period-options">
@@ -794,6 +916,15 @@ const AdminDashboard: React.FC = () => {
                   <h3>Order Revenue</h3>
                   <p className="stat-number">R{dashboardStats.orderRevenue.toFixed(2)}</p>
                   <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
+                </div>
+                <div className="stat-card">
+                  <h3>Driver Payments</h3>
+                  <p className="stat-number">
+                    R{(orders.filter(o => 
+                      (o.status === 'delivered' || o.status === 'completed') && o.driver_id
+                    ).length * 40).toFixed(2)}
+                  </p>
+                  <p className="stat-period">Total driver payments</p>
                 </div>
                 
                 <div className="stat-card top-products">
@@ -920,7 +1051,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="status-actions"><strong>Update Status:</strong>
                           <div className="status-buttons">
                             <button onClick={() => { updateOrderStatus(selectedOrder.id,'processing'); }} className="status-btn processing">Processing</button>
-                            <button onClick={() => { updateOrderStatus(selectedOrder.id,'shipped'); }} className="status-btn shipped">Shipped</button>
+                            <button onClick={() => { updateOrderStatus(selectedOrder.id,'in transit'); }} className="status-btn shipped">In Transit</button>
                             <button onClick={() => { updateOrderStatus(selectedOrder.id,'delivered'); }} className="status-btn delivered">Delivered</button>
                             <button onClick={() => { updateOrderStatus(selectedOrder.id,'cancelled'); }} className="status-btn cancelled">Cancel</button>
                           </div>
@@ -962,10 +1093,121 @@ const AdminDashboard: React.FC = () => {
                       <div className="items-section">
                         <strong>Order Items:</strong>
                         <table className="items-table">
-                          <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
-                          <tbody>{selectedOrder.items.map((it, idx) => (<tr key={idx}><td>{it.product?.name || `Product ${it.productId}`}</td><td>{it.qty}</td><td>{it.product?.price ? `R${(it.product.price * it.qty).toFixed(2)}` : 'N/A'}</td></tr>))}</tbody>
-                          <tfoot><tr><td colSpan={2}>Subtotal</td><td>R{Number(selectedOrder.subtotal).toFixed(2)}</td></tr><tr><td colSpan={2}>Service Fee</td><td>R{Number(selectedOrder.serviceFee).toFixed(2)}</td></tr><tr className="total-row"><td colSpan={2}>Total</td><td>R{Number(selectedOrder.total).toFixed(2)}</td></tr></tfoot>
+                          <thead>
+                            <tr>
+                              <th>Item</th>
+                              <th>Qty</th>
+                              <th>Price</th>
+                              <th>Status</th> 
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedOrder.items.map((it, idx) => {
+                              // Check if this item has any missing quantities
+                              const missingItem = selectedOrder.missingItems?.find(
+                                (mi: any) => mi.productId === it.productId
+                              );
+                              
+                              const isFullyAvailable = !missingItem;
+                              const isPartiallyAvailable = missingItem && typeof missingItem.missingQuantity === 'number' && missingItem.missingQuantity < it.qty;
+                              
+                              return (
+                                <tr key={idx} className={isFullyAvailable ? '' : 'missing-item-row'}>
+                                  <td>{it.product?.name || `Product ${it.productId}`}</td>
+                                  <td>
+                                    {it.qty}
+                                    {isPartiallyAvailable && typeof missingItem?.missingQuantity === 'number' && (
+                                      <span className="available-qty-note">
+                                        ({it.qty - missingItem.missingQuantity} available)
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td>{it.product?.price ? `R${(it.product.price * it.qty).toFixed(2)}` : 'N/A'}</td>
+                                  <td className="item-status-cell">
+                                    {isFullyAvailable ? (
+                                      <span className="item-status available">Available</span>
+                                    ) : isPartiallyAvailable ? (
+                                      <span className="item-status partial">
+                                        Partially Available
+                                        <div className="item-status-tooltip">
+                                          {missingItem.missingQuantity} out of {it.qty} missing
+                                          <br/>
+                                          Reason: {missingItem.reason}
+                                        </div>
+                                      </span>
+                                    ) : (
+                                      <span className="item-status missing">
+                                        Not Available
+                                        <div className="item-status-tooltip">
+                                          Reason: {missingItem.reason}
+                                        </div>
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan={2}>Subtotal</td>
+                              <td colSpan={2}>R{Number(selectedOrder.subtotal).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                              <td colSpan={2}>Service Fee</td>
+                              <td colSpan={2}>R{Number(selectedOrder.serviceFee).toFixed(2)}</td>
+                            </tr>
+                            
+                            {/* Show refund information if there are missing items */}
+                            {(selectedOrder.refundAmount || 0) > 0 && (
+                              <tr className="refund-row">
+                                <td colSpan={2}>Refund for Missing Items</td>
+                                <td colSpan={2} className="refund-amount">-R{Number(selectedOrder.refundAmount).toFixed(2)}</td>
+                              </tr>
+                            )}
+                            
+                            <tr className="total-row">
+                              <td colSpan={2}>Total</td>
+                              <td colSpan={2}>
+                                R{Number(selectedOrder.adjustedTotal || selectedOrder.total).toFixed(2)} 
+                                {selectedOrder.adjustedTotal && selectedOrder.adjustedTotal !== selectedOrder.total && (
+                                  <span className="original-price">
+                                    <br/> was R{Number(selectedOrder.total).toFixed(2)}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          </tfoot>
                         </table>
+                        
+                        {/* Missing items summary section */}
+                        {selectedOrder.missingItems && selectedOrder.missingItems.length > 0 && (
+                          <div className="missing-items-summary">
+                            <h4>Missing Items Summary</h4>
+                            <div className="missing-items-info">
+                              <p>
+                                <span className="info-label">Items Affected:</span> 
+                                <span className="info-value">{selectedOrder.missingItems.length}</span>
+                              </p>
+                              <p>
+                                <span className="info-label">Refund Amount:</span> 
+                                <span className="info-value">R{Number(selectedOrder.refundAmount || 0).toFixed(2)}</span>
+                              </p>
+                              <p>
+                                <span className="info-label">Refund Status:</span> 
+                                <span className={`info-value refund-status-${selectedOrder.refundStatus || 'pending'}`}>
+                                  {(selectedOrder.refundStatus || 'pending').toUpperCase()}
+                                </span>
+                              </p>
+                              {selectedOrder.driverNote && (
+                                <p>
+                                  <span className="info-label">Driver Note:</span> 
+                                  <span className="info-value driver-note">{selectedOrder.driverNote}</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1073,15 +1315,96 @@ const AdminDashboard: React.FC = () => {
             <div className="manage-drivers-section">
               <div className="section-header">
                 <h2>Manage Drivers</h2>
+                
+                {/* Add tabs for drivers list and cashout requests */}
+                <div className="driver-management-tabs">
+                  <button 
+                    className={`tab-button ${!selectedDriver && !selectedCashout ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedDriver(null);
+                      setSelectedCashout(null);
+                    }}
+                  >
+                    All Drivers
+                  </button>
+                  <button 
+                    className={`tab-button ${!!selectedCashout ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedDriver(null);
+                      fetchCashoutRequests();
+                      setSelectedCashout({ id: 'all' });
+                    }}
+                  >
+                    Cashout Requests
+                    {cashoutList.filter(c => c.status === 'pending').length > 0 && (
+                      <span className="pending-count">{cashoutList.filter(c => c.status === 'pending').length}</span>
+                    )}
+                  </button>
+                </div>
               </div>
               
-              {driversLoading ? (
-                <div className="loading-indicator">Loading drivers...</div>
-              ) : driversError ? (
-                <div className="error-message">{driversError}</div>
-              ) : driversList.length === 0 ? (
-                <div className="no-drivers">No drivers registered in the system</div>
+              {/* Show cashout requests table when selectedCashout is set */}
+              {selectedCashout ? (
+                <div className="cashout-requests-container">
+                  <h3>Driver Cashout Requests</h3>
+                  
+                  {cashoutLoading ? (
+                    <div className="loading-indicator">Loading cashout requests...</div>
+                  ) : cashoutError ? (
+                    <div className="error-message">{cashoutError}</div>
+                  ) : cashoutList.length === 0 ? (
+                    <div className="no-cashouts">No cashout requests found</div>
+                  ) : (
+                    <div className="cashout-table-container">
+                      <table className="cashout-table">
+                        <thead>
+                          <tr>
+                            <th>Request Date</th>
+                            <th>Driver</th>
+                            <th>Amount</th>
+                            <th>Deliveries</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {cashoutList.map(cashout => (
+                            <tr 
+                              key={cashout.id}
+                              className={`${cashout.status === 'pending' ? 'pending-row' : ''} ${cashout.status === 'completed' ? 'completed-row' : ''}`}
+                            >
+                              <td>{formatDate(cashout.createdAt)}</td>
+                              <td>{cashout.driverName || 'Unknown'}</td>
+                              <td className="amount-cell">R{Number(cashout.amount || 0).toFixed(2)}</td>
+                              <td>{cashout.orderCount || 0} deliveries</td>
+                              <td>
+                                <span className={`cashout-status status-${cashout.status || 'pending'}`}>
+                                  {cashout.status === 'completed' ? 'Paid' : 'Pending'}
+                                </span>
+                                {cashout.paidAt && <div className="paid-date">Paid on {formatDate(cashout.paidAt)}</div>}
+                              </td>
+                              <td>
+                                {cashout.status === 'pending' ? (
+                                  <button 
+                                    className="pay-button"
+                                    onClick={() => processDriverPayment(cashout.id)}
+                                    disabled={processingPayment}
+                                  >
+                                    {processingPayment ? 'Processing...' : 'Mark as Paid'}
+                                  </button>
+                                ) : (
+                                  <span className="already-paid">Paid ✓</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               ) : (
+                // Original drivers table content here
                 <div className="drivers-table-container">
                   <table className="drivers-table">
                     <thead>
@@ -1100,19 +1423,23 @@ const AdminDashboard: React.FC = () => {
                     <tbody>
                       {driversList.map(driver => {
                         // Get this driver's orders 
-                        const driverOrderCount = orders.filter(o => o.driver_id === (driver.driver_id || driver.id)).length;
+                        const driverId = driver.driver_id || driver.id;
+                        const driverOrderCount = orders.filter(o => o.driver_id === driverId).length;
+                        // Only count orders with status 'delivered' or 'completed' for revenue
                         const driverDeliveredCount = orders.filter(o => 
-                          o.driver_id === (driver.driver_id || driver.id) && o.status === 'delivered'
+                          o.driver_id === driverId && 
+                          (o.status === 'delivered' || o.status === 'completed')
                         ).length;
                         const driverAcceptedCount = orders.filter(o => 
-                          o.driver_id === (driver.driver_id || driver.id) && 
-                          (o.status === 'processing' || o.status === 'shipped' || o.status === 'delivered')
+                          o.driver_id === driverId && 
+                          (o.status === 'processing' || o.status === 'in transit' || o.status === 'delivered' || o.status === 'completed')
                         ).length;
+                        // Calculate revenue at R40 per completed delivery
                         const driverRevenue = driverDeliveredCount * 40;
                         
                         return (
                           <tr 
-                            key={driver.driver_id || driver.id} 
+                            key={driverId} 
                             className={selectedDriver?.driver_id === driver.driver_id ? 'selected-row' : ''}
                             onClick={() => setSelectedDriver(driver)}
                           >
@@ -1149,65 +1476,81 @@ const AdminDashboard: React.FC = () => {
               {selectedDriver && (
                 <div className="order-details-overlay" onClick={() => setSelectedDriver(null)}>
                   <div className="order-details-modal driver-orders-modal" onClick={e => e.stopPropagation()}>
-                    <button 
-                      className="modal-close" 
-                      onClick={() => setSelectedDriver(null)} 
-                      aria-label="Close"
-                    >
-                      &times;
-                    </button>
+                    {/* Existing modal header */}
+                    <button className="modal-close" onClick={() => setSelectedDriver(null)} aria-label="Close">&times;</button>
                     
                     <div className="modal-header">
-                      <h3>Orders for {selectedDriver.full_name || selectedDriver.email}</h3>
-                      <div className="driver-quick-info">
-                        <div className="info-chip">
-                          <span className="label">Vehicle:</span>
-                          <span>{selectedDriver.vehicle_type} {selectedDriver.vehicle_model}</span>
-                        </div>
-                        <div className="info-chip">
-                          <span className="label">Phone:</span>
-                          <span>{selectedDriver.phone_number || 'N/A'}</span>
-                        </div>
-                        <div className="info-chip revenue">
-                          <span className="label">Total Earnings:</span>
-                          <span>R{(driverOrders.filter(order => order.status === 'delivered').length * 40).toFixed(2)}</span>
-                        </div>
-                      </div>
+                      <h3>Driver: {selectedDriver.full_name || selectedDriver.email}</h3>
+                      {/* Existing driver info */}
                     </div>
                     
-                    {driverOrdersLoading ? (
-                      <div className="loading-indicator">Loading orders...</div>
-                    ) : driverOrders.length === 0 ? (
-                      <div className="no-orders">No orders assigned to this driver</div>
+                    {/* Add tabs for orders and payment history */}
+                    <div className="driver-modal-tabs">
+                      <button 
+                        className={`tab-button ${!showPaymentHistory ? 'active' : ''}`}
+                        onClick={() => setShowPaymentHistory(false)}
+                      >
+                        Orders
+                      </button>
+                      <button 
+                        className={`tab-button ${showPaymentHistory ? 'active' : ''}`}
+                        onClick={() => setShowPaymentHistory(true)}
+                      >
+                        Payment History
+                      </button>
+                    </div>
+                    
+                    {/* Show payment history when tab is selected */}
+                    {showPaymentHistory ? (
+                      <div className="payment-history-container">
+                        {paymentHistoryLoading ? (
+                          <div className="loading-indicator">Loading payment history...</div>
+                        ) : driverPaymentHistory.length === 0 ? (
+                          <div className="no-payment-history">No payment records found for this driver</div>
+                        ) : (
+                          <table className="payment-history-table">
+                            <thead>
+                              <tr>
+                                <th>Payment Date</th>
+                                <th>Amount</th>
+                                <th>Deliveries</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {driverPaymentHistory.map(payment => (
+                                <tr key={payment.id}>
+                                  <td>{payment.paidAt ? formatDate(payment.paidAt) : 'N/A'}</td>
+                                  <td className="amount-cell">R{Number(payment.amount || 0).toFixed(2)}</td>
+                                  <td>{payment.orderCount || 0} deliveries</td>
+                                  <td>{formatDate(payment.createdAt)}</td>
+                                  <td>
+                                    <span className={`payment-status status-${payment.status || 'pending'}`}>
+                                      {payment.status === 'completed' ? 'Paid' : 'Pending'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot>
+                              <tr>
+                                <td colSpan={2}><strong>Total Paid:</strong></td>
+                                <td colSpan={3} className="total-paid">
+                                  R{driverPaymentHistory
+                                    .filter(p => p.status === 'completed')
+                                    .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+                                    .toFixed(2)
+                                }
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        )}
+                      </div>
                     ) : (
+                      // Original driver orders content here
                       <>
-                        <div className="orders-summary">
-                          <div className="summary-card">
-                            <div className="summary-number">{driverOrders.length}</div>
-                            <div className="summary-label">Total Assigned</div>
-                          </div>
-                          <div className="summary-card">
-                            <div className="summary-number">
-                              {driverOrders.filter(order => 
-                                order.status === 'processing' || order.status === 'shipped'
-                              ).length}
-                            </div>
-                            <div className="summary-label">In Progress</div>
-                          </div>
-                          <div className="summary-card">
-                            <div className="summary-number">
-                              {driverOrders.filter(order => order.status === 'delivered').length}
-                            </div>
-                            <div className="summary-label">Delivered</div>
-                          </div>
-                          <div className="summary-card">
-                            <div className="summary-number">
-                              {driverOrders.filter(order => order.status === 'cancelled').length}
-                            </div>
-                            <div className="summary-label">Cancelled</div>
-                          </div>
-                        </div>
-                        
                         {/* Driver Orders List */}
                         <div className="driver-orders-accordion">
                           {driverOrders.map(order => (
@@ -1241,11 +1584,11 @@ const AdminDashboard: React.FC = () => {
                                       <h4>Delivery Status</h4>
                                       <div className={`delivery-status ${
                                         order.status === 'delivered' ? 'delivered' :
-                                        order.status === 'shipped' ? 'in-transit' :
+                                        order.status === 'in transit' ? 'in-transit' :
                                         'not-started'}`}
                                       >
                                         {order.status === 'delivered' ? 'Delivered' :
-                                         order.status === 'shipped' ? 'In Transit' :
+                                         order.status === 'in transit' ? 'In Transit' :
                                          'Not Started'}
                                       </div>
                                       

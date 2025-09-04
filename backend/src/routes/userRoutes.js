@@ -27,10 +27,27 @@ router.get('/me', authenticateToken, async (req, res) => {
   const { uid } = req.user;
   try {
     const doc = await admin.firestore().collection('users').doc(uid).get();
-    if (!doc.exists) return res.status(404).json({ error: "Profile not found" });
+    
+    if (!doc.exists) {
+      // If user auth record exists but no Firestore document, create a minimal one
+      const userRecord = await admin.auth().getUser(uid);
+      const userData = {
+        email: userRecord.email,
+        user_type: userRecord.customClaims?.admin ? 'admin' : 'customer',
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Save this minimal profile
+      await admin.firestore().collection('users').doc(uid).set(userData);
+      
+      return res.json(userData);
+    }
+    
+    // Return the existing document
     res.json(doc.data());
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
