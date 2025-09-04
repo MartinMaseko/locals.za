@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import LayOut from './components/pages/LayOut';
 import UserAccount from './components/pages/userpages/userAccount';
@@ -19,6 +19,9 @@ import CheckoutPage from './components/pages/storepages/cart/CheckoutPage';
 import OrderConfirmationPage from './components/pages/storepages/cart/OrderConfirmationPage';
 import DriverLayout from './components/pages/drivers/layout/DriverLayout';
 import DriversDash from './components/pages/drivers/driversDash';
+import DriverLogin from './components/pages/drivers/auth/DriverLogin';
+import DriverDeliveries from './components/pages/drivers/driverDeliveries';
+import DriverRevenue from './components/pages/drivers/driverRevenue';
 
 function App() {
   return (
@@ -31,13 +34,17 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/adminlogin" element={<AdminLogin />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
-            
+            <Route path="/driver-login" element={<DriverLogin />} />
 
-
-            {/* Legacy route for backward compatibility */}
-            <Route path="/driversdashboard" element={<DriverLayout />}>
-              <Route index element={<DriversDash />} />
+            {/* Driver routes with shared layout */}
+            <Route path="/driver" element={<DriverLayout />}>
+              <Route path="dashboard" element={<DriversDash />} />
+              <Route path="deliveries/:orderId" element={<DriverDeliveries />} />
+              <Route path="/driver/revenue" element={<DriverRevenue />} />
             </Route>
+            
+            {/* Redirect for existing driversdashboard URL */}
+            <Route path="/driversdashboard" element={<Navigate to="/driver/dashboard" replace />} />
             
             <Route path="/" element={<LayOut />}>
               <Route index element={<HomePage />} /> 

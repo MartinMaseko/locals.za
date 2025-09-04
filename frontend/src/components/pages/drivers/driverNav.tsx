@@ -17,7 +17,7 @@ const DriversNav = () => {
       await signOut(auth);
       console.log('Driver Signed Out');
       setDropdownOpen(false);
-      navigate('/login');
+      navigate('/driver-login');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -25,9 +25,11 @@ const DriversNav = () => {
 
   return (
     <nav className="navbar drivers-navbar">
-      <div className="navbar-content">
-        <div className="navbar-logo">
-          <img src={Logo} alt="Logo" className='driver-logo'/>
+      <div className="driver-navbar-content">
+        <div className="driver-navbar-logo">
+          <Link to="/driversdashboard">
+            <img src={Logo} alt="Logo" className='driver-logo'/>
+          </Link>
         </div>
         <div className="navbar-menu">
           <button
@@ -57,14 +59,6 @@ const DriversNav = () => {
           <Link to="/driversdashboard" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
             <img width="35" height="35" src="https://img.icons8.com/material/35/ffb803/dashboard-layout.png" alt="dashboard-layout"/>
             Dashboard
-          </Link>
-          <Link to="/driver/account" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/pulsar-line/35/ffb803/guest-male.png" alt="account"/>
-            Account
-          </Link>
-          <Link to="/driver/orders" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img width="35" height="35" src="https://img.icons8.com/ios-glyphs/35/ffb803/delivery.png" alt="delivery"/>
-            Orders
           </Link>
           <Link to="/driver/revenue" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/money-bag.png" alt="revenue"/>

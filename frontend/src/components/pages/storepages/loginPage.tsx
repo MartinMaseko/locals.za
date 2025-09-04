@@ -92,10 +92,8 @@ const UserLogin = () => {
         } else {
           navigate('/');
         }
-      } else if (profile.user_type === 'driver') {
-        navigate('/driversdashboard');
       } else {
-        setError('Only customers and drivers can log in here.');
+        setError('Only customers can log in here.');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');

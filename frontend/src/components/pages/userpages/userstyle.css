@@ -10,7 +10,6 @@
     box-sizing: border-box;
     min-height: 100vh;
     text-align: center;
-    background: transparent;
 }
 .profile-heading {
     display: flex;
@@ -166,4 +165,223 @@ input[type="file"]::-webkit-file-upload-button:focus {
 
 .order-card {
     margin-top: 1rem;
+}
+
+/* Order status styling */
+.order-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Status-specific colors */
+.order-status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.order-status-processing {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.order-status-shipped,
+.order-status-dispatched {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.order-status-delivered,
+.order-status-completed {
+  background-color: #212121;
+  color: #ffb803;
+}
+
+.order-status-cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.order-status-unknown {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+/* Order card and header improvements */
+.order-card {
+  margin-top: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  overflow: hidden; /* Prevent children from overflowing */
+  max-width: 100%;
+}
+
+.order-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  text-align: start;
+  margin-bottom: 1rem;
+  align-items: start;
+}
+
+.order-no {
+  text-align: left;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  grid-column: 1;
+  grid-row: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word; /* Break long IDs */
+  max-width: 100%;
+  font-weight: 500;
+}
+
+.order-date {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #6c757d;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.order-header > div:last-child {
+  grid-column: 1 / -1; /* Span both columns */
+  grid-row: 2;
+  margin-top: 8px;
+}
+
+/* Missing items badge */
+.missing-items-badge {
+  display: inline-block;
+  background-color: #f8d7da;
+  color: #721c24;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 5px;
+  white-space: nowrap;
+}
+
+/* Order items section */
+.order-items {
+  margin-bottom: 1rem;
+}
+
+.order-items-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-item-wrapper {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  position: relative;
+}
+
+.has-missing {
+  background-color: #fff3cd;
+}
+
+/* Item availability status */
+.item-availability {
+  margin-top: 6px;
+  font-size: 0.75rem;
+}
+
+.unavailable-status {
+  color: #721c24;
+  font-weight: 500;
+}
+
+.partially-available-status {
+  color: #856404;
+  font-weight: 500;
+}
+
+/* Refund styling */
+.refund-line {
+  color: #155724;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.original-total {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-decoration: line-through;
+  margin-left: 6px;
+}
+
+.refund-credit-note {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-top: 10px;
+}
+
+/* Empty orders styling */
+.empty-orders-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* ETA Display Styling */
+.eta-display {
+  margin-top: 8px;
+  background-color: #212121;
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eta-arrival {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffb803;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.eta-arrival img {
+  margin-right: 4px;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 480px) {
+  .order-header {
+    grid-template-columns: 1fr;
+  }
+  
+  .order-date {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+  }
+  
+  .order-header > div:last-child {
+    grid-row: 3;
+  }
 }
