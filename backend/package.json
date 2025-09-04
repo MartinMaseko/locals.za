@@ -11,13 +11,14 @@
   "description": "Backend for locals.ZA - A platform for local businesses in South Africa",
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0",
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.6"
   },
   "devDependencies": {
     "@types/node": "^24.2.0"
