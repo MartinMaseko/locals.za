@@ -234,7 +234,7 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get Order by ID (Salon Owner / Admin)
+// Get Order by ID (Salon Owner / Admin / Assigned Driver)
 router.get('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
@@ -243,26 +243,158 @@ router.get('/:id', authenticateToken, async (req, res) => {
     
     const orderData = { id: doc.id, ...doc.data() };
     
-    // Security check: ensure user can only view their own orders unless they're an admin
-    if (req.user.uid !== orderData.userId && req.user.role !== 'admin' && 
-        req.user.user_type !== 'admin' && req.user.uid !== orderData.salon_id) {
+    // Security check: ensure user can only view their own orders unless they're an admin or the assigned driver
+    const isAdmin = req.user.role === 'admin' || req.user.user_type === 'admin';
+    const isOrderOwner = req.user.uid === orderData.userId;
+    const isSalonOwner = req.user.uid === orderData.salon_id;
+    const isAssignedDriver = req.user.uid === orderData.driver_id || 
+                             req.user.driver_id === orderData.driver_id;
+    
+    if (!isAdmin && !isOrderOwner && !isSalonOwner && !isAssignedDriver) {
+      console.log('Access denied: User', req.user.uid, 'tried to access order', id);
+      console.log('Order driver_id:', orderData.driver_id, 'User driver_id claim:', req.user.driver_id);
       return res.status(403).json({ error: "You don't have permission to view this order" });
+    }
+    
+    // If we need to fetch the products info
+    if (orderData.items && Array.isArray(orderData.items) && !orderData.products) {
+      try {
+        // Convert items to products with full details if needed
+        const productDetails = await Promise.all(
+          orderData.items.map(async (item) => {
+            const productId = item.productId || item.product?.id;
+            if (!productId) {
+              return {
+                id: 'unknown',
+                name: item.product?.name || 'Unknown Product',
+                price: item.product?.price || 0,
+                quantity: item.qty || 1
+              };
+            }
+            
+            try {
+              const productDoc = await admin.firestore().collection('products').doc(productId).get();
+              if (productDoc.exists) {
+                return {
+                  id: productId,
+                  ...productDoc.data(),
+                  quantity: item.qty || 1
+                };
+              } else {
+                return {
+                  id: productId,
+                  name: item.product?.name || 'Product Not Found',
+                  price: item.product?.price || 0,
+                  quantity: item.qty || 1
+                };
+              }
+            } catch (err) {
+              console.error('Error fetching product', productId, ':', err);
+              return {
+                id: productId,
+                name: item.product?.name || 'Error Loading Product',
+                price: item.product?.price || 0,
+                quantity: item.qty || 1
+              };
+            }
+          })
+        );
+        
+        orderData.products = productDetails;
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+      }
     }
     
     res.json(orderData);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error fetching order by ID:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
 // Update Order Status (Admin/Driver)
 router.put('/:id/status', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, missingItems, refundAmount, driverNote, adjustedTotal } = req.body;
   try {
-    await admin.firestore().collection('orders').doc(id).set({ status, updatedAt: new Date().toISOString() }, { merge: true });
+    // Get the current user ID
+    const userId = req.user.uid;
+    
+    // Create update object with status and timestamp
+    const updateData = { 
+      status, 
+      updatedAt: new Date().toISOString(),
+      updatedBy: userId
+    };
+    
+    // If missing items data is provided, include it in the update
+    if (missingItems && Array.isArray(missingItems) && missingItems.length > 0) {
+      // Add missing items data to update
+      updateData.missingItems = missingItems;
+      updateData.hasRefund = !!refundAmount;
+      
+      if (refundAmount) {
+        updateData.refundAmount = Number(refundAmount);
+        updateData.refundStatus = 'pending';
+      }
+      
+      if (adjustedTotal) {
+        updateData.adjustedTotal = Number(adjustedTotal);
+      }
+      
+      if (driverNote) {
+        updateData.driverNote = driverNote;
+      }
+      
+      // Get the order to fetch customer ID
+      const orderDoc = await admin.firestore().collection('orders').doc(id).get();
+      
+      if (orderDoc.exists && refundAmount > 0) {
+        const orderData = orderDoc.data();
+        const customerId = orderData.userId;
+        
+        // Create discount for next order
+        if (customerId) {
+          await admin.firestore().collection('discounts').add({
+            userId: customerId,
+            amount: refundAmount,
+            reason: `Refund for missing items in order ${id}`,
+            status: 'active',
+            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+          
+          // Notify customer
+          await admin.firestore().collection('notifications').add({
+            userId: customerId,
+            title: 'Items missing from your order',
+            message: `Some items in your order #${id.slice(-6)} were unavailable. A refund of R${Number(refundAmount).toFixed(2)} has been credited to your account for your next order.`,
+            type: 'refund',
+            orderId: id,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        }
+        
+        // Notify admin
+        await admin.firestore().collection('adminNotifications').add({
+          title: 'Missing Items in Order',
+          message: `Order #${id.slice(-6)} has ${missingItems.length} missing items. Refund amount: R${Number(refundAmount).toFixed(2)}`,
+          orderId: id,
+          type: 'missingItems',
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+    
+    // Update the order document
+    await admin.firestore().collection('orders').doc(id).set(updateData, { merge: true });
+    
     res.json({ success: true });
   } catch (error) {
+    console.error('Error updating order status:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -332,6 +464,270 @@ router.get('/driver/:driverId', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching driver orders:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Get orders - supports filtering by driver_id (for driver dashboard)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const { driver_id, status } = req.query;
+    const { uid } = req.user;
+    
+    // Security check: Drivers can only access their own orders
+    // Admins can access any driver's orders by providing driver_id
+    if (driver_id && driver_id !== uid) {
+      // Check if this is the driver's custom ID (driver_id claim)
+      const isDriverOwner = req.user.driver_id === driver_id || req.user.driver === true;
+      
+      // If not the driver's ID and not admin, check user type
+      if (!isDriverOwner) {
+        // Check if user is admin
+        const userRef = await admin.firestore().collection('users').doc(uid).get();
+        const userData = userRef.data();
+        
+        if (userData?.user_type !== 'admin') {
+          return res.status(403).json({ error: "Not authorized to view other driver's orders" });
+        }
+      }
+    }
+    
+    // Use the authenticated user's ID if driver_id is not provided
+    const driverId = driver_id || uid;
+    
+    // If no driver_id provided and not filtering specifically for drivers, return error
+    if (!driverId) {
+      return res.status(400).json({ error: "driver_id parameter is required" });
+    }
+    
+    let orders = [];
+    
+    try {
+      // Try to get orders with driver_id match
+      let query = admin.firestore()
+        .collection('orders')
+        .where('driver_id', '==', driverId);
+      
+      // Apply status filter if provided
+      if (status) {
+        query = query.where('status', '==', status);
+      }
+      
+      // Add sorting (if you have a composite index)
+      try {
+        query = query.orderBy('createdAt', 'desc');
+      } catch (sortError) {
+        // Ignore sort error, we'll sort in memory later
+      }
+        
+      const snapshot = await query.get();
+      orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Sort in memory if we couldn't do it in the query
+      if (!query.toString().includes('orderBy')) {
+        orders.sort((a, b) => {
+          // Handle various createdAt formats
+          const getTime = (doc) => {
+            const ts = doc.createdAt;
+            if (!ts) return 0;
+            if (typeof ts === 'string') return new Date(ts).getTime();
+            if (ts.seconds) return ts.seconds * 1000;
+            return 0;
+          };
+          return getTime(b) - getTime(a); // Descending
+        });
+      }
+    } catch (indexError) {
+      console.log('Falling back to unfiltered query with client-side filtering');
+      // If index error, do unfiltered query and filter in memory
+      const snapshot = await admin.firestore().collection('orders').get();
+      orders = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(order => order.driver_id === driverId && (!status || order.status === status))
+        .sort((a, b) => {
+          // Sort by createdAt in descending order
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          return dateB.getTime() - dateA.getTime();
+        });
+    }
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update order ETA
+router.put('/:id/eta', authenticateToken, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { eta } = req.body;
+    const userId = req.user.uid;
+    
+    if (!eta) {
+      return res.status(400).json({ error: 'ETA is required' });
+    }
+    
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+    const orderDoc = await orderRef.get();
+    
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    const orderData = orderDoc.data();
+    
+    // Check if the user is authorized (either driver or admin)
+    const isDriver = orderData.driver_id === userId || 
+                    (orderData.driver && orderData.driver.id === userId);
+    const isAdmin = req.user.role === 'admin';
+    
+    if (!isDriver && !isAdmin) {
+      return res.status(403).json({ error: 'Unauthorized to update this order' });
+    }
+    
+    // Update the order with ETA
+    await orderRef.update({
+      eta: eta,
+      eta_updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      eta_updated_by: userId
+    });
+    
+    // Send notification to customer about ETA (if implemented)
+    // TODO: Add notification logic here
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating order ETA:', error);
+    res.status(500).json({ error: 'Failed to update order ETA' });
+  }
+});
+
+// Report missing items during order collection
+router.post('/:id/missing-items', authenticateToken, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { missingItems, refundAmount, driverNote } = req.body;
+    const userId = req.user.uid;
+    
+    // Validate the request body
+    if (!Array.isArray(missingItems) || missingItems.length === 0) {
+      return res.status(400).json({ error: 'Missing items data is required' });
+    }
+    
+    // Get the order document
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+    const orderDoc = await orderRef.get();
+    
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    const orderData = orderDoc.data();
+    
+    // Verify driver is assigned to this order
+    if (orderData.driver_id !== userId && (!orderData.driver || orderData.driver.id !== userId)) {
+      return res.status(403).json({ error: 'Unauthorized to update this order' });
+    }
+    
+    // Calculate the original total
+    const originalTotal = orderData.total || 0;
+    
+    // Calculate refund amount if not provided
+    let calculatedRefundAmount = refundAmount;
+    if (!calculatedRefundAmount) {
+      calculatedRefundAmount = missingItems.reduce(
+        (total, item) => total + ((item.price || 0) * (item.missingQuantity || 0)), 
+        0
+      );
+    }
+    
+    // Calculate new total
+    const newTotal = originalTotal - calculatedRefundAmount;
+    
+    // Update the order with missing items information
+    await orderRef.update({
+      missingItems,
+      refundAmount: calculatedRefundAmount,
+      adjustedTotal: newTotal,
+      driverNote,
+      hasRefund: calculatedRefundAmount > 0,
+      refundStatus: 'pending', // Options: pending, processed, credited
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: userId
+    });
+    
+    // Create a discount for next order if there's a refund amount
+    if (calculatedRefundAmount > 0) {
+      // Get customer ID
+      const customerId = orderData.userId;
+      
+      if (customerId) {
+        // Create a discount entry
+        await admin.firestore().collection('discounts').add({
+          userId: customerId,
+          amount: calculatedRefundAmount,
+          reason: `Refund for missing items in order ${orderId}`,
+          status: 'active',
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      
+      // Notify the customer about missing items and refund
+      try {
+        // Get customer data for notification
+        const customerDoc = await admin.firestore().collection('users').doc(customerId).get();
+        
+        if (customerDoc.exists) {
+          const customerData = customerDoc.data();
+          
+          // Create a notification for the customer
+          await admin.firestore().collection('notifications').add({
+            userId: customerId,
+            title: 'Items missing from your order',
+            message: `Some items in your order #${orderId.slice(-6)} were unavailable. A refund of R${calculatedRefundAmount.toFixed(2)} has been credited to your account for your next order.`,
+            type: 'refund',
+            orderId: orderId,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+          
+          // Send email to customer about missing items
+          // This would integrate with your email provider
+        }
+      } catch (notifyError) {
+        console.error('Error notifying customer about missing items:', notifyError);
+        // Continue processing even if notification fails
+      }
+      
+      // Notify admin about missing items
+      try {
+        await admin.firestore().collection('adminNotifications').add({
+          title: 'Missing Items in Order',
+          message: `Order #${orderId.slice(-6)} has ${missingItems.length} missing items. Refund amount: R${calculatedRefundAmount.toFixed(2)}`,
+          orderId: orderId,
+          type: 'missingItems',
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (adminNotifyError) {
+        console.error('Error notifying admin about missing items:', adminNotifyError);
+        // Continue processing even if notification fails
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Missing items reported successfully',
+      refundAmount: calculatedRefundAmount,
+      newTotal
+    });
+    
+  } catch (error) {
+    console.error('Error reporting missing items:', error);
+    res.status(500).json({ error: 'Failed to report missing items' });
   }
 });
 

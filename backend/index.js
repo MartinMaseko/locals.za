@@ -81,6 +81,12 @@ const adminRoutes = require('./src/routes/adminRoutes');
 // Mount the admin router at the /api/admin base path.
 app.use('/api/admin', adminRoutes);
 
+// Mount the maps router at the /api/maps base path.
+const mapsRoutes = require('./src/routes/mapsRoutes');
+
+// Mount the maps router at the /api/maps base path.
+app.use('/api/maps', mapsRoutes);
+
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 

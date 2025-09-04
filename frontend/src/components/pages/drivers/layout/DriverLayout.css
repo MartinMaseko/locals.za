@@ -1,0 +1,74 @@
+.driver-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  width: 100vw;
+}
+
+/* Loading State */
+.driver-loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.driver-loading-spinner {
+  border: 4px solid rgba(255, 184, 3, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid #FFB803;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Authentication Required Message */
+.driver-auth-required {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.driver-auth-required h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.driver-auth-required p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.driver-auth-required button {
+  background-color: #FFB803;
+  color: #333;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.driver-auth-required button:hover {
+  background-color: #e9a800;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .driver-layout-content {
+    padding: 15px;
+  }
+}

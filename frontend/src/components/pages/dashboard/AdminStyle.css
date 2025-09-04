@@ -1108,3 +1108,191 @@
   justify-content: flex-end;
   margin-top: 15px;
 }
+
+.revenue-cell {
+  font-weight: 600;
+  color: #32a852;
+}
+
+.payment-status.paid {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.payment-status.unpaid {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Driver Management Tabs */
+.driver-management-tabs,
+.driver-modal-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.tab-button {
+  background-color: #f5f5f5;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  position: relative;
+  font-family: inherit;
+}
+
+.tab-button.active {
+  background-color: #212121;
+  color: #ffb803;
+}
+
+.pending-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ff4d4f;
+  color: white;
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* Cashout Requests Table */
+.cashout-table-container {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.cashout-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cashout-table th {
+  background-color: #f5f5f5;
+  padding: 10px;
+  font-weight: 600;
+}
+
+.cashout-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.pending-row {
+  background-color: #fff9e6;
+}
+
+.completed-row {
+  background-color: #f6f6f6;
+}
+
+.amount-cell {
+  font-weight: 600;
+  color: #212121;
+}
+
+.cashout-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-completed {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.paid-date {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+.pay-button {
+  background-color: #212121;
+  color: #ffb803;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.pay-button:hover {
+  background-color: #ffb803;
+  color: #212121;
+}
+
+.pay-button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.already-paid {
+  color: #0f5132;
+  font-weight: 500;
+}
+
+/* Payment History Table */
+.payment-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.payment-history-table th {
+  background-color: #f5f5f5;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.payment-history-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.payment-history-table tfoot td {
+  padding: 15px 10px;
+  font-weight: 600;
+}
+
+.total-paid {
+  font-size: 1.1rem;
+  color: #32a852;
+}
+
+.no-payment-history,
+.no-cashouts {
+  padding: 40px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  color: #666;
+}
