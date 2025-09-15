@@ -173,3 +173,31 @@
 .favorite-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,16,16,0.12); }
 .favorite-btn.favorited { background: #FFFAED; }
 .favorite-btn.favorited svg { fill: #FFB803; stroke: none; }
+
+/* Desktop layout */
+@media (min-width: 992px) {
+  .product-thumb {
+    width: 150px;
+    height: 150px;
+  } 
+
+  .product-card {
+    width: 250px;
+    min-height: 350px;
+    flex-direction: column;
+  }
+
+  .product-detail-page {
+    max-width: 100vw;
+  }
+
+  .product-detail-grid {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .product-detail-image {
+    width: 350px;
+    height: 350px;
+  }
+}
