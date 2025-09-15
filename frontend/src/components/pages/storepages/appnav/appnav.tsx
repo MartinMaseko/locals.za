@@ -1,18 +1,7 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './appnavstyle.css';
 
 const AppNav = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleCategoriesClick = () => {
-    if (location.pathname === '/' || location.pathname === '') {
-      window.dispatchEvent(new Event('toggleCategories'));
-    } else {
-      navigate('/', { replace: false });
-      setTimeout(() => window.dispatchEvent(new Event('toggleCategories')), 80);
-    }
-  };
 
   return (
     <nav className="appnav-bar">
@@ -20,10 +9,10 @@ const AppNav = () => {
         <img className='appnav-icons' src="https://img.icons8.com/material-rounded/40/ffb803/home.png" alt="home"/>
         Home
       </Link>
-      <button type="button" className="appnav-icon" title="Categories" onClick={handleCategoriesClick}>
-        <img className='appnav-icons' src="https://img.icons8.com/ios/40/ffb803/sorting-answers.png" alt="categories"/>
-        <span>Category</span>
-      </button>
+      <Link to="/shop" className="appnav-icon" title="Shop">
+        <img  className='appnav-icons' src="https://img.icons8.com/material-rounded/40/ffb803/shop.png" alt="shop"/>
+        <span>Shop</span>
+      </Link>
 
       <Link to="/support" className="appnav-icon" title="Support">
         <img className='appnav-icons' src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="support"/>
