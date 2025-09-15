@@ -385,3 +385,20 @@ input[type="file"]::-webkit-file-upload-button:focus {
     grid-row: 3;
   }
 }
+
+/* Desktop layout */
+@media (min-width: 992px) {
+  .profile-container,
+  .user-orders-page {
+    max-width: 100vw;
+  }
+
+  .orders-list {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .order-card {
+    width: 350px;
+  }
+}

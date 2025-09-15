@@ -171,3 +171,17 @@
   color: #FFB803;
   transform: translateY(-2px);
 }
+
+/* Desktop layout */
+@media (min-width: 992px) {
+  .products-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .homepage-search-input{
+    max-width: 600px;
+  }
+}
