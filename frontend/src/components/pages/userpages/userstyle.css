@@ -121,12 +121,9 @@ input[type="file"]::-webkit-file-upload-button:focus {
 .start-shopping-link {
     text-decoration: none;
     font-size: 1.5rem;
-    color: #212529;
+    color: #ffb803;
 }
 
-.start-shopping-link:hover {
-    color: #FFB803;
-}
 
 .order-costs {
     margin-top: 0.5rem;

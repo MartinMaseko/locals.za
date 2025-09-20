@@ -16,6 +16,7 @@ function generateDriverId() {
 }
 
 const vehicleTypes = ['van', 'sedan', 'hatch'];
+
 const productCategories = [
   'Hair Extensions','Wigs','Conditioners','Shampoos','Hair Tools','Hair Care',
   'Hair Coloring','Hair Food','Hair Loss Treatments','Hair Styling Products',
@@ -1001,7 +1002,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="order-search"><input type="text" placeholder="Search by Order ID" value={orderSearchQuery} onChange={e => setOrderSearchQuery(e.target.value)} className="order-search-input" /></div>
                 <div className="orders-controls">
                   <div className="orders-filter">
-                    <select value={orderStatusFilter} onChange={e => setOrderStatusFilter(e.target.value)}><option value="">All Orders</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select>
+                    <select value={orderStatusFilter} onChange={e => setOrderStatusFilter(e.target.value)}><option value="">All Orders</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="in transit">In Transit</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
                     <button onClick={fetchOrders} className="refresh-button">Refresh</button>
                   </div>
                 </div>
