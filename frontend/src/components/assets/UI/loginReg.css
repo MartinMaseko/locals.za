@@ -77,3 +77,19 @@
     text-decoration: none;
     color: #FFB803;
 }
+
+.forgot-password-link,
+.cancel-btn {
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #212529;
+    margin-top: 1rem;
+}
+
+.forgot-password-link:hover,
+.forgot-password-link:focus {
+    color: #FFB803;
+}

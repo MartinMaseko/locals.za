@@ -9,15 +9,43 @@ router.post('/register', authenticateToken, async (req, res) => {
   const { full_name, phone_number, user_type } = req.body;
 
   try {
+    // User document
     await admin.firestore().collection('users').doc(uid).set({
       email,
       full_name,
       phone_number,
       user_type,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
+
+    // Welcome notification and inbox message
+    const welcomeMessage = {
+      title: "Welcome to LocalsZA! 🎉",
+      body: `Hi ${full_name || 'there'}! Welcome to LocalsZA. 
+      We're excited to have you join our smart business community. 
+      Browse stock supplies, and enjoy fast delivery right to your doorstep.`,
+      imageUrl: "https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/Welcome%20Banner.png?alt=media&token=67bad8c1-3e85-4658-8b42-8051f2fd6b34",
+      read: false,
+      from: "system",
+      fromRole: "LocalsZA Team",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      type: "welcome"
+    };
+
+    // Add welcome message to user's inbox
+    await admin.firestore().collection('users').doc(uid)
+      .collection('inbox').add(welcomeMessage);
+      
+    // Add welcome notification
+    await admin.firestore().collection('users').doc(uid)
+      .collection('notifications').add({
+        ...welcomeMessage,
+        body: `Welcome to Locals! We're excited to have you join us.`
+      });
 
     res.json({ success: true });
   } catch (error) {
+    console.error("Error during registration:", error);
     return res.status(400).json({ error: error.message });
   }
 });

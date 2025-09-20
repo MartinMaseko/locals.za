@@ -11,6 +11,7 @@ import UserRegistration from './components/pages/userpages/userReg';
 import HomePage from './components/pages/storepages/homepage';
 import ProductDetailPage from './components/pages/storepages/productview/productsDetail';
 import CartPage from './components/pages/storepages/cart/cartPage';
+import MessagesPage from './components/pages/storepages/messages/messagesPage';
 import SupportPage from './components/pages/storepages/helpcentre/SupportPage';
 import ScrollToTop from './components/ScrollToTop';
 import { FavoritesProvider } from './components/contexts/FavoritesContext';
@@ -50,6 +51,7 @@ function App() {
               <Route index element={<HomePage />} /> 
               <Route path="/useraccount" element={<UserAccount />} />
               <Route path="/userprofile" element={<UserProfile />} />
+              <Route path="/messages" element={<MessagesPage />} />
               <Route path="/userorders" element={<UserOrders />} />
               <Route path="product/:id" element={<ProductDetailPage />} />
               <Route path="/cart" element={<CartPage />} />

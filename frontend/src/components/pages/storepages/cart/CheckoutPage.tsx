@@ -4,6 +4,7 @@ import { useCart } from '../../../contexts/CartContext';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '../../../../Auth/firebaseClient';
 import './cartstyle.css';
 
@@ -25,6 +26,44 @@ const CheckoutPage: React.FC = () => {
     return s + (isNaN(price) ? 0 : price * it.qty);
   }, 0);
   const total = subtotal + SERVICE_FEE;
+
+  // Order confirmation message in user's inbox
+    const createOrderConfirmationMessage = async (orderId: string) => {
+      try {
+        const auth = getAuth(app);
+        const userId = auth.currentUser?.uid;
+  
+        if (!userId) return; // Skip if not logged in
+  
+        const db = getFirestore(app);
+  
+        // Create message in user's inbox
+        await addDoc(collection(db, 'users', userId, 'inbox'), {
+          title: `Order #${orderId.slice(-6)} Confirmed`,
+          body: `Thank you for your order! Your order for R${total.toFixed(2)} has been received and is being processed. 
+          We'll update you when your order status changes. You can track your order at any time on the Orders page.`,
+          fromRole: "LocalsZA Team",
+          read: false,
+          createdAt: serverTimestamp(),
+          type: "order",
+          orderId: orderId,
+          imageUrl: "https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/Thank%20You%20Banner.png?alt=media&token=81d2147b-f5ca-45e3-82ca-6e87dd4a0a4f"
+        });
+  
+        // Create notification
+        await addDoc(collection(db, 'users', userId, 'notifications'), {
+          title: `New Order Placed`,
+          body: `Your order #${orderId.slice(-6)} has been received and is being processed.`,
+          read: false,
+          createdAt: serverTimestamp(),
+          type: "order",
+          orderId: orderId
+        });
+      } catch (error) {
+        console.error("Error creating order messages:", error);
+        // Continue with order flow even if messaging fails
+      }
+    };
 
   const placeOrder = async () => {
     if (!cart.length) return setError('Cart is empty');
@@ -53,10 +92,18 @@ const CheckoutPage: React.FC = () => {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
+      // Get the order ID from response
+      const data = res.data as { id?: string; orderId?: string };
+      const orderId = data.id || data.orderId || '';
+
+      // Create order confirmation message in user's inbox
+      if (user) {
+        await createOrderConfirmationMessage(orderId);
+      }
+
       // on success clear cart and navigate to confirmation
       clearCart();
-      const data = res.data as { id?: string; orderId?: string };
-      navigate(`/order-confirmation/${data.id || data.orderId || ''}`, { replace: true });
+      navigate(`/order-confirmation/${orderId}`, { replace: true });
     } catch (err: any) {
       console.error(err);
       setError(err?.response?.data?.message || 'Failed to place order');
