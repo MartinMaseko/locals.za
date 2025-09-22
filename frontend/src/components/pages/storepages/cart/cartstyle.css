@@ -242,6 +242,11 @@
   margin-bottom: 1rem;
 }
 
+.shop-link {
+  text-decoration: none;
+  color: #ffb803;
+}
+
 .continue-shopping-btn,
 .view-orders-button,
 .shop-link {

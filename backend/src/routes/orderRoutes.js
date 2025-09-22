@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
+// Import the notification helper
+const { sendOrderConfirmationMessage, sendOrderStatusMessage, sendUserMessages } = require('../utils/notificationHelper');
 
 /*
   POST '/'
@@ -59,10 +61,11 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // save order
     const orderRef = await admin.firestore().collection('orders').add(orderData);
+    const orderId = orderRef.id;
 
     // optionally store separate order_items collection for compatibility
     if (Array.isArray(items) && items.length > 0) {
-      const orderItems = items.map(item => ({ ...item, order_id: orderRef.id }));
+      const orderItems = items.map(item => ({ ...item, order_id: orderId }));
       const batch = admin.firestore().batch();
       orderItems.forEach(item => {
         const itemRef = admin.firestore().collection('order_items').doc();
@@ -71,7 +74,12 @@ router.post('/', authenticateToken, async (req, res) => {
       await batch.commit();
     }
 
-    return res.status(201).json({ id: orderRef.id, order: orderData });
+    // Send order confirmation message to user's inbox
+    if (userId) {
+      await sendOrderConfirmationMessage(userId, orderId, orderData);
+    }
+
+    return res.status(201).json({ id: orderId, order: orderData });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -328,6 +336,21 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
       updatedBy: userId
     };
     
+    // Get the order to fetch customer ID before making any updates
+    const orderDoc = await admin.firestore().collection('orders').doc(id).get();
+    let customerId = null;
+    
+    if (orderDoc.exists) {
+      const orderData = orderDoc.data();
+      customerId = orderData.userId;
+      
+      // If the status is changing, send a message to the user
+      if (customerId && status && status !== orderData.status) {
+        // Send status update message
+        await sendOrderStatusMessage(customerId, id, status);
+      }
+    }
+    
     // If missing items data is provided, include it in the update
     if (missingItems && Array.isArray(missingItems) && missingItems.length > 0) {
       // Add missing items data to update
@@ -347,9 +370,6 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
         updateData.driverNote = driverNote;
       }
       
-      // Get the order to fetch customer ID
-      const orderDoc = await admin.firestore().collection('orders').doc(id).get();
-      
       if (orderDoc.exists && refundAmount > 0) {
         const orderData = orderDoc.data();
         const customerId = orderData.userId;
@@ -365,16 +385,24 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
             createdAt: admin.firestore.FieldValue.serverTimestamp()
           });
           
-          // Notify customer
-          await admin.firestore().collection('notifications').add({
-            userId: customerId,
-            title: 'Items missing from your order',
-            message: `Some items in your order #${id.slice(-6)} were unavailable. A refund of R${Number(refundAmount).toFixed(2)} has been credited to your account for your next order.`,
-            type: 'refund',
+          // Notify customer through user messages system instead of notifications collection
+          const inboxMessage = {
+            title: `Items Missing from Order #${id.slice(-6)}`,
+            body: `Some items in your order were unavailable. A refund of R${Number(refundAmount).toFixed(2)} has been credited to your account for your next order.`,
+            fromRole: "LocalsZA Support",
+            type: "refund",
             orderId: id,
-            read: false,
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
-          });
+            imageUrl: "https://img.icons8.com/ios/50/ffb803/refund.png"
+          };
+          
+          const notificationMessage = {
+            title: `Refund Applied`,
+            body: `R${Number(refundAmount).toFixed(2)} credit for missing items in order #${id.slice(-6)}`,
+            type: "refund",
+            orderId: id
+          };
+          
+          await sendUserMessages(customerId, inboxMessage, notificationMessage);
         }
         
         // Notify admin
@@ -594,8 +622,28 @@ router.put('/:id/eta', authenticateToken, async (req, res) => {
       eta_updated_by: userId
     });
     
-    // Send notification to customer about ETA (if implemented)
-    // TODO: Add notification logic here
+    // Send notification to customer about ETA
+    const customerId = orderData.userId;
+    if (customerId) {
+      // Create ETA notification for customer
+      const inboxMessage = {
+        title: `ETA Update for Order #${orderId.slice(-6)}`,
+        body: `Your delivery is expected to arrive at ${eta}. Your driver is on the way!`,
+        fromRole: "LocalsZA Support",
+        type: "eta_update",
+        orderId: orderId,
+        imageUrl: "https://img.icons8.com/ios-filled/50/ffb803/delivery-time.png"
+      };
+      
+      const notificationMessage = {
+        title: `Delivery ETA Updated`,
+        body: `Your order #${orderId.slice(-6)} will arrive at ${eta}`,
+        type: "eta_update",
+        orderId: orderId
+      };
+      
+      await sendUserMessages(customerId, inboxMessage, notificationMessage);
+    }
     
     res.json({ success: true });
   } catch (error) {
@@ -673,33 +721,25 @@ router.post('/:id/missing-items', authenticateToken, async (req, res) => {
           expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
           createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
-      }
-      
-      // Notify the customer about missing items and refund
-      try {
-        // Get customer data for notification
-        const customerDoc = await admin.firestore().collection('users').doc(customerId).get();
         
-        if (customerDoc.exists) {
-          const customerData = customerDoc.data();
-          
-          // Create a notification for the customer
-          await admin.firestore().collection('notifications').add({
-            userId: customerId,
-            title: 'Items missing from your order',
-            message: `Some items in your order #${orderId.slice(-6)} were unavailable. A refund of R${calculatedRefundAmount.toFixed(2)} has been credited to your account for your next order.`,
-            type: 'refund',
-            orderId: orderId,
-            read: false,
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
-          });
-          
-          // Send email to customer about missing items
-          // This would integrate with your email provider
-        }
-      } catch (notifyError) {
-        console.error('Error notifying customer about missing items:', notifyError);
-        // Continue processing even if notification fails
+        // Notify customer using the inbox system
+        const inboxMessage = {
+          title: `Items Missing from Order #${orderId.slice(-6)}`,
+          body: `Some items in your order were unavailable. A refund of R${calculatedRefundAmount.toFixed(2)} has been credited to your account for your next order.`,
+          fromRole: "LocalsZA Support",
+          type: "refund",
+          orderId: orderId,
+          imageUrl: "https://img.icons8.com/ios/50/ffb803/refund.png"
+        };
+        
+        const notificationMessage = {
+          title: `Refund Applied`,
+          body: `R${calculatedRefundAmount.toFixed(2)} credit for missing items in order #${orderId.slice(-6)}`,
+          type: "refund",
+          orderId: orderId
+        };
+        
+        await sendUserMessages(customerId, inboxMessage, notificationMessage);
       }
       
       // Notify admin about missing items
@@ -730,6 +770,5 @@ router.post('/:id/missing-items', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to report missing items' });
   }
 });
-
 
 module.exports = router;

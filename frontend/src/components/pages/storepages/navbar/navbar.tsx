@@ -67,6 +67,10 @@ const Navbar = () => {
             <img width="35" height="35" src="https://img.icons8.com/external-kmg-design-glyph-kmg-design/35/ffb803/external-logistics-shipping-delivery-kmg-design-glyph-kmg-design-2.png" alt="orders-box"/>
             Orders
           </Link>
+          <Link to="/messages" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
+            <img width="35" height="35" src="https://img.icons8.com/ios-filled/35/ffb803/message-group.png" alt="message-group"/>
+            Messages
+          </Link>
           <Link to="/cart" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/lift-cart-here.png" alt="lift-cart-here"/>
             Cart

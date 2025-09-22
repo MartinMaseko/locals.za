@@ -4,7 +4,6 @@ import { useCart } from '../../../contexts/CartContext';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
-import { app } from '../../../../Auth/firebaseClient';
 import './cartstyle.css';
 
 const SERVICE_FEE = 65;
@@ -35,7 +34,7 @@ const CheckoutPage: React.FC = () => {
 
     try {
       // try to get token if user logged in
-      const auth = getAuth(app);
+      const auth = getAuth();
       const user = auth.currentUser;
       const token = user ? await user.getIdToken() : null;
 
@@ -53,10 +52,15 @@ const CheckoutPage: React.FC = () => {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
+      // Get the order ID from response
+      const data = res.data as { id?: string; orderId?: string };
+      const orderId = data.id || data.orderId || '';
+
+      // Order confirmation messages are now handled by the backend
+
       // on success clear cart and navigate to confirmation
       clearCart();
-      const data = res.data as { id?: string; orderId?: string };
-      navigate(`/order-confirmation/${data.id || data.orderId || ''}`, { replace: true });
+      navigate(`/order-confirmation/${orderId}`, { replace: true });
     } catch (err: any) {
       console.error(err);
       setError(err?.response?.data?.message || 'Failed to place order');
