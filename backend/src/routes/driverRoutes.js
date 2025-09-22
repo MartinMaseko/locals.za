@@ -3,6 +3,8 @@ const router = express.Router();
 const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
 const driverController = require('../controllers/driverController');
+// Import email helper functions
+const { sendEmail, formatCashoutEmail } = require('../utils/emailHelper');
 
 // Register a new driver
 router.post('/register', driverController.register);
@@ -179,6 +181,16 @@ router.post('/cashout', authenticateToken, async (req, res) => {
       lastCashoutAmount: amount
     }, { merge: true });
     
+    // Prepare request details for email
+    const requestDetails = {
+      driver: driverName,
+      driverId: driverId,
+      driverEmail: driverEmail,
+      amount: amount.toFixed(2),
+      orderCount: orderIds.length,
+      orderIds: orderIds
+    };
+    
     // Create a cashout record
     const cashoutRef = admin.firestore().collection('cashouts').doc();
     batch.set(cashoutRef, {
@@ -190,35 +202,37 @@ router.post('/cashout', authenticateToken, async (req, res) => {
       orderCount: orderIds.length,
       status: 'pending',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      // Store the email content for later use when email is set up
       emailDetails: {
-        to: process.env.ADMIN_EMAIL || 'martinmasekodev@gmail.com',
+        to: process.env.ADMIN_EMAIL || 'admin@locals-za.co.za',
         subject: `Driver Cashout Request: ${driverName}`,
-        requestDetails: {
-          driver: driverName,
-          driverId: driverId,
-          driverEmail: driverEmail,
-          amount: amount.toFixed(2),
-          orderCount: orderIds.length,
-          orderIds: orderIds
-        }
+        requestDetails
       }
     });
     
     // Commit all the updates
     await batch.commit();
     
-    // Log the cashout request in the console instead of sending email
-    console.log('======= DRIVER CASHOUT REQUEST =======');
-    console.log(`Driver: ${driverName} (${driverId})`);
-    console.log(`Email: ${driverEmail}`);
-    console.log(`Amount: R${amount.toFixed(2)}`);
-    console.log(`Orders: ${orderIds.length}`);
-    console.log(`Order IDs: ${orderIds.join(', ')}`);
-    console.log('=====================================');
-    
-    // In future, this is where email will be sent
-    // await sendEmail(mailOptions);
+    // Send email using the configured settings from .env
+    try {
+      // Format email HTML content
+      const htmlContent = formatCashoutEmail(requestDetails);
+      
+      // Mail options
+      const mailOptions = {
+        from: process.env.EMAIL_USER || 'admin@locals-za.co.za',
+        to: process.env.ADMIN_EMAIL || 'admin@locals-za.co.za',
+        subject: `Driver Cashout Request: ${driverName} - R${amount.toFixed(2)}`,
+        html: htmlContent,
+        text: `Driver Cashout Request from ${driverName} for R${amount.toFixed(2)} for ${orderIds.length} orders.`
+      };
+      
+      // Send the email
+      await sendEmail(mailOptions);
+      console.log('Cashout email notification sent successfully');
+    } catch (emailError) {
+      console.error('Failed to send cashout email notification:', emailError);
+      // Continue processing even if email fails
+    }
     
     res.json({ 
       success: true, 
@@ -316,34 +330,6 @@ router.get('/info', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to get driver information' });
   }
 });
-
-// Email sending functionality - commented out for future implementation
-/* 
-async function sendEmail(mailOptions) {
-  try {
-    const nodemailer = require('nodemailer');
-    
-    // Create a transporter using SMTP
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: process.env.EMAIL_PORT || 587,
-      secure: process.env.EMAIL_SECURE === 'true',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-
-    // Send the email
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
-    return info;
-  } catch (error) {
-    console.error('Email sending failed:', error);
-    throw error;
-  }
-}
-*/
 
 // Simple test endpoint to verify routing
 router.get('/test', (req, res) => {
