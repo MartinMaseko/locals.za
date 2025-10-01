@@ -6,7 +6,7 @@
     width: 100vw;
     max-width: 450px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1rem 1rem;
     box-sizing: border-box;
     min-height: 100vh;
     text-align: center;
@@ -366,6 +366,63 @@ input[type="file"]::-webkit-file-upload-button:focus {
   margin-right: 4px;
 }
 
+/* Frequent Products Section */
+.frequent-products-section {
+  background-color: #191919;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.frequent-product-item {
+  padding: 0.5rem;
+}
+
+.frequent-products-section h2 {
+  color: #FFB803;
+  margin-bottom: 0.5rem;
+}
+
+.frequent-products-description,
+.purchase-count {
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.frequent-product-stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.reorder-add-to-cart {
+  border: none;
+  border-radius: 5px;
+  background: #ffb803;
+  color: #191919;
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  margin-left: 0.4rem; 
+  cursor: pointer;
+}
+
+.reorder-add-to-cart:hover,
+.reorder-add-to-cart:focus {
+  background: #191919;
+  color: #ffb803;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.frequent-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
 /* Mobile responsiveness improvements */
 @media (max-width: 480px) {
   .order-header {
@@ -397,5 +454,11 @@ input[type="file"]::-webkit-file-upload-button:focus {
 
   .order-card {
     width: 350px;
+  }
+
+  .frequent-products-grid{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.5rem;
   }
 }

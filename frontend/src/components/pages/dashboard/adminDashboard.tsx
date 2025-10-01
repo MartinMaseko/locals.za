@@ -18,9 +18,20 @@ function generateDriverId() {
 const vehicleTypes = ['van', 'sedan', 'hatch'];
 
 const productCategories = [
-  'Hair Extensions','Wigs','Conditioners','Shampoos','Hair Tools','Hair Care',
-  'Hair Coloring','Hair Food','Hair Loss Treatments','Hair Styling Products',
-  'Moisturizers','Relaxers','Hair Accessories','Hair Growth Products'
+  // Fast-Moving Consumer Goods (FMCG) Categories
+  'Beverages',
+  'Groceries & Pantry',
+  'Snacks & Confectionery',
+  'Household Cleaning & Goods',
+  'Personal Care',
+
+  // Hair Care & Cosmetics Categories
+  'Shampoos & Cleansers',
+  'Conditioners & Treatments',
+  'Relaxers & Perm Kits',
+  'Hair Styling Products',
+  'Hair Food & Oils',
+  'Hair Coloring'
 ];
 
 // FormatDate function to handle more data formats:
@@ -476,23 +487,47 @@ const AdminDashboard: React.FC = () => {
     try {
       const token = await getToken();
       let productImageUrl = '';
+      
       if (productForm.image) {
-        const storage = getStorage(app);
-        const imageRef = ref(storage, `products/${productForm.product_id || productForm.name}_${Date.now()}`);
-        await uploadBytes(imageRef, productForm.image);
-        productImageUrl = await getDownloadURL(imageRef);
+        try {
+          console.log('Starting image upload');
+          const auth = getAuth(app);
+          console.log('Current user:', auth.currentUser?.uid);
+          
+          const storage = getStorage(app);
+          const imageRef = ref(storage, `products/${productForm.product_id}_${Date.now()}`);
+          console.log('Image reference created:', imageRef.fullPath);
+          
+          await uploadBytes(imageRef, productForm.image);
+          console.log('Upload successful');
+          productImageUrl = await getDownloadURL(imageRef);
+        } catch (uploadErr: any) {
+          console.error('Image upload failed:', uploadErr);
+          console.error('Error code:', uploadErr.code);
+          console.error('Error message:', uploadErr.message);
+          
+          // Continue without image if upload fails
+          setProductError(`Image upload failed: ${uploadErr.message}. Product will be created without an image.`);
+        }
       }
-      await axios.post('/api/products', {
-        product_id: productForm.product_id, name: productForm.name, description: productForm.description,
-        price: productForm.price, brand: productForm.brand, category: productForm.category, image_url: productImageUrl
-      }, { headers: { Authorization: `Bearer ${token}` }});
-      setProductSuccess('Product added successfully!');
-      setProductForm({ product_id: generateProductId(), name: '', description: '', price: '', brand: '', category: '', image: null });
-    } catch (err: any) {
-      setProductError(err?.response?.data?.error || err?.message || 'Product creation failed');
-    }
-  };
-
+    
+    await axios.post('/api/products', {
+      product_id: productForm.product_id,
+      name: productForm.name,
+      description: productForm.description,
+      price: productForm.price,
+      brand: productForm.brand,
+      category: productForm.category,
+      image_url: productImageUrl
+    }, { headers: { Authorization: `Bearer ${token}` }});
+    
+    setProductSuccess('Product added successfully!');
+    setProductForm({ product_id: generateProductId(), name: '', description: '', price: '', brand: '', category: '', image: null });
+  } catch (err: any) {
+    console.error('Product creation error:', err);
+    setProductError(err?.response?.data?.error || err?.message || 'Product creation failed');
+  }
+};
   // promote user
   const [promoteUid, setPromoteUid] = useState('');
   const [promoteMsg, setPromoteMsg] = useState('');
