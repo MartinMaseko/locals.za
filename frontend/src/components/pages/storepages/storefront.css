@@ -181,12 +181,8 @@
   .products-list {
     display: flex;
     flex-wrap: wrap;
-  }
-
-  .products-list-item {
-    flex: 1 1 calc(25% - 1rem);
-    box-sizing: border-box;
-    max-width: calc(25% - 1rem);
+    justify-content: center;
+    gap: 0.5rem;
   }
 
   .homepage-search-input{
