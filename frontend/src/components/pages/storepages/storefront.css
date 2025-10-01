@@ -31,8 +31,12 @@
   margin-top: 1rem;
 }
 
+.category-image {
+  width: 150px;
+  height: 150px;
+}
+
 .suggestion-icon {
-  background: #191919;
   padding: 1rem;
   border-radius: 75%;
 }
@@ -90,7 +94,7 @@
   color: #f8f9fa;
   box-sizing: border-box;
 }
-.category-icon {
+.category-icon-home {
   width: 30px;
   height: 35px;
 }
@@ -177,8 +181,12 @@
   .products-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: flex-start;
+  }
+
+  .products-list-item {
+    flex: 1 1 calc(25% - 1rem);
+    box-sizing: border-box;
+    max-width: calc(25% - 1rem);
   }
 
   .homepage-search-input{
