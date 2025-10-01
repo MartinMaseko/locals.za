@@ -12,6 +12,7 @@ import HomePage from './components/pages/storepages/homepage';
 import ProductDetailPage from './components/pages/storepages/productview/productsDetail';
 import CartPage from './components/pages/storepages/cart/cartPage';
 import MessagesPage from './components/pages/storepages/messages/messagesPage';
+import StoreCategories from './components/pages/storepages/store/storeCategories';
 import SupportPage from './components/pages/storepages/helpcentre/SupportPage';
 import ScrollToTop from './components/ScrollToTop';
 import { FavoritesProvider } from './components/contexts/FavoritesContext';
@@ -57,6 +58,7 @@ function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-confirmation/:id" element={<OrderConfirmationPage />} />
+              <Route path="/shop" element={<StoreCategories />} />
               <Route path="/support" element={<SupportPage />} />
             </Route>
           </Routes>

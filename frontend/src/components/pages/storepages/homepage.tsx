@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react'; // Add useRef here
 import LoadingContext from './LoadingContext';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
@@ -7,11 +7,33 @@ import './storefront.css';
 import ProductCard from './productview/productsCard';
 import LogoAnime from '../../assets/logos/locals-svg.gif';
 import AppBanner from '../../assets/images/appbanner.webp';
+import Beverages from '../../assets/images/Beverages.webp';
+import GroceriesPantry from '../../assets/images/Groceries.webp';
+import HairColoring from '../../assets/images/HairColour.webp';
+import HairFoodOils from '../../assets/images/HairFood.webp';
+import HairStylingProducts from '../../assets/images/HairStyling.webp';
+import HouseholdCleaningGoods from '../../assets/images/HouseholdCleaning.webp';
+import PersonalCare from '../../assets/images/PersonalCare.webp';
+import RelaxersPermKits from '../../assets/images/Relaxers.webp';
+import shampoosCleansers from '../../assets/images/Shampoo.webp';
+import SnacksConfectionery from '../../assets/images/Snacks.webp';
+import ConditionersTreatments from '../../assets/images/ConditionerTreatments.webp';
 
 const productCategories = [
-  'Hair Extensions','Wigs','Conditioners','Shampoos','Hair Tools',
-  'Hair Care','Hair Coloring','Hair Food','Hair Loss Treatments',
-  'Hair Styling Products','Moisturizers','Relaxers','Hair Accessories','Hair Growth Products'
+  // Fast-Moving Consumer Goods (FMCG) Categories
+  'Beverages',
+  'Groceries & Pantry',
+  'Snacks & Confectionery',
+  'Household Cleaning & Goods',
+  'Personal Care',
+
+  // Hair Care & Cosmetics Categories
+  'Shampoos & Cleansers',
+  'Conditioners & Treatments',
+  'Relaxers & Perm Kits',
+  'Hair Styling Products',
+  'Hair Food & Oils',
+  'Hair Coloring'
 ];
 
 const HomePage = () => {
@@ -29,6 +51,9 @@ const HomePage = () => {
 
   // access global loading setter from context
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
+
+  // Create a ref for the products section
+  const productsSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setGlobalLoading(loading || productsLoading);
@@ -95,6 +120,20 @@ const HomePage = () => {
     return () => window.removeEventListener('toggleCategories', handleToggle);
   }, []);
 
+  // Create a function to handle category selection and scrolling
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    setShowCategories(false);
+    
+    // Scroll to products section with a small delay to allow filtering to complete
+    setTimeout(() => {
+      productsSectionRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 100);
+  };
+
   // Conditional rendering for the products loading state
   if (loading || productsLoading) {
     return (
@@ -126,16 +165,17 @@ const HomePage = () => {
               onClick={() => setShowCategories(prev => !prev)}
               aria-expanded={showCategories}
             >
-              <img className='category-icon' src="https://img.icons8.com/ios/40/ffb803/sorting-answers.png" alt="categories"/>
+              <img className='category-icon-home' src="https://img.icons8.com/ios/40/ffb803/sorting-answers.png" alt="categories"/>
               Category {selectedCategory ? `: ${selectedCategory}` : ''}
             </button>
           </div>
-          {/* sliding dropdown - shown only when showCategories is true */}
+          
+          {/* Updated dropdown to use handleCategorySelect */}
           <div className={`homepage-category-dropdown${showCategories ? ' open' : ''}`} aria-hidden={!showCategories}>
             <ul>
               <li
                 className="homepage-category-item"
-                onClick={() => { setSelectedCategory(''); setShowCategories(false); }}
+                onClick={() => handleCategorySelect('')}
               >
                 All Categories
               </li>
@@ -143,7 +183,7 @@ const HomePage = () => {
                 <li
                   key={cat}
                   className="homepage-category-item"
-                  onClick={() => { setSelectedCategory(cat); setShowCategories(false); }}
+                  onClick={() => handleCategorySelect(cat)}
                 >
                   {cat}
                 </li>
@@ -155,77 +195,96 @@ const HomePage = () => {
         <div className="homepage-welcome">
           <img src={AppBanner} alt="App banner" className="homepage-appbanner" />
           <h2 className='user-welcome-text'>Welcome{ name ? `, ${name}` : '' }!</h2>
-          {/* Category Suggestions */}
+          
+          {/* Updated category suggestions to use handleCategorySelect */}
           <div className='categories-suggestions'>
-            <div
-              className='category-item'
-              role="button"
-              tabIndex={0}
-              onClick={() => { setSelectedCategory('Hair Extensions'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Extensions'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
-            >
-              <div className='suggestion-icon'>
-                <img width="35" height="35" src="https://img.icons8.com/metro/35/ffb803/womans-hair.png" alt="womans-hair"/>
+            {/* Category Card for Beverages */}
+            <div className="category-item" onClick={() => handleCategorySelect('Beverages')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={Beverages} alt="Beverages" />
               </div>
-              <div className="category-label">
-                <span className="category-line1">Hair</span>
-                <span className="category-line2">Extensions</span>
-              </div>
+              <span className="category-label">Beverages</span>
             </div>
 
-            <div
-              className='category-item'
-              role="button"
-              tabIndex={0}
-              onClick={() => { setSelectedCategory('Shampoos'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Shampoos'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
-            >
-              <div className='suggestion-icon'>
-                <img width="35" height="35" src="https://img.icons8.com/ios-filled/35/ffb803/shampoo-dispenser.png" alt="shampoo-dispenser"/>
+            {/* Category Card for Groceries */}
+            <div className="category-item" onClick={() => handleCategorySelect('Groceries & Pantry')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={GroceriesPantry} alt="Groceries & Pantry" />
               </div>
-              <div className="category-label">
-                <span className="category-line1">Shampoo</span>
-              </div>
+              <span className="category-label">Groceries</span>
             </div>
 
-            <div
-              className='category-item'
-              role="button"
-              tabIndex={0}
-              onClick={() => { setSelectedCategory('Hair Coloring'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Coloring'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
-            >
-              <div className='suggestion-icon'>
-                <img width="35" height="35" src="https://img.icons8.com/ios/35/ffb803/hair-colouring.png" alt="hair-colouring"/>
+            {/* Continue updating all other category items the same way */}
+            <div className="category-item" onClick={() => handleCategorySelect('Snacks & Confectionery')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={SnacksConfectionery} alt="Snacks & Confectionery" />
               </div>
-              <div className="category-label">
-                <span className="category-line1">Hair</span>
-                <span className="category-line1">Coloring</span>
-              </div>
+              <span className="category-label">Snacks</span>
             </div>
 
-            <div
-              className='category-item'
-              role="button"
-              tabIndex={0}
-              onClick={() => { setSelectedCategory('Hair Tools'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory('Hair Tools'); setShowCategories(false); const el = document.querySelector('.products-section'); if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
-            >
-              <div className='suggestion-icon'>
-                <img width="35" height="35" src="https://img.icons8.com/ios-filled/35/ffb803/hair-dryer.png" alt="hair-dryer"/>
+            <div className="category-item" onClick={() => handleCategorySelect('Household Cleaning & Goods')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={HouseholdCleaningGoods} alt="Household Cleaning & Goods" />
               </div>
-              <div className="category-label">
-                <span className="category-line1">Hair</span>
-                <span className="category-line2">Tools</span>
+              <span className="category-label">Household</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Personal Care')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={PersonalCare} alt="Personal Care" />
               </div>
+              <span className="category-label">Personal Care</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Shampoos & Cleansers')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={shampoosCleansers} alt="Shampoos & Cleansers" />
+              </div>
+              <span className="category-label">Shampoos</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Conditioners & Treatments')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={ConditionersTreatments} alt="Conditioners & Treatments" />
+              </div>
+              <span className="category-label">Conditioners</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Relaxers & Perm Kits')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={RelaxersPermKits} alt="Relaxers & Perm Kits" />
+              </div>
+              <span className="category-label">Relaxers</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Hair Styling Products')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={HairStylingProducts} alt="Hair Styling Products" />
+              </div>
+              <span className="category-label">Hair Styling</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Hair Food & Oils')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={HairFoodOils} alt="Hair Food & Oils" />
+              </div>
+              <span className="category-label">Hair Food</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Hair Coloring')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={HairColoring} alt="Hair Coloring" />
+              </div>
+              <span className="category-label">Hair Coloring</span>
             </div>
           </div>
         </div>
 
-        {/* products section uses filteredProducts */}
-        <div className='products-section'>
-          <h2 className="products-section-title">{ selectedCategory ? '' : 'Browse Products' }</h2>
+        {/* Add ref to the products section */}
+        <div className='products-section' ref={productsSectionRef}>
+          <h2 className="products-section-title">{ selectedCategory || 'Browse Products' }</h2>
 
+          {/* Rest of your products section remains unchanged */}
           {productsLoading ? (
             <div>Loading products...</div>
           ) : Object.keys(groupedProducts).length === 0 ? (
@@ -238,7 +297,6 @@ const HomePage = () => {
                   <ul className='products-list'>
                     {groupedProducts[category].map(product => (
                       <li key={product.id} className='products-list-item'>
-                        {/* no onClick prop — ProductCard will navigate to product page by default */}
                         <ProductCard product={product} />
                       </li>
                     ))}
