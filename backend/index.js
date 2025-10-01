@@ -87,6 +87,10 @@ const mapsRoutes = require('./src/routes/mapsRoutes');
 // Mount the maps router at the /api/maps base path.
 app.use('/api/maps', mapsRoutes);
 
+// Mount the support router at the /api/support base path.
+const supportRoutes = require('./src/routes/supportRoutes');
+app.use('/api/support', supportRoutes);
+
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 

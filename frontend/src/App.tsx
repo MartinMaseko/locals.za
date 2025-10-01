@@ -13,7 +13,7 @@ import ProductDetailPage from './components/pages/storepages/productview/product
 import CartPage from './components/pages/storepages/cart/cartPage';
 import MessagesPage from './components/pages/storepages/messages/messagesPage';
 import StoreCategories from './components/pages/storepages/store/storeCategories';
-import SupportPage from './components/pages/storepages/helpcentre/SupportPage';
+import SupportPage from './components/pages/storepages/support/supportPage';
 import ScrollToTop from './components/ScrollToTop';
 import { FavoritesProvider } from './components/contexts/FavoritesContext';
 import { CartProvider } from './components/contexts/CartContext';
@@ -24,6 +24,7 @@ import DriversDash from './components/pages/drivers/driversDash';
 import DriverLogin from './components/pages/drivers/auth/DriverLogin';
 import DriverDeliveries from './components/pages/drivers/driverDeliveries';
 import DriverRevenue from './components/pages/drivers/driverRevenue';
+import FloatingSupport from './components/common/FloatingSupport';
 
 function App() {
   return (
@@ -62,6 +63,7 @@ function App() {
               <Route path="/support" element={<SupportPage />} />
             </Route>
           </Routes>
+          <FloatingSupport />
         </CartProvider>
       </FavoritesProvider>
     </Router>
