@@ -453,7 +453,7 @@ input[type="file"]::-webkit-file-upload-button:focus {
   }
 
   .order-card {
-    width: 350px;
+    width: 100% ;
   }
 
   .frequent-products-grid{
