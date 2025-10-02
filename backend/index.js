@@ -91,6 +91,10 @@ app.use('/api/maps', mapsRoutes);
 const supportRoutes = require('./src/routes/supportRoutes');
 app.use('/api/support', supportRoutes);
 
+// Mount the product request router at the /api/product-requests base path.
+const productRequestRoutes = require('./src/routes/productRequestRoutes');
+app.use('/api/product-requests', productRequestRoutes);
+
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 

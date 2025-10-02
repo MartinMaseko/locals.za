@@ -1,44 +1,140 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './productstyle.css';
 import { useCart } from '../../../contexts/CartContext';
 import type { Product } from '../../../contexts/FavoritesContext';
+import ProductCard from './productsCard';
+import LogoAnime from '../../../assets/logos/locals-svg.gif';
+import LoadingContext from '../LoadingContext';
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(location.state?.product || null);
+  const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(!product);
   const [error, setError] = useState('');
-
+  
+  const { setLoading: setGlobalLoading } = useContext(LoadingContext);
   const { addToCart, removeFromCart, isInCart, getQty, increaseQty, decreaseQty } = useCart();
 
   useEffect(() => {
-    if (product) return;
-    if (!id) {
-      setError('Missing product id');
-      return;
-    }
+    setGlobalLoading(loading);
+    return () => setGlobalLoading(false);
+  }, [loading, setGlobalLoading]);
 
-    const fetchProduct = async () => {
+  useEffect(() => {
+    const fetchProductAndSuggestions = async () => {
       setLoading(true);
       setError('');
+      
       try {
-        const { data } = await axios.get<Product>(`/api/products/${id}`);
-        setProduct(data);
+        // If we don't have the product from navigation state, fetch it
+        let currentProduct = product;
+        
+        if (!currentProduct) {
+          if (!id) {
+            throw new Error('Missing product id');
+          }
+          
+          const { data } = await axios.get<Product>(`/api/products/${id}`);
+          currentProduct = data;
+          setProduct(data);
+        }
+        
+        if (currentProduct) {
+          // Fetch all products to apply our enhanced recommendation algorithm
+          const { data } = await axios.get<Product[]>('/api/products');
+          
+          // Apply multi-factor recommendation algorithm
+          const recommendations = getEnhancedRecommendations(data, currentProduct);
+          setSuggestedProducts(recommendations);
+        }
       } catch (err: any) {
-        console.error('Failed to load product:', err);
-        setError('Failed to load product');
+        console.error('Failed to load product or suggestions:', err);
+        setError(err.message || 'Failed to load product');
       } finally {
         setLoading(false);
       }
     };
-    fetchProduct();
+    
+    fetchProductAndSuggestions();
   }, [id, product]);
+  
+  /**
+   * Enhanced recommendation algorithm that uses multiple factors:
+   * 1. Exact category match (highest priority)
+   * 2. Same brand (second priority)
+   * 3. Similar price range (third priority)
+   * 4. Product name keyword matching (additional relevance)
+   */
+  const getEnhancedRecommendations = (allProducts: Product[], currentProduct: Product): Product[] => {
+    // Remove the current product from consideration
+    const otherProducts = allProducts.filter(p => p.id !== currentProduct.id);
+    
+    // Define price range (±25% of current product price)
+    const currentPrice = parseFloat(String(currentProduct.price));
+    const minPrice = currentPrice * 0.75;
+    const maxPrice = currentPrice * 1.25;
+    
+    // Extract keywords from product name
+        const nameKeywords = (currentProduct.name ?? '')
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(word => word.length > 3) // Only consider meaningful words (longer than 3 chars)
+          .filter(word => !['with', 'and', 'for', 'the'].includes(word)); // Remove common words
+    
+    // Score and rank products
+    const scoredProducts = otherProducts.map(product => {
+      let score = 0;
+      
+      // Category match (highest weight: 10 points)
+      if (product.category === currentProduct.category) {
+        score += 10;
+      }
+      
+      // Brand match (high weight: 8 points)
+      if (product.brand && currentProduct.brand && product.brand === currentProduct.brand) {
+        score += 8;
+      }
+      
+      // Price range match (medium weight: 5 points)
+      const productPrice = parseFloat(String(product.price));
+      if (productPrice >= minPrice && productPrice <= maxPrice) {
+        score += 5;
+      }
+      
+      // Name keyword matches (1 point per matching keyword)
+      if (product.name) {
+        const productNameLower = product.name.toLowerCase();
+        nameKeywords.forEach(keyword => {
+          if (productNameLower.includes(keyword)) {
+            score += 1;
+          }
+        });
+      }
+      
+      return { product, score };
+    });
+    
+    // Sort by score (highest first)
+    scoredProducts.sort((a, b) => b.score - a.score);
+    
+    // Return top 5 products
+    return scoredProducts
+      .slice(0, 5)
+      .map(item => item.product);
+  };
 
-  if (loading) return <div className="product-detail-loading">Loading product...</div>;
+  if (loading) return (
+    <div className='loading-container'>
+      <img src={LogoAnime} alt="Loading..." className="loading-gif" />
+      Loading...
+    </div>
+  );
+  
   if (error) return <div className="product-detail-error">{error}</div>;
   if (!product) return <div className="product-detail-empty">Product not found</div>;
 
@@ -104,6 +200,18 @@ const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Suggested Products Section */}
+      {suggestedProducts.length > 0 && (
+        <div className="suggested-products-section">
+          <h2>You might also like</h2>
+          <div className="suggested-products-grid">
+            {suggestedProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
