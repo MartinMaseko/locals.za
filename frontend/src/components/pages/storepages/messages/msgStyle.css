@@ -189,6 +189,7 @@
 
 .message-image, .notification-image {
   width: 100%;
+  height: fit-content;
   object-fit: cover;
 }
 
@@ -201,4 +202,40 @@
   height: 10px;
   border-radius: 50%;
   background: #FFB803;
+}
+
+@media screen and (min-width: 992px) {
+  .message-image-container,
+  .notification-image-container {
+    max-height: 400px;
+  }
+  
+  .message-image,
+  .notification-image {
+    max-height: 400px;
+  }
+}
+
+/* Make sure message items have proper spacing for content */
+.message-item,
+.notification-item {
+  padding-bottom: 16px;
+}
+
+/* Adjust layout for larger screens */
+@media screen and (min-width: 1200px) {
+  .messages-content {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .message-image-container,
+  .notification-image-container {
+    max-height: 500px;
+  }
+  
+  .message-image,
+  .notification-image {
+    max-height: 500px;
+  }
 }

@@ -415,8 +415,23 @@ const SupportPage: React.FC = () => {
             
             <div className="contact-method">
               <h3>WhatsApp Support</h3>
-              <p>Update Here</p>
-              <p>Add Clickable Icon</p>
+              <p>Get in touch with our Sales Representative</p>
+              <a 
+                href="https://wa.me/27629973007" // Replace with business No.
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whatsapp-link"
+                aria-label="Contact us on WhatsApp"
+              >
+                <div className="whatsapp-icon pulsate">
+                  <img 
+                    width="48" 
+                    height="48" 
+                    src="https://img.icons8.com/color/48/whatsapp--v1.png" 
+                    alt="WhatsApp Support"
+                  />
+                </div>
+              </a>
               <p className="contact-hours">Monday-Friday: 8am - 5pm</p>
             </div>
           </div>

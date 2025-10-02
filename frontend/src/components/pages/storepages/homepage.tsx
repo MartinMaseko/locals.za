@@ -49,6 +49,11 @@ const HomePage = () => {
   // New: Products state (keep your existing fetch logic)
   const [products, setProducts] = useState<any[]>([]);
 
+  // Add this import at the top with your other imports
+  const [productRequest, setProductRequest] = useState('');
+  const [requestSubmitting, setRequestSubmitting] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<{success?: boolean; message: string} | null>(null);
+  
   // access global loading setter from context
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
 
@@ -134,6 +139,50 @@ const HomePage = () => {
     }, 100);
   };
 
+  // Add this function to handle product requests
+  const handleProductRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!productRequest.trim()) {
+      setRequestStatus({
+        success: false,
+        message: 'Please enter a product name or description'
+      });
+      return;
+    }
+    
+    setRequestSubmitting(true);
+    setRequestStatus(null);
+    
+    try {
+      await axios.post('/api/product-requests', {
+        productName: productRequest,
+        email: name.includes('@') ? name : undefined, // Use email if available
+        timestamp: new Date().toISOString(),
+        emailTo: 'admin@locals-za.co.za'
+      });
+      
+      setRequestStatus({
+        success: true,
+        message: 'Thank you! We\'ve received your product request.'
+      });
+      setProductRequest(''); // Clear the input
+      
+      // Reset status message after 5 seconds
+      setTimeout(() => {
+        setRequestStatus(null);
+      }, 5000);
+      
+    } catch (error) {
+      setRequestStatus({
+        success: false,
+        message: 'Failed to submit request. Please try again later.'
+      });
+    } finally {
+      setRequestSubmitting(false);
+    }
+  };
+  
   // Conditional rendering for the products loading state
   if (loading || productsLoading) {
     return (
@@ -305,6 +354,38 @@ const HomePage = () => {
               ))}
             </>
           )}
+        </div>
+        
+        {/* Product Request Section */}
+        <div className="product-request-section">
+          <h3 className="request-title">Can't find what you're looking for?</h3>
+          <p className="request-subtitle">Let us know and we'll try to add it to our inventory</p>
+          
+          <form onSubmit={handleProductRequest} className="request-form">
+            <div className="request-input-group">
+              <input
+                type="text"
+                value={productRequest}
+                onChange={(e) => setProductRequest(e.target.value)}
+                placeholder="Tell us what product you need..."
+                disabled={requestSubmitting}
+                className="request-input"
+              />
+              <button 
+                type="submit" 
+                className="request-button"
+                disabled={requestSubmitting}
+              >
+                {requestSubmitting ? 'Sending...' : 'Send'}
+              </button>
+            </div>
+            
+            {requestStatus && (
+              <div className={`request-status ${requestStatus.success ? 'success' : 'error'}`}>
+                {requestStatus.message}
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </>
