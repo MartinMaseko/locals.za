@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
-// Import the notification helper
 const { sendOrderConfirmationMessage, sendOrderStatusMessage, sendUserMessages } = require('../utils/notificationHelper');
 
 /*
@@ -72,11 +71,6 @@ router.post('/', authenticateToken, async (req, res) => {
         batch.set(itemRef, item);
       });
       await batch.commit();
-    }
-
-    // Send order confirmation message to user's inbox
-    if (userId) {
-      await sendOrderConfirmationMessage(userId, orderId, orderData);
     }
 
     return res.status(201).json({ id: orderId, order: orderData });
@@ -324,7 +318,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Update Order Status (Admin/Driver)
 router.put('/:id/status', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { status, missingItems, refundAmount, driverNote, adjustedTotal } = req.body;
+  const { status, sendConfirmation, missingItems, refundAmount, driverNote, adjustedTotal } = req.body;
+  
   try {
     // Get the current user ID
     const userId = req.user.uid;
@@ -338,83 +333,48 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
     
     // Get the order to fetch customer ID before making any updates
     const orderDoc = await admin.firestore().collection('orders').doc(id).get();
-    let customerId = null;
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
     
-    if (orderDoc.exists) {
-      const orderData = orderDoc.data();
-      customerId = orderData.userId;
+    const orderData = orderDoc.data();
+    const customerId = orderData.userId;
+    
+    // If the status is changing to 'pending' from 'pending_payment' and sendConfirmation is true
+    if (customerId && status === 'pending' && orderData.status === 'pending_payment' && sendConfirmation === true) {
+      console.log(`Sending order confirmation for order ${id} to user ${customerId}`);
       
-      // If the status is changing, send a message to the user
-      if (customerId && status && status !== orderData.status) {
-        // Send status update message
-        await sendOrderStatusMessage(customerId, id, status);
-      }
+      // Mark the order as having had confirmation sent
+      updateData.confirmationSent = true;
+      updateData.confirmationSentAt = admin.firestore.FieldValue.serverTimestamp();
+      
+      // Send the confirmation message using the existing helper
+      await sendOrderConfirmationMessage(customerId, id, orderData);
+    } 
+    // For other status changes, send status update message
+    else if (customerId && status && status !== orderData.status) {
+      console.log(`Sending status update for order ${id} to user ${customerId}: ${status}`);
+      await sendOrderStatusMessage(customerId, id, status);
     }
     
     // If missing items data is provided, include it in the update
-    if (missingItems && Array.isArray(missingItems) && missingItems.length > 0) {
-      // Add missing items data to update
+    if (missingItems) {
       updateData.missingItems = missingItems;
-      updateData.hasRefund = !!refundAmount;
-      
-      if (refundAmount) {
-        updateData.refundAmount = Number(refundAmount);
-        updateData.refundStatus = 'pending';
-      }
-      
-      if (adjustedTotal) {
-        updateData.adjustedTotal = Number(adjustedTotal);
-      }
-      
-      if (driverNote) {
-        updateData.driverNote = driverNote;
-      }
-      
-      if (orderDoc.exists && refundAmount > 0) {
-        const orderData = orderDoc.data();
-        const customerId = orderData.userId;
-        
-        // Create discount for next order
-        if (customerId) {
-          await admin.firestore().collection('discounts').add({
-            userId: customerId,
-            amount: refundAmount,
-            reason: `Refund for missing items in order ${id}`,
-            status: 'active',
-            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
-          });
-          
-          // Notify customer through user messages system instead of notifications collection
-          const inboxMessage = {
-            title: `Items Missing from Order #${id.slice(-6)}`,
-            body: `Some items in your order were unavailable. A refund of R${Number(refundAmount).toFixed(2)} has been credited to your account for your next order.`,
-            fromRole: "LocalsZA Support",
-            type: "refund",
-            orderId: id,
-            imageUrl: "https://img.icons8.com/ios/50/ffb803/refund.png"
-          };
-          
-          const notificationMessage = {
-            title: `Refund Applied`,
-            body: `R${Number(refundAmount).toFixed(2)} credit for missing items in order #${id.slice(-6)}`,
-            type: "refund",
-            orderId: id
-          };
-          
-          await sendUserMessages(customerId, inboxMessage, notificationMessage);
-        }
-        
-        // Notify admin
-        await admin.firestore().collection('adminNotifications').add({
-          title: 'Missing Items in Order',
-          message: `Order #${id.slice(-6)} has ${missingItems.length} missing items. Refund amount: R${Number(refundAmount).toFixed(2)}`,
-          orderId: id,
-          type: 'missingItems',
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-      }
+    }
+    
+    // If refund amount is provided, include it in the update
+    if (refundAmount) {
+      updateData.refundAmount = refundAmount;
+    }
+    
+    // If driver note is provided, include it in the update
+    if (driverNote) {
+      updateData.driverNote = driverNote;
+    }
+    
+    // If adjusted total is provided, include it in the update
+    if (adjustedTotal !== undefined) {
+      updateData.adjustedTotal = adjustedTotal;
     }
     
     // Update the order document
@@ -768,6 +728,47 @@ router.post('/:id/missing-items', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error reporting missing items:', error);
     res.status(500).json({ error: 'Failed to report missing items' });
+  }
+});
+
+// Send order confirmation notification (called from OrderConfirmationPage)
+router.post('/:id/send-confirmation', authenticateToken, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    
+    // Get the order from the database
+    const orderDoc = await admin.firestore().collection('orders').doc(orderId).get();
+    
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    const orderData = orderDoc.data();
+    const userId = orderData.userId;
+    
+    // Only allow the order owner or admin to send confirmations
+    if (req.user.uid !== userId && !req.user.isAdmin) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    // Check if confirmation was already sent to avoid duplicates
+    if (orderData.confirmationSent) {
+      return res.status(200).json({ message: 'Confirmation already sent' });
+    }
+    
+    // Use the existing helper function to send notification
+    await sendOrderConfirmationMessage(userId, orderId, orderData);
+    
+    // Mark the order as having had confirmation sent
+    await admin.firestore().collection('orders').doc(orderId).update({
+      confirmationSent: true,
+      confirmationSentAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error sending confirmation:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
