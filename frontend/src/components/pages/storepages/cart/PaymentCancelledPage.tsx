@@ -3,35 +3,31 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
-import ProductCard from '../productview/productsCard';
 import LoadingContext from '../LoadingContext';
 import LogoAnime from '../../../assets/logos/locals-svg.gif';
 import './cartstyle.css';
 
-type OrderItem = {
-  productId?: string;
-  qty: number;
-  product?: {
-    id?: string;
-    name?: string;
-    price?: number | string;
-    image_url?: string;
-  };
-};
-
 type Order = {
   id: string;
-  items: OrderItem[];
+  items: Array<{
+    productId?: string;
+    qty: number;
+    product?: {
+      id?: string;
+      name?: string;
+      price?: number | string;
+      image_url?: string;
+    };
+  }>;
   subtotal?: number;
   serviceFee?: number;
   total?: number;
   status?: string;
   createdAt?: string;
-  confirmationSent?: boolean;
   deliveryAddress?: Record<string, any>;
 };
 
-const OrderConfirmationPage: React.FC = () => {
+const PaymentCancelledPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,10 +35,7 @@ const OrderConfirmationPage: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const location = useLocation();
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
-  
-  // Use refs to track one-time operations
   const statusUpdatedRef = useRef(false);
-  const confirmationSentRef = useRef(false);
   
   useEffect(() => {
     setGlobalLoading(loading);
@@ -81,7 +74,7 @@ const OrderConfirmationPage: React.FC = () => {
         
         // For orders coming from PayFast, we may need to fetch without auth first
         const isFromPayFast = location.search.includes('pf_') || 
-                             location.pathname.includes('/order-confirmation/');
+                             location.pathname.includes('/payment-cancelled/');
         
         let orderData: Order | null = null;
         
@@ -125,45 +118,44 @@ const OrderConfirmationPage: React.FC = () => {
         
         setOrder(orderData);
         
-        // Only try to update status if user is logged in
-        if (user && orderData) {
-          // Process status updates if needed
-          if (!statusUpdatedRef.current && orderData.status === 'pending_payment') {
-            try {
-              console.log("Updating order status to 'pending'");
-              statusUpdatedRef.current = true;
-              
-              const token = await user.getIdToken();
-              await axios.put(`/api/orders/${id}/status`, 
-                { 
-                  status: 'pending',
-                  sendConfirmation: true
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
-              
-              setOrder(prevOrder => prevOrder ? { ...prevOrder, status: 'pending' } : orderData);
-            } catch (err) {
-              console.error('Error updating order status:', err);
-              statusUpdatedRef.current = false;
-            }
-          }
-          // If the order is already in pending status but confirmation hasn't been sent
-          else if (!confirmationSentRef.current && !orderData.confirmationSent && orderData.status !== 'pending_payment') {
-            try {
-              console.log("Sending order confirmation");
-              confirmationSentRef.current = true;
-              
-              const token = await user.getIdToken();
-              await axios.post(`/api/orders/${id}/send-confirmation`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-            } catch (err) {
-              console.error('Error sending order confirmation:', err);
-              confirmationSentRef.current = false;
-            }
+        // Update the order status to cancelled if it's pending_payment
+        if (!statusUpdatedRef.current && user && orderData.status === 'pending_payment') {
+          try {
+            console.log("Updating order status to 'cancelled'");
+            statusUpdatedRef.current = true;
+            
+            const token = await user.getIdToken();
+            await axios.put(`/api/orders/${id}/status`, 
+              { status: 'cancelled' },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            setOrder(prevOrder => prevOrder ? { ...prevOrder, status: 'cancelled' } : orderData);
+          } catch (err) {
+            console.error('Error updating order status to cancelled:', err);
+            statusUpdatedRef.current = false;
           }
         }
+        
+        // Even if the user isn't logged in but we fetched the order, mark it as cancelled
+        // through a public endpoint if coming from PayFast
+        else if (!statusUpdatedRef.current && !user && isFromPayFast && 
+                orderData.status === 'pending_payment') {
+          try {
+            console.log("Updating order status to 'cancelled' via public endpoint");
+            statusUpdatedRef.current = true;
+            
+            await axios.put(`/api/orders/public/${id}/cancel`, {
+              cancelReason: 'payment_cancelled_by_user'
+            });
+            
+            setOrder(prevOrder => prevOrder ? { ...prevOrder, status: 'cancelled' } : orderData);
+          } catch (err) {
+            console.error('Error updating order status to cancelled:', err);
+            statusUpdatedRef.current = false;
+          }
+        }
+        
       } catch (err: any) {
         console.error('Error fetching order:', err);
         
@@ -223,14 +215,14 @@ const OrderConfirmationPage: React.FC = () => {
     <div className="order-confirmation-wrapper">
       <div className="order-confirmation-content">
         <div className="order-confirmation-header">
-          <h1>Order Confirmed</h1>
+          <h1>Payment Cancelled</h1>
           <div className="order-status">
-            <span className={`status-badge status-${order.status?.toLowerCase() || 'pending'}`}>
-              Status: {order.status || 'Pending'}
+            <span className="status-badge status-cancelled">
+              Status: Cancelled
             </span>
           </div>
           <p className="order-confirmation-message">
-            Thank you for your order! Your order #{order.id} has been received and is being processed.
+            Your order #{order.id} has been cancelled. No payment has been processed.
           </p>
           <p className="order-date">
             Placed on: {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}
@@ -242,14 +234,25 @@ const OrderConfirmationPage: React.FC = () => {
           <div className="order-items-grid">
             {order.items.map((item, index) => (
               <div key={index} className="order-item-card">
-                <ProductCard
-                  product={{
-                    id: item.product?.id ?? '',
-                    name: item.product?.name ?? '',
-                    price: item.product?.price ?? 0,
-                    image_url: item.product?.image_url ?? '',
-                  }}
-                />
+                {item.product && (
+                  <div className="product-card">
+                    <div className="product-image-container">
+                      <img
+                        src={item.product.image_url || "https://via.placeholder.com/150"}
+                        alt={item.product.name || "Product"}
+                        className="product-image"
+                      />
+                    </div>
+                    <div className="product-details">
+                      <h3 className="product-name">{item.product.name}</h3>
+                      <p className="product-price">
+                        R {typeof item.product.price === 'number' 
+                          ? item.product.price.toFixed(2) 
+                          : parseFloat(String(item.product.price || 0)).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="item-quantity">QTY: {item.qty}</div>
               </div>
             ))}
@@ -285,12 +288,11 @@ const OrderConfirmationPage: React.FC = () => {
         </div>
 
         <div className="order-actions">
-          <Link to="/" className="continue-shopping-btn">Continue Shopping</Link>
-          <Link to="/userorders" className="view-orders-button">View All Orders</Link>
+          <Link to="/" className="view-orders-button">Continue Shopping</Link>
         </div>
       </div>
     </div>
   );
 };
 
-export default OrderConfirmationPage;
+export default PaymentCancelledPage;

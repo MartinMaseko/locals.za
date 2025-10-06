@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../../contexts/CartContext';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
+import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
+import InstantEftLogo from '../../../assets/images/instantEft.webp';
 import './cartstyle.css';
 
-const SERVICE_FEE = 65;
+const SERVICE_FEE = 80;
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +20,9 @@ const CheckoutPage: React.FC = () => {
   const [postal, setPostal] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Create a ref for PayFast form
+  const payfastFormRef = useRef<HTMLFormElement>(null);
 
   const subtotal = cart.reduce((s, it) => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
@@ -33,21 +38,25 @@ const CheckoutPage: React.FC = () => {
     setError('');
 
     try {
-      // try to get token if user logged in
+      // Get authentication token if user is logged in
       const auth = getAuth();
       const user = auth.currentUser;
       const token = user ? await user.getIdToken() : null;
 
+      // Create order payload
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
         subtotal,
         serviceFee: SERVICE_FEE,
         total,
         deliveryAddress: { name, phone, addressLine, city, postal },
-        status: 'pending',
+        status: 'pending_payment',
         createdAt: new Date().toISOString(),
+        userId: user?.uid || 'guest',
+        email: user?.email || '',
       };
 
+      // Step 1: Create the order in the system
       const res = await axios.post('/api/orders', payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -56,15 +65,61 @@ const CheckoutPage: React.FC = () => {
       const data = res.data as { id?: string; orderId?: string };
       const orderId = data.id || data.orderId || '';
 
-      // Order confirmation messages are now handled by the backend
+      if (!orderId) {
+        throw new Error('Failed to create order - no order ID returned');
+      }
 
-      // on success clear cart and navigate to confirmation
+      console.log(`Order created with ID: ${orderId}`);
+      
+      // Step 2: Initialize payment with PayFast
+      type PaymentInitResponse = {
+        formData?: Record<string, string | number | boolean>;
+        url?: string;
+        fullUrl?: string;
+      };
+
+      const paymentRes = await axios.post<PaymentInitResponse>(`/api/payment/process/${orderId}`, {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      
+      // Clear cart after successful order creation
       clearCart();
-      navigate(`/order-confirmation/${orderId}`, { replace: true });
+      
+      // Step 3: Redirect to PayFast
+      const paymentData = paymentRes.data || {};
+      if (paymentData.formData) {
+        console.log('Redirecting to PayFast...');
+        
+        // Method 1: Form submission (recommended by PayFast)
+        if (payfastFormRef.current) {
+          const formData = paymentData.formData;
+          const formUrl = paymentData.url || '';
+          
+          // Set form action URL
+          payfastFormRef.current.action = formUrl;
+          payfastFormRef.current.innerHTML = '';
+          
+          // Create hidden inputs for each field
+          Object.keys(formData).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = String(formData[key]);
+            payfastFormRef.current?.appendChild(input);
+          });
+          
+          // Submit the form
+          payfastFormRef.current.submit();
+        } else {
+          // Method 2: Direct URL redirect (fallback)
+          window.location.href = paymentData.fullUrl || paymentData.url || '';
+        }
+      } else {
+        throw new Error('Payment data not received');
+      }
     } catch (err: any) {
-      console.error(err);
+      console.error('Order placement error:', err);
       setError(err?.response?.data?.message || 'Failed to place order');
-    } finally {
       setLoading(false);
     }
   };
@@ -119,13 +174,44 @@ const CheckoutPage: React.FC = () => {
         </label>
           <input value={postal} onChange={e => setPostal(e.target.value)} />
 
+        <div className="payfast-information">
+          <div className="payfast-logos">
+            <img src={PayfastLogo} alt="PayFast Logo" className="payfast-logo" />
+            <img src={InstantEftLogo} alt="Instant EFT Logo" className="instanteft-logo" />
+          </div>
+          <h3>Payment via PayFast</h3>
+          <p>
+            You will be redirected to PayFast to complete your payment securely.
+            Please ensure all details are correct before proceeding.
+          </p>
+        </div>
+
         <div className='checkout-actions'>
-          <button className='place-order-button' type="button" disabled={loading} onClick={placeOrder}>
-            {loading ? 'Placing order...' : 'Place order'}
+          <button 
+            className='place-order-button' 
+            type="button" 
+            disabled={loading} 
+            onClick={placeOrder}
+          >
+            {loading ? 'Processing...' : 'Proceed to Payment'}
           </button>
-          <button className='cancel-button' type="button" onClick={() => navigate(-1)}>Cancel</button>
+          <button 
+            className='cancel-button' 
+            type="button" 
+            onClick={() => navigate(-1)}
+          >
+            Cancel
+          </button>
         </div>
       </section>
+      
+      {/* Hidden form for PayFast submission */}
+      <form 
+        ref={payfastFormRef}
+        method="POST" 
+        action=""
+        style={{ display: 'none' }}
+      ></form>
     </div>
   );
 };

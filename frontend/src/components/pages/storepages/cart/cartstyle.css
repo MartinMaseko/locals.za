@@ -4,7 +4,7 @@
 .checkout-page,
 .order-confirmation-wrapper {
     min-height: 100vh;
-    min-width: 100vw;
+    max-width: 100vw;
 }
 
 .favorites-section,
@@ -278,6 +278,32 @@
 .redirect-button:focus,
 .redirect-button:hover {
   font-size: 1.125rem;
+}
+
+.product-image {
+  width: 100px;
+  height: auto;
+}
+
+.payfast-information {
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 1rem;
+  color: #6c757d;
+}
+
+.payfast-logos{
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.payfast-logo,
+.instanteft-logo {
+  width: 100px;
+  height: auto;
+  margin-top: 0.5rem;
 }
 
 /* Desktop (large screens) */
