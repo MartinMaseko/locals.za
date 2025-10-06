@@ -25,6 +25,7 @@ import DriverLogin from './components/pages/drivers/auth/DriverLogin';
 import DriverDeliveries from './components/pages/drivers/driverDeliveries';
 import DriverRevenue from './components/pages/drivers/driverRevenue';
 import FloatingSupport from './components/common/FloatingSupport';
+import PaymentCancelledPage from './components/pages/storepages/cart/PaymentCancelledPage';
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-confirmation/:id" element={<OrderConfirmationPage />} />
+              <Route path="/payment-cancelled/:id" element={<PaymentCancelledPage />} />
               <Route path="/shop" element={<StoreCategories />} />
               <Route path="/support" element={<SupportPage />} />
             </Route>

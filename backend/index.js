@@ -95,6 +95,12 @@ app.use('/api/support', supportRoutes);
 const productRequestRoutes = require('./src/routes/productRequestRoutes');
 app.use('/api/product-requests', productRequestRoutes);
 
+// Add this import for the payment routes
+const paymentRoutes = require('./src/routes/paymentRoutes');
+
+// IMPORTANT: Mount the payment router BEFORE the JSON body parser for the ITN endpoint to work
+app.use('/api/payment', paymentRoutes);
+
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 
