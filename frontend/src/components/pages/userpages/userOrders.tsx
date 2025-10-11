@@ -8,7 +8,8 @@ import ProductCard from '../storepages/productview/productsCard';
 import LoadingContext from '../storepages/LoadingContext';
 import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
 import { Link } from 'react-router-dom';
-import { useCart } from '../../contexts/CartContext'; 
+import { useCart } from '../../contexts/CartContext';
+import LocalsZAIcon from '../../assets/logos/LZA ICON.png';
 
 // Missing items
 interface MissingItem {
@@ -227,7 +228,11 @@ const UserOrders: React.FC = () => {
     </div>
   );
   
-  if (error) return <div className="user-orders-error">{error}</div>;
+  if (error) return <div className="user-orders-error">
+    <img src={LocalsZAIcon} alt="Locals ZA Logo" className="login-error-icon" />
+    <p className='login-error-message'>{error}</p>
+    <Link className='login-error-link' to="/login">Login</Link>
+  </div>;
 
   // Add a helper function to check if ETA is recent (less than 30 minutes old)
   const isETARecent = (etaUpdatedAt?: string) => {

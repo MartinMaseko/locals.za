@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import OrderRating from './OrderRating';
 import './msgStyle.css';
 
 interface MessageItem {
@@ -15,6 +16,9 @@ interface MessageItem {
   from?: string;
   fromRole?: string;
   type?: string;
+  orderId?: string;
+  status?: string;
+  includeRating?: boolean;
 }
 
 const Messages: React.FC = () => {
@@ -26,6 +30,7 @@ const Messages: React.FC = () => {
 
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check authentication state
@@ -51,6 +56,7 @@ const Messages: React.FC = () => {
           const inboxMessages: MessageItem[] = [];
           snapshot.forEach((doc) => {
             const data = doc.data();
+            
             inboxMessages.push({
               id: doc.id,
               title: data.title || 'Message',
@@ -60,7 +66,10 @@ const Messages: React.FC = () => {
               createdAt: data.createdAt,
               from: data.from,
               fromRole: data.fromRole,
-              type: data.type
+              type: data.type,
+              orderId: data.orderId,
+              status: data.status,
+              includeRating: data.includeRating === true
             });
           });
           setMessages(inboxMessages);
@@ -124,6 +133,50 @@ const Messages: React.FC = () => {
     }
   };
 
+  const renderMessage = (message: MessageItem) => {
+    return (
+      <div key={message.id} className={`message-item ${message.read ? 'read' : 'unread'}`}>
+        <div className="message-header">
+          <span className="message-title">{message.title}</span>
+          <span className="message-date">{formatDate(message.createdAt)}</span>
+        </div>
+        <div className="message-body">
+          {message.imageUrl && (
+            <img src={message.imageUrl} alt="" className="message-image" />
+          )}
+          <p>{message.body}</p>
+          
+          {/* For completed orders */}
+          {message.type === 'order_status' && 
+           message.status === 'completed' && (
+            <div className="rating-section">
+              <h4>Order Completed</h4>
+              {message.orderId && (
+                <OrderRating 
+                  orderId={message.orderId} 
+                  onRatingSubmit={(rating, comment) => {
+                    console.log(`Order ${message.orderId} rated: ${rating}, comment: ${comment}`);
+                    markAsRead('inbox', message.id);
+                  }}
+                />
+              )}
+            </div>
+          )}
+          
+          {/* For order links */}
+          {message.type === 'order' && message.orderId && (
+            <button 
+              className="view-order-btn"
+              onClick={() => navigate(`/userorders?highlight=${message.orderId}`)}
+            >
+              View Order
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="messages-page">
@@ -181,34 +234,7 @@ const Messages: React.FC = () => {
             ) : (
               <div className="messages-list">
                 {messages.map((message) => (
-                  <div 
-                    key={message.id} 
-                    className={`message-item ${!message.read ? 'unread' : ''}`}
-                    onClick={() => markAsRead('inbox', message.id)}
-                  >
-                    <div className="message-header">
-                      <div className="message-sender">
-                        {message.fromRole || "LocalsZA"}
-                      </div>
-                      <div className="message-date">
-                        {formatDate(message.createdAt)}
-                      </div>
-                    </div>
-                    <div className="message-title">{message.title}</div>
-                    {message.imageUrl && (
-                      <div className="message-image-container">
-                        <img 
-                          src={message.imageUrl} 
-                          alt="Message attachment" 
-                          className="message-image" 
-                        />
-                      </div>
-                    )}
-                    <div className="message-body">{message.body}</div>
-                    {!message.read && (
-                      <div className="unread-indicator"></div>
-                    )}
-                  </div>
+                  renderMessage(message)
                 ))}
               </div>
             )}

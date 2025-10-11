@@ -80,11 +80,11 @@ const ProductDetailPage: React.FC = () => {
     const maxPrice = currentPrice * 1.25;
     
     // Extract keywords from product name
-        const nameKeywords = (currentProduct.name ?? '')
-          .toLowerCase()
-          .split(/\s+/)
-          .filter(word => word.length > 3) // Only consider meaningful words (longer than 3 chars)
-          .filter(word => !['with', 'and', 'for', 'the'].includes(word)); // Remove common words
+    const nameKeywords = (currentProduct.name ?? '')
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 3) // Only consider meaningful words (longer than 3 chars)
+      .filter(word => !['with', 'and', 'for', 'the'].includes(word)); // Remove common words
     
     // Score and rank products
     const scoredProducts = otherProducts.map(product => {
@@ -128,6 +128,12 @@ const ProductDetailPage: React.FC = () => {
       .map(item => item.product);
   };
 
+  // Updated back button handler with explicit scrollToTop state
+  const handleBackNavigation = () => {
+    // Pass scrollToTop state to ensure scroll position is reset
+    navigate("..", { state: { scrollToTop: true } });
+  };
+
   if (loading) return (
     <div className='loading-container'>
       <img src={LogoAnime} alt="Loading..." className="loading-gif" />
@@ -143,7 +149,7 @@ const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="product-detail-page">
-      <button className="product-detail-back" onClick={() => navigate(-1)}>
+      <button className="product-detail-back" onClick={handleBackNavigation}>
         <img width="30" height="30" src="https://img.icons8.com/ios-filled/35/ffb803/back.png" alt="back" />
         Back
       </button>

@@ -1045,6 +1045,248 @@
   font-size: 1.1rem;
 }
 
+
+.route-planner-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffb803;
+  color: #1f1f1f;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.route-planner-btn:hover {
+  background-color: #e6a700;
+}
+
+.route-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Address buttons in driver deliveries */
+.address-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.add-address-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffb803;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-address-btn.added {
+  background-color: #4CAF50;
+  cursor: default;
+}
+
+.add-address-btn:hover:not(.added) {
+  background-color: #e6a700;
+}
+
+.show-route-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1f1f1f;
+  color: white;
+  border: 1px solid #ffb803;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.show-route-btn:hover {
+  background-color: #333333;
+}
+
+/* Navigation overlay styles */
+.navigation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.navigation-card {
+  background-color: #1f1f1f;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.navigation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
+}
+
+.navigation-header h2 {
+  margin: 0;
+  color: #ffb803;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #ffb803;
+  cursor: pointer;
+}
+
+/* Saved addresses list */
+.saved-addresses {
+  padding: 15px 20px;
+}
+
+.saved-addresses h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #ffb803;
+}
+
+.no-addresses {
+  text-align: center;
+  padding: 20px 0;
+  color: #aaa;
+}
+
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.address-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2a2a2a;
+  border-radius: 5px;
+  padding: 10px 15px;
+}
+
+.address-info {
+  flex: 1;
+}
+
+.address-customer {
+  font-weight: 600;
+  color: #ffb803;
+  margin-bottom: 5px;
+}
+
+.address-text {
+  font-size: 14px;
+  color: #ddd;
+}
+
+.remove-address-btn {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 20px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.remove-address-btn:hover {
+  background-color: rgba(255, 107, 107, 0.2);
+}
+
+/* Navigation actions */
+.navigation-actions {
+  padding: 15px 20px;
+  border-top: 1px solid #333;
+  text-align: center;
+}
+
+.waze-navigation-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #33ccff;
+  color: #1f1f1f;
+  border: none;
+  width: 100%;
+  border-radius: 5px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.waze-navigation-btn:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.waze-navigation-btn:hover:not(:disabled) {
+  background-color: #00aaff;
+}
+
+.waze-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.waze-note {
+  padding: 10px 20px 15px;
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+}
+
+.navigation-error {
+  margin: 10px 20px;
+  padding: 10px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-left: 3px solid #ff6b6b;
+  color: #ff6b6b;
+  font-size: 14px;
+}
+
 @media (min-width: 768px) {
   .driver-revenue-cards {
     flex-direction: row;

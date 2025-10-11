@@ -1,244 +1,153 @@
 import { useState, useEffect } from 'react';
+import { useWazeRoute } from '../../../components/contexts/WazeRouteContext';
+import './driverStyles.css';
 
 interface NavigationProps {
-  address: string;
-  destinationLat?: number;
-  destinationLng?: number;
   onClose: () => void;
-  onETAUpdate?: (eta: string, arrivalTime?: string) => void;
 }
 
-const Navigation = ({ address, destinationLat, destinationLng, onClose, onETAUpdate }: NavigationProps) => {
-  const [currentLat, setCurrentLat] = useState<number | null>(null);
-  const [currentLng, setCurrentLng] = useState<number | null>(null);
-  const [eta, setEta] = useState<string>('Calculating...');
-  const [distance, setDistance] = useState<string>('Calculating...');
+const Navigation = ({ onClose }: NavigationProps) => {
+  const { addresses, removeAddress } = useWazeRoute();
   const [error, setError] = useState<string>('');
-  const [isLocationReady, setIsLocationReady] = useState<boolean>(false);
-
-  // Get current location on component mount
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLat(position.coords.latitude);
-          setCurrentLng(position.coords.longitude);
-          setIsLocationReady(true);
-        },
-        (err) => {
-          setError(`Error accessing location: ${err.message}`);
-        }
+  
+  // Function to open Waze with multiple stops
+  const openWazeMultiStop = () => {
+    if (addresses.length === 0) {
+      setError('No addresses added for navigation');
+      return;
+    }
+    
+    try {
+      // Get the first address with valid coordinates, if any
+      const addressWithCoords = addresses.find(addr => 
+        addr.coordinates && 
+        typeof addr.coordinates.lat === 'number' && 
+        typeof addr.coordinates.lng === 'number'
       );
-    } else {
-      setError('Geolocation is not supported by your browser');
-    }
-  }, []);
 
-  // Calculate ETA when we have both current and destination coordinates
-  useEffect(() => {
-    const calculateRoute = async () => {
-      // If we have coordinates directly, use them
-      if (currentLat && currentLng && destinationLat && destinationLng) {
-        try {
-          // Calculate a reasonable ETA based on straight-line distance
-          const estimatedEta = calculateSimulatedETA(
-            currentLat, 
-            currentLng, 
-            destinationLat, 
-            destinationLng
-          );
-          
-          // Also calculate the actual arrival time (not just duration)
-          const arrivalTime = calculateArrivalTime(estimatedEta);
-          
-          setEta(estimatedEta);
-          
-          // Calculate approximate distance
-          const estimatedDistance = calculateSimulatedDistance(
-            currentLat, 
-            currentLng, 
-            destinationLat, 
-            destinationLng
-          );
-          
-          setDistance(estimatedDistance);
-          
-          // Call the callback if provided with both ETA duration and arrival time
-          if (onETAUpdate) {
-            onETAUpdate(estimatedEta, arrivalTime);
-          }
-        } catch (error) {
-          console.error("Error calculating route:", error);
-          setError("Couldn't calculate ETA");
-        }
-      } 
-      // If we only have an address string, use an estimate
-      else if (currentLat && currentLng && address) {
-        // Set a default ETA for address-based navigation
-        setEta('~20-30 min');
-        setDistance('Distance unavailable');
-        
-        if (onETAUpdate) {
-          onETAUpdate('~20-30 min');
-        }
-      }
-    };
-
-    if (isLocationReady) {
-      calculateRoute();
-    }
-  }, [currentLat, currentLng, destinationLat, destinationLng, address, onETAUpdate, isLocationReady]);
-
-  // Helper functions for simulated ETA and distance
-  const calculateSimulatedETA = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    // Calculate the distance in km
-    const distance = calculateHaversineDistance(lat1, lon1, lat2, lon2);
-    
-    // Assume average speed of 40 km/h in city
-    const timeInHours = distance / 40;
-    const timeInMinutes = Math.round(timeInHours * 60);
-    
-    // Format the ETA
-    if (timeInMinutes < 60) {
-      return `~${timeInMinutes} min`;
-    } else {
-      const hours = Math.floor(timeInMinutes / 60);
-      const mins = timeInMinutes % 60;
-      return `~${hours} h ${mins} min`;
-    }
-  };
-
-  const calculateSimulatedDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const distance = calculateHaversineDistance(lat1, lon1, lat2, lon2);
-    return `~${distance.toFixed(1)} km`;
-  };
-
-  // Haversine formula to calculate distance between two coordinates
-  const calculateHaversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
-  // Function to open Google Maps
-  const openGoogleMaps = () => {
-    let mapsUrl = '';
-    
-    if (currentLat && currentLng) {
-      // Use coordinates if available
-      if (destinationLat && destinationLng) {
-        mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLng}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
-      } else {
-        // Use address string
-        mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLng}&destination=${encodeURIComponent(address)}&travelmode=driving`;
-      }
-    } else {
-      // Fallback if no current location
-      mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=driving`;
-    }
-    
-    window.open(mapsUrl, '_blank');
-  };
-
-  // Add this helper function to the component
-  const calculateArrivalTime = (etaString: string): string => {
-    // Extract minutes from the ETA string (e.g., "~30 min" -> 30)
-    let minutes = 0;
-    
-    // Handle both formats: "~30 min" and "~1 h 25 min"
-    if (etaString.includes('h')) {
-      // Extract hours and minutes
-      const hourMatch = etaString.match(/~(\d+)\s*h/);
-      const minuteMatch = etaString.match(/(\d+)\s*min/);
+      // Format all addresses for the URL
+      const formattedAddresses = addresses.map(addr => encodeURIComponent(addr.address)).join(',');
       
-      if (hourMatch) {
-        minutes += parseInt(hourMatch[1]) * 60;
+      // Build Waze URLs - for both app and web
+      // Try to use coordinates if available, otherwise just use text addresses
+      let wazeAppUrl = 'waze://?navigate=yes';
+      let wazeWebUrl = 'https://www.waze.com/ul?navigate=yes';
+      
+      // If we have coordinates for at least the first address
+      if (addressWithCoords?.coordinates?.lat && addressWithCoords?.coordinates?.lng) {
+        // Add coordinates
+        wazeAppUrl += `&ll=${addressWithCoords.coordinates.lat},${addressWithCoords.coordinates.lng}&z=10`;
+        wazeWebUrl += `&ll=${addressWithCoords.coordinates.lat},${addressWithCoords.coordinates.lng}&z=10`;
       }
-      if (minuteMatch) {
-        minutes += parseInt(minuteMatch[1]);
+      
+      // Add addresses to both URLs
+      if (addresses.length > 1) {
+        // For multiple addresses
+        wazeAppUrl += `&q=${formattedAddresses}`;
+        wazeWebUrl += `&q=${formattedAddresses}`;
+      } else if (addresses.length === 1) {
+        // For single address
+        wazeAppUrl += `&q=${encodeURIComponent(addresses[0].address)}`;
+        wazeWebUrl += `&q=${encodeURIComponent(addresses[0].address)}`;
       }
-    } else {
-      // Just minutes
-      const minuteMatch = etaString.match(/~(\d+)\s*min/);
-      if (minuteMatch) {
-        minutes = parseInt(minuteMatch[1]);
+      
+      // First try to open Waze app
+      console.log("Attempting to open Waze app with URL:", wazeAppUrl);
+      
+      // Create a hidden iframe to try opening the app URL
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = wazeAppUrl;
+      document.body.appendChild(iframe);
+      
+      // Set a timeout to remove the iframe and open the web version as fallback
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        
+        // Open the web version in a new tab
+        console.log("Opening Waze web version:", wazeWebUrl);
+        window.open(wazeWebUrl, '_blank');
+      }, 1000); // 1 second should be enough to see if the app opens
+      
+    } catch (error) {
+      console.error('Error opening Waze:', error);
+      setError('Failed to open Waze. Please try again or open Waze manually.');
+      
+      // Always try web version as a fallback
+      try {
+        const address = encodeURIComponent(addresses[0].address);
+        window.open(`https://www.waze.com/ul?q=${address}&navigate=yes`, '_blank');
+      } catch (e) {
+        console.error('Failed to open web fallback:', e);
       }
     }
-    
-    // Calculate arrival time
-    const now = new Date();
-    const arrivalTime = new Date(now.getTime() + minutes * 60000);
-    
-    // Format as HH:MM
-    return arrivalTime.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
   };
 
   return (
     <div className="navigation-overlay">
       <div className="navigation-card">
         <div className="navigation-header">
-          <h2>Navigation</h2>
+          <h2>Route Planning</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         
-        <div className="delivery-address">
-          <h3>Destination:</h3>
-          <p>{address}</p>
-        </div>
-        
-        <div className="eta-info">
-          <div className="eta-item">
-            <div className="eta-icon">
-              <img width="24" height="24" src="https://img.icons8.com/ios-filled/24/ffb803/time_2.png" alt="time_2"/>
+        <div className="saved-addresses">
+          <h3>Delivery Stops ({addresses.length})</h3>
+          
+          {addresses.length === 0 ? (
+            <div className="no-addresses">
+              <p>No delivery addresses added yet.</p>
+              <p>Add addresses from order details to create a route.</p>
             </div>
-            <div className="eta-content">
-              <span className="eta-label">Estimated Time:</span>
-              <span className="eta-value">{eta}</span>
+          ) : (
+            <div className="address-list">
+              {addresses.map((address) => (
+                <div key={address.id} className="address-item">
+                  <div className="address-info">
+                    <div className="address-customer">{address.name}</div>
+                    <div className="address-text">{address.address}</div>
+                  </div>
+                  <button 
+                    className="remove-address-btn"
+                    onClick={() => removeAddress(address.id)}
+                    aria-label="Remove address"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
             </div>
-          </div>
-          <div className="eta-item">
-            <div className="eta-icon">
-              <img width="24" height="24" src="https://img.icons8.com/ios-filled/24/ffb803/place-marker.png" alt="place-marker"/>
-            </div>
-            <div className="eta-content">
-              <span className="eta-label">Estimated Distance:</span>
-              <span className="eta-value">{distance}</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {error && (
-          <div className="location-error">
+          <div className="navigation-error">
             <p>{error}</p>
-            <p>Please allow location access to get accurate directions</p>
           </div>
         )}
 
         <div className="navigation-actions">
           <button 
-            className="open-in-maps-btn"
-            onClick={openGoogleMaps}
-            disabled={!isLocationReady && !destinationLat}
+            className="waze-navigation-btn"
+            onClick={openWazeMultiStop}
+            disabled={addresses.length === 0}
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#FFFFFF">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-            </svg>
-            Navigate with Google Maps
+            <img 
+              src="https://img.icons8.com/color/24/000000/waze.png" 
+              alt="Waze"
+              className="waze-icon" 
+            />
+            Navigate with Waze
           </button>
+        </div>
+        
+        <div className="waze-note">
+          <p>Note: This will open the Waze app if installed, otherwise it will open in your browser.</p>
+          <p>Waze supports up to 10 stops in a single route.</p>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Navigation;

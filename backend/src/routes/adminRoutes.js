@@ -6,6 +6,9 @@ const adminController = require('../controllers/adminController');
 // Get dashboard statistics
 router.get('/stats', authenticateToken, adminController.getDashboardStats);
 
+// Get user count for dashboard
+router.get('/stats/users', authenticateToken, adminController.getUserCount);
+
 // Get all cashout requests
 router.get('/cashouts', authenticateToken, adminController.getCashoutRequests);
 

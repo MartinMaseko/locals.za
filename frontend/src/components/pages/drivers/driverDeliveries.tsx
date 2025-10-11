@@ -4,8 +4,8 @@ import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
 import axios from 'axios';
 import './driverStyles.css';
-import Navigation from './Navigation'; 
-
+import Navigation from './Navigation';
+import { useWazeRoute } from '../../../components/contexts/WazeRouteContext';
 
 interface MissingItem {
   productId: string;
@@ -53,12 +53,15 @@ interface Order {
 }
 
 const DriverDeliveries = () => {
+  const { addAddress, hasAddress } = useWazeRoute();
+  
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showNavigation, setShowNavigation] = useState<boolean>(false);
   const [estimatedETA, setEstimatedETA] = useState<string | null>(null);
+  const [addressAdded, setAddressAdded] = useState(false);
   
   // State variables for item verification
   const [verifyingItems, setVerifyingItems] = useState(false);
@@ -175,16 +178,13 @@ const DriverDeliveries = () => {
           throw new Error('Authentication required');
         }
         
-        console.log(`Fetching order details for ID: ${orderId}`);
-        
         // Try to get full order details including products
         const response = await axios.get<Order>(`/api/orders/${orderId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (response.data && response.data.id) {
-          console.log('Order details received:', response.data);
-          
+      
           // Normalize the data
           const normalizedOrder = normalizeOrderData(response.data);
           setOrder(normalizedOrder);
@@ -269,7 +269,24 @@ const DriverDeliveries = () => {
     navigate('/driversdashboard');
   };
 
-  const handleNavigate = () => {
+  const handleAddAddress = () => {
+    if (!order) return;
+
+    const formattedAddress = 
+      `${order.deliveryAddress.street || ''}, ${order.deliveryAddress.city || ''}, ${order.deliveryAddress.postalCode || ''}, South Africa`.trim();
+    
+    addAddress({
+      id: order.id,
+      name: order.customer_name || 'Customer',
+      address: formattedAddress,
+      coordinates: order.deliveryAddress.coordinates || undefined
+    });
+
+    // Set local state to update UI
+    setAddressAdded(true);
+  };
+
+  const handleShowRoutePlanner = () => {
     setShowNavigation(true);
   };
 
@@ -437,6 +454,13 @@ const DriverDeliveries = () => {
     setMissingItems([]);
   };
 
+  // Check if this order's address is already added when component mounts
+  useEffect(() => {
+    if (orderId) {
+      setAddressAdded(hasAddress(orderId));
+    }
+  }, [orderId, hasAddress]);
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -501,13 +525,34 @@ const DriverDeliveries = () => {
               <br/>{estimatedETA && <span className="info-value">ETA: {estimatedETA}</span>}
             </div>
           </div>
-          <button 
-            className='navigate-btn'
-            onClick={handleNavigate}
-          >
-            <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/navigation.png" alt="navigation"/>
-            Navigate
-          </button>
+          
+          <div className="address-buttons">
+            <button 
+              className={`add-address-btn ${addressAdded ? 'added' : ''}`}
+              onClick={handleAddAddress}
+              disabled={addressAdded}
+            >
+              {addressAdded ? (
+                <>
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="added"/>
+                  Address Added
+                </>
+              ) : (
+                <>
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/plus.png" alt="add"/>
+                  Add to Route
+                </>
+              )}
+            </button>
+            
+            <button 
+              className='show-route-btn'
+              onClick={handleShowRoutePlanner}
+            >
+              <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/map.png" alt="route"/>
+              Show Route Planner
+            </button>
+          </div>
         </div>
         
         <div className="delivery-section order-items">
@@ -718,13 +763,9 @@ const DriverDeliveries = () => {
           </div>
         </div>
       </div>
-      {showNavigation && order && (
+      {showNavigation && (
         <Navigation
-          address={`${order.deliveryAddress.street || ''}, ${order.deliveryAddress.city || ''}, ${order.deliveryAddress.postalCode || ''}`}
-          destinationLat={order.deliveryAddress.coordinates?.lat}
-          destinationLng={order.deliveryAddress.coordinates?.lng}
           onClose={() => setShowNavigation(false)}
-          onETAUpdate={handleETAUpdate}
         />
       )}
     </div>
