@@ -222,6 +222,19 @@
   color: #212121;
 }
 
+.complete-order-btn.delivered {
+  background-color: #4CAF50;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.complete-order-btn.delivered:hover {
+  background-color: #4CAF50;
+}
+
 /* Navigate button styles */
 .navigate-btn {
   display: flex;
