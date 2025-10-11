@@ -7,7 +7,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 interface Delivery {
   orderId: string;  
   address: string;  
-  customerName: string;  
+  customerName: string;  // Changed from customer_name
   status: string;
   coordinates?: {
     lat: number;
