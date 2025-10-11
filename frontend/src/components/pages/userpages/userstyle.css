@@ -423,6 +423,27 @@ input[type="file"]::-webkit-file-upload-button:focus {
   gap: 1rem;
 }
 
+.user-orders-error {
+  margin-top: 50%;
+  height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-error-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
+
+.login-error-link {
+  text-decoration: none;
+  font-size: 1.25rem;
+  color: #ffb803;
+  margin-top: 0.5rem;
+}
 /* Mobile responsiveness improvements */
 @media (max-width: 480px) {
   .order-header {
@@ -445,6 +466,10 @@ input[type="file"]::-webkit-file-upload-button:focus {
   .profile-container,
   .user-orders-page {
     max-width: 100vw;
+  }
+
+  .user-orders-error {
+    margin-top: 20%;
   }
 
   .orders-list {

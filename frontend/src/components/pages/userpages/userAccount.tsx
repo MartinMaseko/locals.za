@@ -6,6 +6,8 @@ import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from 'firebase/
 import { app } from '../../../Auth/firebaseClient';
 import './userstyle.css';
 import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
+import { Link } from 'react-router-dom';
+import LocalsZAIcon from '../../assets/logos/LZA ICON.png';
 
 interface UserProfile {
   full_name: string;
@@ -224,9 +226,11 @@ const UserAccount = () => {
   // Show login prompt if no user
   if (!authUser) {
     return (
-      <div className="profile-container">
-        <div className="profile-error">Please log in to view your profile.</div>
-      </div>
+      <div className="user-orders-error">
+          <img src={LocalsZAIcon} alt="Locals ZA Logo" className="login-error-icon" />
+          <p className='login-error-message'>Log in to view your profile.</p>
+          <Link className='login-error-link' to="/login">Login</Link>
+        </div>
     );
   }
 

@@ -772,4 +772,88 @@ router.post('/:id/send-confirmation', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/orders/:id/rate
+ * @desc    Add or update a rating for an order
+ * @access  Private
+ */
+router.post('/:id/rate', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+    const { rating, comment } = req.body;
+    
+    // Validate rating
+    if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+    }
+
+    // Fetch the order to verify ownership and status
+    const orderRef = admin.firestore().collection('orders').doc(id);
+    const orderDoc = await orderRef.get();
+    
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    const orderData = orderDoc.data();
+    
+    // Verify the user owns this order
+    if (orderData.userId !== userId) {
+      return res.status(403).json({ error: 'Not authorized to rate this order' });
+    }
+    
+    // Verify order is completed
+    if (orderData.status !== 'completed' && orderData.status !== 'delivered') {
+      return res.status(400).json({ error: 'Only completed orders can be rated' });
+    }
+    
+    // Add the rating to the order
+    await orderRef.update({
+      rating: rating,
+      ratingComment: comment || null,
+      ratedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // If the order has a driver, update the driver's average rating
+    if (orderData.driver_id) {
+      const driverRef = admin.firestore().collection('drivers').doc(orderData.driver_id);
+      const driverDoc = await driverRef.get();
+      
+      if (driverDoc.exists) {
+        const driverData = driverDoc.data();
+        const currentRatings = driverData.ratings || [];
+        const newRating = {
+          orderId: id,
+          rating: rating,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
+        // Add this order's rating to the driver's ratings array
+        await driverRef.update({
+          ratings: [...currentRatings, newRating],
+          averageRating: calculateAverageRating([...currentRatings, newRating])
+        });
+      }
+    }
+    
+    res.json({ 
+      success: true,
+      message: 'Rating submitted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    res.status(500).json({ error: 'Failed to submit rating' });
+  }
+});
+
+// Helper function to calculate average rating
+function calculateAverageRating(ratings) {
+  if (!ratings || ratings.length === 0) return 0;
+  
+  const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
+  return sum / ratings.length;
+}
+
 module.exports = router;

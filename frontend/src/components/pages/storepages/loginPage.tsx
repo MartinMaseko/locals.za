@@ -49,7 +49,7 @@ const UserLogin = () => {
       // Redirect based on user_type
       if (profile.user_type === 'customer') {
         if (!profile.full_name || !profile.phone_number) {
-          navigate('/useraccount');
+          navigate('/');
         } else {
           navigate('/');
         }
@@ -91,7 +91,7 @@ const UserLogin = () => {
       // Redirect based on user_type
       if (profile.user_type === 'customer') {
         if (!profile.full_name || !profile.phone_number) {
-          navigate('/userprofile');
+          navigate('/');
         } else {
           navigate('/');
         }
