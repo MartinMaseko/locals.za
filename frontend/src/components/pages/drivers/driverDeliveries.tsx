@@ -60,7 +60,7 @@ const DriverDeliveries = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showNavigation, setShowNavigation] = useState<boolean>(false);
-  const [estimatedETA, setEstimatedETA] = useState<string | null>(null);
+  const [estimatedETA] = useState<string | null>(null);
   const [addressAdded, setAddressAdded] = useState(false);
   
   // State variables for item verification
@@ -290,33 +290,6 @@ const DriverDeliveries = () => {
     setShowNavigation(true);
   };
 
-  const handleETAUpdate = async (eta: string) => {
-    setEstimatedETA(eta);
-    
-    // Update the backend with the ETA
-    if (order && order.id) {
-      try {
-        const token = await auth.currentUser?.getIdToken();
-        
-        // If token is not available, just silently return without error
-        if (!token) return;
-        
-        await axios.put(`/api/orders/${order.id}/status`, 
-          { 
-            status: order.status, 
-            eta: eta 
-          },
-          { headers: { Authorization: `Bearer ${token}` }}
-        );
-        
-        // If the ETA update succeeds, store it in local state
-        setOrder(prev => prev ? { ...prev, eta: eta } : null);
-        
-      } catch (error) {
-        console.error('ETA update failed. This is expected if the endpoint is not yet implemented.', error);
-      }
-    }
-  };
 
   const handleCollectOrder = () => {
     // Instead of immediately updating status, start item verification
