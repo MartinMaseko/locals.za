@@ -757,8 +757,19 @@ const DriverDeliveries = () => {
                 Collect Order
               </button>
             )}
-            <button className="complete-order-btn" onClick={() => handleUpdateStatus('completed')} disabled={loading}>
-              Delivery Complete
+            <button 
+              className={`complete-order-btn ${order.status === 'completed' ? 'delivered' : ''}`}
+              onClick={() => handleUpdateStatus('completed')} 
+              disabled={loading || order.status === 'completed'}
+            >
+              {order.status === 'completed' ? (
+                <>
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="delivered"/>
+                  Delivered
+                </>
+              ) : (
+                'Delivery Complete'
+              )}
             </button>
           </div>
         </div>
