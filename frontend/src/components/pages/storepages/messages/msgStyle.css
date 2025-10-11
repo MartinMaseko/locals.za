@@ -204,6 +204,16 @@
   background: #FFB803;
 }
 
+
+.view-order-btn {
+  border: none;
+  background: #191919;
+  color: #ffb803;
+  font-family: inherit;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
 @media screen and (min-width: 992px) {
   .message-image-container,
   .notification-image-container {
@@ -220,6 +230,97 @@
 .message-item,
 .notification-item {
   padding-bottom: 16px;
+}
+
+/* Order Rating styling */
+.order-rating-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #ffb803;
+}
+
+.order-rating-container h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.stars-container {
+  margin-bottom: 15px;
+  direction: rtl; /* Right to left for easier selection */
+  text-align: left;
+}
+
+.star {
+  font-size: 28px;
+  color: #ddd;
+  cursor: pointer;
+  margin-right: 5px;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #ffb803;
+}
+
+.rating-comment {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.submit-rating {
+  background-color: #ffb803;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.submit-rating:hover {
+  background-color: #e5a600;
+}
+
+.submit-rating:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.rating-error {
+  color: #d32f2f;
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+.order-rating-container.submitted {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+}
+
+.stars-display {
+  margin-bottom: 10px;
+}
+
+.stars-display .star {
+  cursor: default;
+}
+
+.submitted-comment {
+  font-style: italic;
+  color: #555;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
 }
 
 /* Adjust layout for larger screens */

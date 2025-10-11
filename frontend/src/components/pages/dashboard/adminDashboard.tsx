@@ -85,6 +85,9 @@ interface Order {
   adjustedTotal?: number;
   refundStatus?: 'pending' | 'processed' | 'credited';
   driverNote?: string;
+  rating?: number;
+  ratingComment?: string;
+  ratedAt?: any;
 }
 
 interface MissingItem {
@@ -100,6 +103,11 @@ interface OrderItem {
   productId: string;
   product: any;
   qty: number;
+}
+
+
+interface UserCountResponse {
+  count: number;
 }
 
 type OrderStatus = 'pending' | 'processing' | 'in transit' | 'delivered' | 'cancelled' | 'completed';
@@ -145,6 +153,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('');
   const [orderSearchQuery, setOrderSearchQuery] = useState<string>('');
+  const [userCount, setUserCount] = useState<number>(0);
 
   // customers cache
   const [customerDetails, setCustomerDetails] = useState<Record<string, any>>({});
@@ -229,6 +238,26 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (activeSection === 'orders' && admin) fetchOrders();
   }, [activeSection, admin, fetchOrders]);
+
+  // Fetch user count function
+  const fetchUserCount = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.get<UserCountResponse>('/api/admin/stats/users', { 
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserCount(data.count);
+    } catch (err) {
+      console.error('Error fetching user count:', err);
+      setUserCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSection === 'dashboard' && admin) {
+      fetchUserCount();
+    }
+  }, [activeSection, admin, fetchUserCount]);
 
   // search / filter orders
   useEffect(() => {
@@ -954,6 +983,11 @@ const AdminDashboard: React.FC = () => {
                   <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
                 </div>
                 <div className="stat-card">
+                  <h3>Users</h3>
+                  <p className="stat-number">{userCount}</p>
+                  <p className="stat-period">Total registered users</p>
+                </div>
+                <div className="stat-card">
                   <h3>Driver Payments</h3>
                   <p className="stat-number">
                     R{(orders.filter(o => 
@@ -1048,7 +1082,7 @@ const AdminDashboard: React.FC = () => {
                 filteredOrders.length === 0 ? <div className="no-orders">{orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found'}</div> :
                 <div className="orders-grid"><div className="orders-list">
                   <table className="orders-table">
-                    <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Rating</th><th>Actions</th></tr></thead>
                     <tbody>
                       {filteredOrders.map(order => (
                         <tr key={order.id} onClick={() => setSelectedOrder(order)} className={selectedOrder?.id === order.id ? 'selected' : ''}>
@@ -1057,6 +1091,28 @@ const AdminDashboard: React.FC = () => {
                           <td>{order.userId?.substring(0,8)}...</td>
                           <td>R{Number(order.total || 0).toFixed(2)}</td>
                           <td><div className={`status-badge ${order.status}`}>{order.status}</div></td>
+                          <td>
+                            {order.status === 'completed' ? (
+                              order.rating ? (
+                                <div className="table-rating">
+                                  <div className="table-stars">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <span 
+                                        key={star} 
+                                        className={`table-star ${star <= (order.rating || 0) ? 'filled' : ''}`}
+                                      >
+                                        ★
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="no-table-rating">Not rated</span>
+                              )
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </td>
                           <td><div className="action-buttons"><button onClick={(e)=>{e.stopPropagation(); setSelectedOrder(order);}} className="view-button">View</button></div></td>
                         </tr>
                       ))}
@@ -1245,6 +1301,34 @@ const AdminDashboard: React.FC = () => {
                           </div>
                         )}
                       </div>
+                      {/* Rating section - only show for completed orders */}
+                      {selectedOrder?.status === 'completed' && (
+                        <div className="rating-section">
+                          <strong>Customer Rating:</strong>
+                          {selectedOrder.rating ? (
+                            <div className="order-rating">
+                              <div className="rating-stars">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <span 
+                                    key={star} 
+                                    className={`admin-star ${star <= (selectedOrder.rating || 0) ? 'filled' : ''}`}
+                                  >
+                                    ★
+                                  </span>
+                                ))}
+                                <span className="rating-value">{selectedOrder.rating}/5</span>
+                              </div>
+                              {selectedOrder.ratingComment && (
+                                <div className="rating-comment">
+                                  "{selectedOrder.ratingComment}"
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="no-rating">Customer has not rated this order yet</div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

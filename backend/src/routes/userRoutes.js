@@ -137,4 +137,32 @@ router.put('/me', authenticateToken, async (req, res) => {
   }
 });
 
+// Get user count (for admin dashboard)
+router.get('/count', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    
+    // Get user data to verify admin status
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all users from the users collection
+    const snapshot = await admin.firestore().collection('users').get();
+    const count = snapshot.size;
+    
+    res.json({
+      count: count,
+      message: 'User count retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Error getting user count:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
