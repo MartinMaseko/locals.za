@@ -90,6 +90,7 @@ router.get('/me/deliveries', authenticateToken, async (req, res) => {
   }
 });
 
+
 // Update Delivery Status (Driver)
 router.put('/deliveries/:id/status', authenticateToken, async (req, res) => {
   const { id } = req.params;

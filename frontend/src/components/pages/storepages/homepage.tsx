@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext, useRef } from 'react'; // Add useRef here
+import { useEffect, useState, useContext, useRef, useLayoutEffect } from 'react'; // Add useRef here
 import LoadingContext from './LoadingContext';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
@@ -18,6 +18,7 @@ import RelaxersPermKits from '../../assets/images/Relaxers.webp';
 import shampoosCleansers from '../../assets/images/Shampoo.webp';
 import SnacksConfectionery from '../../assets/images/Snacks.webp';
 import ConditionersTreatments from '../../assets/images/ConditionerTreatments.webp';
+import { useLocation } from 'react-router-dom';
 
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
@@ -59,6 +60,15 @@ const HomePage = () => {
 
   // Create a ref for the products section
   const productsSectionRef = useRef<HTMLDivElement>(null);
+
+   // Get location from router
+  const location = useLocation();
+
+  // Scroll restoration
+  useLayoutEffect(() => {
+    // Scroll to top when component mounts or location changes
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   useEffect(() => {
     setGlobalLoading(loading || productsLoading);

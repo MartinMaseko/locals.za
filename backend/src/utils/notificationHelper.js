@@ -89,18 +89,41 @@ const sendOrderStatusMessage = async (userId, orderId, status) => {
     case 'processing':
       statusTitle = `Your Order #${shortOrderId} is Being Processed`;
       statusMessage = `Great news! Your order is now being prepared. We'll update you when it's ready for delivery.`;
-      statusImage = "https://img.icons8.com/ios-filled/50/ffb803/in-progress.png";
+      statusImage = "https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/Processed%20Order.jpg?alt=media&token=5f5147d1-cd3a-484f-8358-4657134b6021";
       break;
     case 'in transit':
       statusTitle = `Your Order #${shortOrderId} is On the Way`;
       statusMessage = `Your order is now on its way to you! Your driver is en route to your delivery address.`;
-      statusImage = "https://img.icons8.com/ios-filled/50/ffb803/in-transit--v1.png";
+      statusImage = "https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/Intransit.jpg?alt=media&token=1cf4cc7f-4bd1-4401-9bd3-973584417fbf";
       break;
     case 'completed':
       statusTitle = `Your Order #${shortOrderId} has been Delivered`;
-      statusMessage = `Your order has been delivered. Enjoy! Thank you for shopping with LocalsZA.`;
-      statusImage = "https://img.icons8.com/ios-filled/50/ffb803/shipped.png";
-      break;
+      statusMessage = `Your order has been delivered. Enjoy! Thank you for shopping with LocalsZA. We'd love your feedback - please rate your experience.`;
+      statusImage = "https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/delivered.jpg?alt=media&token=971134c0-55a4-4dba-baa5-0199bf5d6f6e";
+      
+      // Add rating request for completed orders
+      const inboxMessageWithRating = {
+        title: statusTitle,
+        body: statusMessage,
+        fromRole: "LocalsZA Team",
+        type: "order_status",
+        orderId: orderId,
+        status: status,
+        imageUrl: statusImage,
+        includeRating: true, // Flag to show rating UI in the message
+      };
+      
+      const notificationMessage = {
+        title: `Order Status Update`,
+        body: `Order #${shortOrderId}: ${status} - Please rate your experience!`,
+        type: "order_status",
+        orderId: orderId,
+        status: status,
+        includeRating: true
+      };
+      
+      return await sendUserMessages(userId, inboxMessageWithRating, notificationMessage);
+      
     case 'cancelled':
       statusTitle = `Your Order #${shortOrderId} has been Cancelled`;
       statusMessage = `Your order has been cancelled. If you have any questions, please contact our support team.`;
@@ -112,26 +135,28 @@ const sendOrderStatusMessage = async (userId, orderId, status) => {
       statusImage = "https://img.icons8.com/ios-filled/50/ffb803/purchase-order.png";
   }
 
-  // Create messages
-  const inboxMessage = {
-    title: statusTitle,
-    body: statusMessage,
-    fromRole: "LocalsZA Team",
-    type: "order_status",
-    orderId: orderId,
-    status: status,
-    imageUrl: statusImage
-  };
-  
-  const notificationMessage = {
-    title: `Order Status Update`,
-    body: `Order #${shortOrderId}: ${status}`,
-    type: "order_status",
-    orderId: orderId,
-    status: status
-  };
-  
-  return await sendUserMessages(userId, inboxMessage, notificationMessage);
+  // Create messages for non-completed statuses (completed is handled separately above)
+  if (status !== 'completed') {
+    const inboxMessage = {
+      title: statusTitle,
+      body: statusMessage,
+      fromRole: "LocalsZA Team",
+      type: "order_status",
+      orderId: orderId,
+      status: status,
+      imageUrl: statusImage
+    };
+    
+    const notificationMessage = {
+      title: `Order Status Update`,
+      body: `Order #${shortOrderId}: ${status}`,
+      type: "order_status",
+      orderId: orderId,
+      status: status
+    };
+    
+    return await sendUserMessages(userId, inboxMessage, notificationMessage);
+  }
 };
 
 module.exports = {

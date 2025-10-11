@@ -24,53 +24,55 @@ const DriversNav = () => {
   };
 
   return (
-    <nav className="navbar drivers-navbar">
-      <div className="driver-navbar-content">
-        <div className="driver-navbar-logo">
-          <Link to="/driversdashboard">
-            <img src={Logo} alt="Logo" className='driver-logo'/>
-          </Link>
+    <div className="driver-nav-container">
+      <nav className="navbar drivers-navbar">
+        <div className="driver-navbar-content">
+          <div className="driver-navbar-logo">
+            <Link to="/driversdashboard">
+              <img src={Logo} alt="Logo" className='driver-logo'/>
+            </Link>
+          </div>
+          <div className="navbar-menu">
+            <button
+              className="navbar-icon"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label="Menu"
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <img 
+                src="https://img.icons8.com/forma-thin-filled/40/FFB803/menu.png"
+                alt="Driver Menu"
+                style={{ width: '40px', height: '40px' }}
+              />
+            </button>
+          </div>
         </div>
-        <div className="navbar-menu">
+        {/* Full-screen sliding menu */}
+        <div className={`navbar-fullscreen-dropdown${dropdownOpen ? ' open' : ''}`}>
           <button
-            className="navbar-icon"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            aria-label="Menu"
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            className="navbar-close"
+            onClick={() => setDropdownOpen(false)}
+            aria-label="Close Menu"
           >
-            <img 
-              src="https://img.icons8.com/forma-thin-filled/40/FFB803/menu.png"
-              alt="Driver Menu"
-              style={{ width: '40px', height: '40px' }}
-            />
+            &times;
           </button>
+          <div className="navbar-fullscreen-items driver-menu-items">
+            <Link to="/driversdashboard" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
+              <img width="35" height="35" src="https://img.icons8.com/material/35/ffb803/dashboard-layout.png" alt="dashboard-layout"/>
+              Dashboard
+            </Link>
+            <Link to="/driver/revenue" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
+              <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/money-bag.png" alt="revenue"/>
+              Revenue
+            </Link>
+            <button className="navbar-logout" onClick={handleSignOut}>
+              <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/logout-rounded-left.png" alt="logout-rounded-left"/>
+              Sign Out
+            </button>
+          </div>
         </div>
-      </div>
-      {/* Full-screen sliding menu */}
-      <div className={`navbar-fullscreen-dropdown${dropdownOpen ? ' open' : ''}`}>
-        <button
-          className="navbar-close"
-          onClick={() => setDropdownOpen(false)}
-          aria-label="Close Menu"
-        >
-          &times;
-        </button>
-        <div className="navbar-fullscreen-items driver-menu-items">
-          <Link to="/driversdashboard" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img width="35" height="35" src="https://img.icons8.com/material/35/ffb803/dashboard-layout.png" alt="dashboard-layout"/>
-            Dashboard
-          </Link>
-          <Link to="/driver/revenue" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/money-bag.png" alt="revenue"/>
-            Revenue
-          </Link>
-          <button className="navbar-logout" onClick={handleSignOut}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/logout-rounded-left.png" alt="logout-rounded-left"/>
-            Sign Out
-          </button>
-        </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 };
 
