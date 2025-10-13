@@ -73,6 +73,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       }
+    },
+    headers: {
+      'Content-Security-Policy': `
+        default-src 'self';
+        img-src 'self' data: https:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com;
+        frame-src 'self' https://www.googletagmanager.com;
+      `.replace(/\s+/g, ' ').trim()
     }
   }
 });
