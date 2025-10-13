@@ -31,11 +31,6 @@ export default defineConfig({
       }
     }),
   ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
   build: {
     assetsDir: 'assets',
     rollupOptions: {
@@ -47,19 +42,23 @@ export default defineConfig({
           if (!assetInfo.name) return 'assets/[name][extname]';
           
           const { name } = assetInfo;
-          
-          // Keep original casing for component assets
-          if (name.includes('components/assets/')) {
-            return name;
-          }
-
           const extType = name.split('.').pop();
 
+          // Handle component assets
+          if (name.includes('components/assets/')) {
+            const cleanPath = name.replace('src/', '');
+            return cleanPath;
+          }
+
+          // Handle other assets
           if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(extType || '')) {
-            // Preserve original filename casing
-            return `components/assets/images/[name][extname]`;
+            return `assets/images/[name][extname]`;
           }
           
+          if (/css/i.test(extType || '')) {
+            return `assets/css/[name][extname]`;
+          }
+
           return 'assets/[name][extname]';
         },
         chunkFileNames: 'assets/js/[name].js',
