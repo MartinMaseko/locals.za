@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && npm run copy-assets",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "copy-assets": "xcopy /E /I /Y src\\components\\assets dist\\assets"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0",
