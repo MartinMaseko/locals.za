@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 export default defineConfig({
   plugins: [
@@ -28,8 +29,44 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }),
   ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (!assetInfo.name) return 'assets/[name][extname]';
+          
+          const { name } = assetInfo;
+          
+          // Keep original casing for component assets
+          if (name.includes('components/assets/')) {
+            return name;
+          }
+
+          const extType = name.split('.').pop();
+
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(extType || '')) {
+            // Preserve original filename casing
+            return `components/assets/images/[name][extname]`;
+          }
+          
+          return 'assets/[name][extname]';
+        },
+        chunkFileNames: 'assets/js/[name].js',
+        entryFileNames: 'assets/js/[name].js',
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': {

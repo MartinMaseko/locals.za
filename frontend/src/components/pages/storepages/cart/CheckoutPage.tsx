@@ -5,7 +5,7 @@ import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
-import InstantEftLogo from '../../../assets/images/instantEft.webp';
+import InstantEftLogo from '../../../assets/images/instantEFT.webp';
 import './cartstyle.css';
 
 const SERVICE_FEE = 80;
