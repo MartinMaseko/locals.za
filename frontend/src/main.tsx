@@ -1,13 +1,27 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { registerSW } from 'virtual:pwa-register'
+import App from './App'
 import './index.css'
-import App from './App.tsx';
-import { registerSW } from 'virtual:pwa-register';
 
-registerSW();
+// Register service worker with error handling
+registerSW({
+  onNeedRefresh() {
+    // Handle PWA update available
+  },
+  onOfflineReady() {
+    // Handle PWA offline ready
+  },
+  onRegisteredSW() {
+    // Handle SW registered
+  },
+  onRegisterError(error) {
+    console.error('SW registration failed:', error)
+  }
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )
