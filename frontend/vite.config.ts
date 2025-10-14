@@ -8,77 +8,42 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      manifest: {
-        name: 'LocalsZA',
-        short_name: 'LocalsZA',
-        start_url: '.',
-        display: 'standalone',
-        background_color: '#f8f9fa',
-        theme_color: '#ffb803',
-        description: 'LocalsZA Progressive Web App',
-        icons: [
-          {
-            src: '/assets/icons/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/assets/icons/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+      workbox: {
+        cleanupOutdatedCaches: true,
+        sourcemap: true
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module'
       }
-    }),
+    })
   ],
   build: {
-    assetsDir: 'assets',
+    sourcemap: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html'),
+        main: path.resolve(__dirname, 'index.html')
       },
       output: {
-        assetFileNames: (assetInfo) => {
-          if (!assetInfo.name) return 'assets/[name][extname]';
-          
-          const { name } = assetInfo;
-          const extType = name.split('.').pop();
-
-          // Handle component assets
-          if (name.includes('components/assets/')) {
-            const cleanPath = name.replace('src/', '');
-            return cleanPath;
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            // Create separate chunks for large dependencies
+            if (id.includes('firebase')) {
+              return 'firebase-vendor'
+            }
+            return 'vendor'
           }
-
-          // Handle other assets
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(extType || '')) {
-            return `assets/images/[name][extname]`;
-          }
-          
-          if (/css/i.test(extType || '')) {
-            return `assets/css/[name][extname]`;
-          }
-
-          return 'assets/[name][extname]';
-        },
-        chunkFileNames: 'assets/js/[name].js',
-        entryFileNames: 'assets/js/[name].js',
-      },
-    },
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
+        }
       }
     },
+    chunkSizeWarningLimit: 1000
+  },
+  server: {
     headers: {
       'Content-Security-Policy': `
         default-src 'self';
         img-src 'self' data: https:;
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com;
