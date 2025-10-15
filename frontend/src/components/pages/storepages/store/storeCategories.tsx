@@ -6,6 +6,8 @@ import LoadingContext from '../LoadingContext';
 import { useContext } from 'react';
 import LogoAnime from '../../../assets/logos/locals-svg.gif';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 // Category images
 import Beverages from '../../../assets/images/Beverages.webp';
 import GroceriesPantry from '../../../assets/images/Groceries.webp';
@@ -102,7 +104,7 @@ const StoreCategories: React.FC = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get<any[]>('/api/products');
+        const { data } = await axios.get<any[]>(`${API_URL}/api/api/products`);
         const productsData = Array.isArray(data) ? data : [];
         setProducts(productsData);
         

@@ -3,7 +3,9 @@ import { signIn } from '../../../Auth/authService';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../assets/logos/LZABLKTRP.webp';
-import '../../assets/UI/loginReg.css'
+import '../../assets/UI/loginReg.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AdminLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -25,7 +27,7 @@ const AdminLogin = () => {
       if (!access_token) throw new Error('Login failed. No access token returned.');
 
       // Fetch user profile to check if admin
-      const { data: profile } = await axios.get<{ user_type: string }>('/api/users/me', {
+      const { data: profile } = await axios.get<{ user_type: string }>(`${API_URL}/api/api/users/me`, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
 
