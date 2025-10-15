@@ -7,6 +7,8 @@ import { app } from '../../../Auth/firebaseClient';
 import '../../assets/UI/loginReg.css';
 import Logo from '../../assets/logos/LZABLKTRP.webp';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const UserLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -34,7 +36,7 @@ const UserLogin = () => {
       const token = await user.getIdToken();
 
       // Fetch user profile from backend
-      const response = await axios.get('/api/users/me', {
+      const response = await axios.get(`${API_URL}/api/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Define a type for the user profile
@@ -77,7 +79,7 @@ const UserLogin = () => {
       const token = await user.getIdToken();
 
       // Fetch user profile from backend
-      const response = await axios.get('/api/users/me', {
+      const response = await axios.get(`${API_URL}/api/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       type UserProfile = {

@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import LocalsZAIcon from '../../assets/logos/LZA ICON.png';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 // Missing items
 interface MissingItem {
   productId: string;
@@ -98,7 +100,7 @@ const UserOrders: React.FC = () => {
         const token = await user.getIdToken();
         
         // Use API endpoint
-        const response = await axios.get(`/api/orders/user/${user.uid}`, {
+        const response = await axios.get(`${API_URL}/api/api/orders/user/${user.uid}`, {
           headers: { 
             Authorization: `Bearer ${token}`
           }

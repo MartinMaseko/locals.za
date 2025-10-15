@@ -70,3 +70,5 @@ export const useCart = () => {
   if (!ctx) throw new Error('useCart must be used within CartProvider');
   return ctx;
 };
+
+// No API calls found in this context file.

@@ -8,6 +8,8 @@ import LoadingContext from '../LoadingContext';
 import LogoAnime from '../../../assets/logos/locals-svg.gif';
 import './cartstyle.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 type OrderItem = {
   productId?: string;
   qty: number;
@@ -90,8 +92,8 @@ const OrderConfirmationPage: React.FC = () => {
           if (user) {
             const token = await user.getIdToken();
             console.log("Token obtained, trying authenticated request");
-            
-            const response = await axios.get<Order>(`/api/orders/${id}`, {
+
+            const response = await axios.get<Order>(`${API_URL}/api/api/orders/${id}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -99,7 +101,7 @@ const OrderConfirmationPage: React.FC = () => {
           } else if (isFromPayFast) {
             // If coming from PayFast and no user is logged in, try a special endpoint
             console.log("No user logged in, but coming from PayFast. Trying public endpoint");
-            const response = await axios.get<Order>(`/api/orders/public/${id}`);
+            const response = await axios.get<Order>(`${API_URL}/api/api/orders/public/${id}`);
             orderData = response.data;
           } else {
             throw new Error('Authentication required');
@@ -110,7 +112,7 @@ const OrderConfirmationPage: React.FC = () => {
           // As a last resort for PayFast returns, try the public endpoint
           if (isFromPayFast) {
             console.log("Trying public endpoint as fallback");
-            const response = await axios.get<Order>(`/api/orders/public/${id}`);
+            const response = await axios.get<Order>(`${API_URL}/api/api/orders/public/${id}`);
             orderData = response.data;
           } else {
             throw authError;
@@ -134,7 +136,7 @@ const OrderConfirmationPage: React.FC = () => {
               statusUpdatedRef.current = true;
               
               const token = await user.getIdToken();
-              await axios.put(`/api/orders/${id}/status`, 
+              await axios.put(`${API_URL}/api/api/orders/${id}/status`, 
                 { 
                   status: 'pending',
                   sendConfirmation: true
@@ -155,7 +157,7 @@ const OrderConfirmationPage: React.FC = () => {
               confirmationSentRef.current = true;
               
               const token = await user.getIdToken();
-              await axios.post(`/api/orders/${id}/send-confirmation`, {}, {
+              await axios.post(`${API_URL}/api/api/orders/${id}/send-confirmation`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
               });
             } catch (err) {

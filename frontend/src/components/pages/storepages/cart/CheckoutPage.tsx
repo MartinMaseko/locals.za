@@ -8,6 +8,8 @@ import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
 import InstantEftLogo from '../../../assets/images/instantEFT.webp';
 import './cartstyle.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const SERVICE_FEE = 80;
 
 const CheckoutPage: React.FC = () => {
@@ -43,6 +45,12 @@ const CheckoutPage: React.FC = () => {
       const user = auth.currentUser;
       const token = user ? await user.getIdToken() : null;
 
+      if (!user) {
+        setError('You must be logged in to place an order.');
+        setLoading(false);
+        return;
+      }
+
       // Create order payload
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
@@ -57,7 +65,7 @@ const CheckoutPage: React.FC = () => {
       };
 
       // Step 1: Create the order in the system
-      const res = await axios.post('/api/orders', payload, {
+      const res = await axios.post(`${API_URL}/api/api/orders`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
@@ -70,7 +78,7 @@ const CheckoutPage: React.FC = () => {
       }
 
       console.log(`Order created with ID: ${orderId}`);
-      
+
       // Step 2: Initialize payment with PayFast
       type PaymentInitResponse = {
         formData?: Record<string, string | number | boolean>;
@@ -78,7 +86,7 @@ const CheckoutPage: React.FC = () => {
         fullUrl?: string;
       };
 
-      const paymentRes = await axios.post<PaymentInitResponse>(`/api/payment/process/${orderId}`, {}, {
+      const paymentRes = await axios.post<PaymentInitResponse>(`${API_URL}/api/api/payment/process/${orderId}`, {}, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       
