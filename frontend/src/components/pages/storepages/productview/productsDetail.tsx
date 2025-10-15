@@ -8,6 +8,8 @@ import ProductCard from './productsCard';
 import LogoAnime from '../../../assets/logos/locals-svg.gif';
 import LoadingContext from '../LoadingContext';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
@@ -38,18 +40,24 @@ const ProductDetailPage: React.FC = () => {
           if (!id) {
             throw new Error('Missing product id');
           }
-          
-          const { data } = await axios.get<Product>(`/api/products/${id}`);
+
+          const { data } = await axios.get<Product>(`${API_URL}/api/api/products/${id}`);
           currentProduct = data;
           setProduct(data);
         }
         
         if (currentProduct) {
           // Fetch all products to apply our enhanced recommendation algorithm
-          const { data } = await axios.get<Product[]>('/api/products');
-          
+          const response = await axios.get(`${API_URL}/api/api/products`);
+          const data = response.data;
+          // Ensure data is an array (handle object with products property)
+          const allProducts = Array.isArray(data) 
+            ? data as Product[] 
+            : (typeof data === 'object' && data !== null && 'products' in data && Array.isArray(data.products) 
+               ? data.products as Product[] 
+               : []);
           // Apply multi-factor recommendation algorithm
-          const recommendations = getEnhancedRecommendations(data, currentProduct);
+          const recommendations = getEnhancedRecommendations(allProducts, currentProduct);
           setSuggestedProducts(recommendations);
         }
       } catch (err: any) {

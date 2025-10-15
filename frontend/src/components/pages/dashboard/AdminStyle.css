@@ -213,6 +213,10 @@
   max-width: 150px;
 }
 
+.form-group label {
+  color: #212529;
+}
+
 /* Dashboard overview */
 .dashboard-overview {
   width: 100%;
@@ -610,6 +614,12 @@
 
 .order-filter select {
   font-family: inherit;
+}
+
+.product-edit-form .form-group label,
+.product-edit-form .form-group input,
+.product-edit-form .form-group textarea {
+  color: #333;
 }
 
 /* Target the filter container */

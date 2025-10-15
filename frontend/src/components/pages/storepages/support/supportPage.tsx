@@ -3,6 +3,8 @@ import type { FormEvent } from 'react';
 import './supportStyle.css';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const SupportPage: React.FC = () => {
   // State to track which FAQ sections are expanded
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -37,7 +39,7 @@ const SupportPage: React.FC = () => {
     
     try {
       // Send email to admin
-      await axios.post('/api/support/contact', {
+      await axios.post(`${API_URL}/api/api/support/contact`, {
         name,
         whatsapp,
         orderNo: orderNo || 'Not provided',

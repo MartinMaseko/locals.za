@@ -7,11 +7,18 @@
   padding: 0;
   box-sizing: border-box;
   align-items: stretch;
+  max-width: 100vw;
 }
 
 .user-welcome-text {
+  display: flex;
+  flex-wrap: wrap;
   text-align: center;
   color: #FFB803;
+  padding: 0.5rem;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .homepage-appbanner{

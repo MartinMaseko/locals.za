@@ -3,6 +3,8 @@ import { openWazeNavigation, convertAddressesToCoordinates } from '../../../util
 import './driverStyles.css';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 interface Delivery {
   orderId: string;  
@@ -63,7 +65,7 @@ const RouteOptimizer: React.FC = () => {
       setIsLoading(true);
       try {
         // Try the basic deliveries endpoint first - more likely to work without special indexes
-        const basicResponse = await fetch('/api/drivers/me/deliveries', {
+        const basicResponse = await fetch(`${API_URL}/api/api/drivers/me/deliveries`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -102,7 +104,7 @@ const RouteOptimizer: React.FC = () => {
     
     const fetchDeliveriesWithCoordinates = async () => {
       try {
-        const response = await fetch('/api/drivers/me/deliveries/coordinates', {
+        const response = await fetch(`${API_URL}/api/api/drivers/me/deliveries/coordinates`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

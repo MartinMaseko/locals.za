@@ -27,7 +27,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // Create separate chunks for large dependencies
             if (id.includes('firebase')) {
               return 'firebase-vendor'
             }
@@ -42,12 +41,12 @@ export default defineConfig({
     headers: {
       'Content-Security-Policy': `
         default-src 'self';
-        img-src 'self' data: https:;
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
+        img-src 'self' data: https: blob:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com;
-        frame-src 'self' https://www.googletagmanager.com;
+        font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;
+        connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://europe-west4-localsza.cloudfunctions.net https://firebasestorage.googleapis.com;
+        frame-src 'self' https://www.googletagmanager.com https://apis.google.com https://localsza.firebaseapp.com;
       `.replace(/\s+/g, ' ').trim()
     }
   }
