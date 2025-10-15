@@ -127,7 +127,7 @@ const sendOrderStatusMessage = async (userId, orderId, status) => {
     case 'cancelled':
       statusTitle = `Your Order #${shortOrderId} has been Cancelled`;
       statusMessage = `Your order has been cancelled. If you have any questions, please contact our support team.`;
-      statusImage = "https://img.icons8.com/ios-filled/50/ffb803/cancel.png";
+      statusImage = "https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/cancelled.jpg?alt=media&token=77c58dcf-5cb4-4300-94d7-9e427bd6a70c";
       break;
     default:
       statusTitle = `Order #${shortOrderId} Status Update`;

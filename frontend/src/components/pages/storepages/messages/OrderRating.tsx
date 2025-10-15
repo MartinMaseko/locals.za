@@ -4,6 +4,8 @@ import { getAuth } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
 import './msgStyle.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface OrderRatingProps {
   orderId: string;
   onRatingSubmit?: (rating: number, comment: string) => void;
@@ -35,8 +37,8 @@ const OrderRating: React.FC<OrderRatingProps> = ({ orderId, onRatingSubmit }) =>
           rating?: number;
           ratingComment?: string;
         }
-        
-        const { data } = await axios.get<OrderData>(`/api/orders/${orderId}`, {
+
+        const { data } = await axios.get<OrderData>(`${API_URL}/api/api/orders/${orderId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -72,8 +74,8 @@ const OrderRating: React.FC<OrderRatingProps> = ({ orderId, onRatingSubmit }) =>
       }
       
       const token = await user.getIdToken();
-      
-      await axios.post(`/api/orders/${orderId}/rate`, {
+
+      await axios.post(`${API_URL}/api/api/orders/${orderId}/rate`, {
         rating: rating,
         comment: comment
       }, {
