@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './driverStyles.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Order {
   id: string;
   status: string;
@@ -100,7 +102,7 @@ const DriverRevenue = () => {
         throw new Error('Authentication required');
       }
       
-      const response = await axios.get('/api/drivers/info', {
+      const response = await axios.get(`${API_URL}/api/api/drivers/info`, {
         params: { driver_id: driverId },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -139,7 +141,7 @@ const DriverRevenue = () => {
         throw new Error('Authentication required');
       }
       
-      const response = await axios.get('/api/orders', {
+      const response = await axios.get(`${API_URL}/api/api/orders`, {
         params: { driver_id: driverId, include_cashout_status: true },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -187,8 +189,8 @@ const DriverRevenue = () => {
       
       // Calculate total amount
       const amount = pendingOrders.length * 40;
-      
-      await axios.post('/api/drivers/cashout', {
+
+      await axios.post(`${API_URL}/api/api/drivers/cashout`, {
         orderIds,
         amount,
         driverName: driver?.name || 'Driver',

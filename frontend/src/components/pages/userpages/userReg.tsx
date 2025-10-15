@@ -6,6 +6,8 @@ import '../../assets/UI/loginReg.css';
 import Logo from '../../assets/logos/LZABLKTRP.webp';
 import LogoAnime from '../../assets/logos/locals-svg.gif';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const UserRegistration = () => {
   const [form, setForm] = useState({ email: '', password: '', full_name: '', phone_number: '' });
   const [error, setError] = useState('');
@@ -26,7 +28,7 @@ const UserRegistration = () => {
       const user = userCredential.user;
       const token = await user.getIdToken();
 
-      await axios.post('/api/users/register', {
+      await axios.post(`${API_URL}/api/api/users/register`, {
         full_name: form.full_name,
         phone_number: form.phone_number,
         user_type: 'customer',
@@ -54,7 +56,7 @@ const UserRegistration = () => {
       const user = result.user;
       const token = await user.getIdToken();
 
-      await axios.post('/api/users/register', {
+      await axios.post(`${API_URL}/api/api/users/register`, {
         full_name: user.displayName || '',
         phone_number: '', 
         user_type: 'customer',

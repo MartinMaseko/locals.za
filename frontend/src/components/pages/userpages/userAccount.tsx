@@ -9,6 +9,8 @@ import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
 import { Link } from 'react-router-dom';
 import LocalsZAIcon from '../../assets/logos/LZA ICON.png';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface UserProfile {
   full_name: string;
   phone_number: string;
@@ -68,7 +70,7 @@ const UserAccount = () => {
       // Force a fresh token
       const token = await user.getIdToken(true);
 
-      const { data } = await axios.get<UserProfile>('/api/users/me', {
+      const { data } = await axios.get<UserProfile>(`${API_URL}/api/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -172,7 +174,7 @@ const UserAccount = () => {
 
       // Update the profile directly
       await axios.put(
-        '/api/users/me',
+        `${API_URL}/api/api/users/me`,
         {
           full_name: profile.full_name,
           phone_number: profile.phone_number,

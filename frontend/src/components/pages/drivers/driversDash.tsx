@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './driverStyles.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Order {
   id: string;
   status: string;
@@ -108,7 +110,7 @@ const DriversDash = () => {
         throw new Error('Authentication required');
       }
       
-      const response = await axios.get('/api/orders', {
+      const response = await axios.get(`${API_URL}/api/api/orders`, {
         params: { driver_id: driverId },
         headers: { Authorization: `Bearer ${token}` }
       });

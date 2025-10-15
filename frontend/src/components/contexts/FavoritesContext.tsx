@@ -60,3 +60,5 @@ export const useFavorites = (): FavoritesContextType => {
   if (!ctx) throw new Error('useFavorites must be used within FavoritesProvider');
   return ctx;
 };
+
+// No API calls found in this context file.

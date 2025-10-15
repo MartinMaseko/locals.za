@@ -856,4 +856,17 @@ function calculateAverageRating(ratings) {
   return sum / ratings.length;
 }
 
+// Public: Get Order by ID (no authentication, for PayFast return)
+router.get('/public/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const doc = await admin.firestore().collection('orders').doc(id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Order not found" });
+    const orderData = { id: doc.id, ...doc.data() };
+    res.json(orderData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

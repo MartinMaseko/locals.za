@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext, useRef, useLayoutEffect } from 'react'; // Add useRef here
+import { useEffect, useState, useContext, useRef, useLayoutEffect } from 'react';
 import LoadingContext from './LoadingContext';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
@@ -19,6 +19,8 @@ import shampoosCleansers from '../../assets/images/Shampoo.webp';
 import SnacksConfectionery from '../../assets/images/Snacks.webp';
 import ConditionersTreatments from '../../assets/images/ConditionerTreatments.webp';
 import { useLocation } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
@@ -82,7 +84,7 @@ const HomePage = () => {
       if (user) {
         const token = await user.getIdToken();
         try {
-          const { data } = await axios.get('/api/users/me', {
+          const { data } = await axios.get(`${API_URL}/api/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const userData = data as { full_name?: string; email?: string };
@@ -101,7 +103,7 @@ const HomePage = () => {
     const fetchProducts = async () => {
       setProductsLoading(true);
       try {
-        const { data } = await axios.get('/api/products');
+        const { data } = await axios.get(`${API_URL}/api/api/products`);
         setProducts(data as any[]);
       } catch {
         setProducts([]);
@@ -112,7 +114,7 @@ const HomePage = () => {
   }, []);
 
   // filter products by search and selectedCategory
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = (Array.isArray(products) ? products : []).filter(p => {
     const nameMatch = (p.name || '').toLowerCase().includes(search.toLowerCase());
     const categoryMatch = (p.category || '').toLowerCase().includes(search.toLowerCase());
     const searchMatch = search ? (nameMatch || categoryMatch) : true;
@@ -165,7 +167,7 @@ const HomePage = () => {
     setRequestStatus(null);
     
     try {
-      await axios.post('/api/product-requests', {
+      await axios.post(`${API_URL}/api/api/product-requests`, {
         productName: productRequest,
         email: name.includes('@') ? name : undefined, // Use email if available
         timestamp: new Date().toISOString(),
