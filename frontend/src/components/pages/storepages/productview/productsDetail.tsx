@@ -27,6 +27,16 @@ const ProductDetailPage: React.FC = () => {
     return () => setGlobalLoading(false);
   }, [loading, setGlobalLoading]);
 
+  // Ensure the page is scrolled to top when entering the product detail
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    } catch (e) {
+      // fallback
+      window.scrollTo(0, 0);
+    }
+  }, [product]);
+  
   useEffect(() => {
     const fetchProductAndSuggestions = async () => {
       setLoading(true);
