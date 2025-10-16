@@ -37,6 +37,7 @@
 .app-form input:focus {
     outline: none;
     box-shadow: 0 0 5px #6b6b6b;
+    color: #212529;
 }
 
 .app-btn,
