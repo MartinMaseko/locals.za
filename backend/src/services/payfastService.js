@@ -16,11 +16,9 @@ class PayfastService {
       merchantId: process.env.PAYFAST_MERCHANT_ID,
       merchantKey: process.env.PAYFAST_MERCHANT_KEY,
       passphrase: process.env.PAYFAST_PASSPHRASE || '',
-      // Prefer Netlify frontend URLs fall back to environment variables are not set
-      returnUrl: 'https://locals-za.netlify.app/order-confirmation' || process.env.PAYFAST_RETURN_URL,
-      cancelUrl: 'https://locals-za.netlify.app/payment-cancelled' || process.env.PAYFAST_CANCEL_URL,
-      // notifyUrl should point to your backend endpoint for ITN processing (Cloud Function)
-      notifyUrl: 'https://europe-west4-localsza.cloudfunctions.net/api/api/payment/notify' || process.env.PAYFAST_NOTIFY_URL,
+      returnUrl: process.env.PAYFAST_RETURN_URL,
+      cancelUrl: process.env.PAYFAST_CANCEL_URL,
+      notifyUrl: process.env.PAYFAST_NOTIFY_URL,
       testMode: process.env.PAYFAST_TEST_MODE === 'true',
       
       // URLs for sandbox and production environments
