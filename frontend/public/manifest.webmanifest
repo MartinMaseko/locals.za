@@ -1,7 +1,8 @@
 {
   "name": "LocalsZA",
   "short_name": "LocalsZA",
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f8f9fa",
   "theme_color": "#ffb803",
