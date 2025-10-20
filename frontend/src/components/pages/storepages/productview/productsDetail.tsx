@@ -43,30 +43,33 @@ const ProductDetailPage: React.FC = () => {
       setError('');
       
       try {
-        // If we don't have the product from navigation state, fetch it
+        // Determine whether we need to fetch a new product for the current id.
+        // If the existing `product` state is missing or doesn't match the route id,
+        // try to use location.state first (fast) then fall back to the API.
         let currentProduct = product;
-        
-        if (!currentProduct) {
-          if (!id) {
-            throw new Error('Missing product id');
-          }
 
-          const { data } = await axios.get<Product>(`${API_URL}/api/api/products/${id}`);
-          currentProduct = data;
-          setProduct(data);
+        if (!currentProduct || currentProduct.id !== id) {
+          if (location.state?.product && location.state.product.id === id) {
+            currentProduct = location.state.product as Product;
+            setProduct(currentProduct);
+          } else {
+            if (!id) throw new Error('Missing product id');
+            const { data } = await axios.get<Product>(`${API_URL}/api/api/products/${id}`);
+            currentProduct = data;
+            setProduct(data);
+          }
         }
-        
+
         if (currentProduct) {
           // Fetch all products to apply our enhanced recommendation algorithm
           const response = await axios.get(`${API_URL}/api/api/products`);
           const data = response.data;
-          // Ensure data is an array (handle object with products property)
-          const allProducts = Array.isArray(data) 
-            ? data as Product[] 
-            : (typeof data === 'object' && data !== null && 'products' in data && Array.isArray(data.products) 
-               ? data.products as Product[] 
+          const allProducts = Array.isArray(data)
+            ? data as Product[]
+            : (typeof data === 'object' && data !== null && 'products' in data && Array.isArray(data.products)
+               ? data.products as Product[]
                : []);
-          // Apply multi-factor recommendation algorithm
+
           const recommendations = getEnhancedRecommendations(allProducts, currentProduct);
           setSuggestedProducts(recommendations);
         }
@@ -79,7 +82,7 @@ const ProductDetailPage: React.FC = () => {
     };
     
     fetchProductAndSuggestions();
-  }, [id, product]);
+  }, [id, location.state]);
   
   /**
    * Enhanced recommendation algorithm that uses multiple factors:
@@ -230,12 +233,21 @@ const ProductDetailPage: React.FC = () => {
         <div className="suggested-products-section">
           <h2>You might also like</h2>
           <div className="suggested-products-grid">
-            {suggestedProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+            {suggestedProducts.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onClick={(prod) => {
+                  // Navigate to the selected suggested product and pass product in state
+                  navigate(`/product/${prod.id}`, { state: { product: prod } });
+                  // Ensure top of page
+                  try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0,0); }
+                }}
+              />
             ))}
-          </div>
-        </div>
-      )}
+           </div>
+         </div>
+       )}
     </div>
   );
 };
