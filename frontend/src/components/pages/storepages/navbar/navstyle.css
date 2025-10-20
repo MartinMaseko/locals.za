@@ -1,11 +1,12 @@
 /* NavBar styles */
 .navbar {
   width: 100vw;
-  height: fit-content;
+  height: 75px;
   background: #454E50;
   position: sticky;
+  padding: 0.5rem 0;
   top: 0;
-  z-index: 10;
+  z-index: 100;
 }
 .navbar-content {
   display: flex;
