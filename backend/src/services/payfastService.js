@@ -99,24 +99,33 @@ class PayfastService {
       if (this.config.testMode) {
         data.testing = 'true';
       }
-      
-      console.log('PayFast request data (before signature):', JSON.stringify(data));
-      
-      // Generate signature using PayFast's algorithm
-      const signature = this.generateSignature(data);
-      data.signature = signature;
-      console.log('Generated signature:', signature);
-      
+
+      // --- NORMALIZE/TRIM ALL VALUES BEFORE SIGNING ---
+      const normalized = {};
+      Object.keys(data).sort().forEach((key) => {
+        const v = data[key];
+        if (typeof v === 'string') {
+          // trim and normalize unicode to a consistent form (NFKC)
+          normalized[key] = v.trim().normalize ? v.trim().normalize('NFKC') : v.trim();
+        } else if (v === undefined || v === null) {
+          normalized[key] = '';
+        } else {
+          normalized[key] = v;
+        }
+      });
+
+      // Generate signature using the normalized data
+      const signature = this.generateSignature(normalized);
+      normalized.signature = signature;
+
       // Determine the correct payment URL (sandbox or production)
-      const paymentUrl = this.config.testMode ? 
-        this.config.sandboxUrl : 
-        this.config.productionUrl;
-      
-      // Return the payment details
+      const paymentUrl = this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl;
+
+      // Return the payment details using the normalized object
       return {
-        formData: data,
+        formData: normalized,
         url: paymentUrl,
-        fullUrl: this.buildFullUrl(paymentUrl, data)
+        fullUrl: this.buildFullUrl(paymentUrl, normalized)
       };
     } catch (error) {
       console.error('Error creating PayFast payment request:', error);
@@ -173,9 +182,9 @@ class PayfastService {
    * @returns {String} Full URL with query string
    */
   buildFullUrl(baseUrl, data) {
-    // Use RFC1738-style encoding (spaces -> +) to match signature encoding
     const encodeRFC1738 = (v) => encodeURIComponent(String(v)).replace(/%20/g, '+');
     const queryString = Object.keys(data)
+      .sort()
       .map(key => `${encodeRFC1738(key)}=${encodeRFC1738(data[key] === undefined || data[key] === null ? '' : data[key])}`)
       .join('&');
     
