@@ -95,17 +95,17 @@ class PayfastService {
         data.custom_str3 = orderData.deliveryAddress.addressLine;
       }
       
+      // Add test mode flag if in sandbox mode - must be present BEFORE signature generation
+      if (this.config.testMode) {
+        data.testing = 'true';
+      }
+      
       console.log('PayFast request data (before signature):', JSON.stringify(data));
       
       // Generate signature using PayFast's algorithm
       const signature = this.generateSignature(data);
       data.signature = signature;
       console.log('Generated signature:', signature);
-      
-      // Add test mode flag if in sandbox mode
-      if (this.config.testMode) {
-        data.testing = 'true';
-      }
       
       // Determine the correct payment URL (sandbox or production)
       const paymentUrl = this.config.testMode ? 
@@ -173,8 +173,10 @@ class PayfastService {
    * @returns {String} Full URL with query string
    */
   buildFullUrl(baseUrl, data) {
+    // Use RFC1738-style encoding (spaces -> +) to match signature encoding
+    const encodeRFC1738 = (v) => encodeURIComponent(String(v)).replace(/%20/g, '+');
     const queryString = Object.keys(data)
-      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+      .map(key => `${encodeRFC1738(key)}=${encodeRFC1738(data[key] === undefined || data[key] === null ? '' : data[key])}`)
       .join('&');
     
     return `${baseUrl}?${queryString}`;
