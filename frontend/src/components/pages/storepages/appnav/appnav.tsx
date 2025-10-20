@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useCart } from '../../../contexts/CartContext';
 import './appnavstyle.css';
 
 const AppNav = () => {
+  const { cart } = useCart();
+  const itemCount = Array.isArray(cart) ? cart.reduce((acc, it) => acc + (it.qty || 0), 0) : 0;
 
   return (
     <nav className="appnav-bar">
@@ -20,7 +23,10 @@ const AppNav = () => {
       </Link>
       <Link to="/cart" className="appnav-icon" title="Cart">
         <img className='appnav-icons' src="https://img.icons8.com/ios-glyphs/40/ffb803/lift-cart-here.png" alt="cart"/>
-        <span>Cart</span>
+        <span>
+          Cart 
+          <span className="cart-item-count"> {itemCount}</span>
+        </span>
       </Link>
     </nav>
   );
