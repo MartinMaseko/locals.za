@@ -37,6 +37,10 @@
     height: 40px;
 }
 
+.cart-item-count {
+  color: #FFB803;
+}
+
 /* Desktop (large screens) - vertical left column */
 @media (min-width: 992px) {
   .appnav-bar {
