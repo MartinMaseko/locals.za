@@ -22,6 +22,12 @@ const CheckoutPage: React.FC = () => {
   const [postal, setPostal] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Field-level errors for inline feedback
+  const [nameError, setNameError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [addressError, setAddressError] = useState('');
+  const [cityError, setCityError] = useState('');
+  const [postalError, setPostalError] = useState('');
   
   // Create a ref for PayFast form
   const payfastFormRef = useRef<HTMLFormElement>(null);
@@ -32,9 +38,46 @@ const CheckoutPage: React.FC = () => {
   }, 0);
   const total = subtotal + SERVICE_FEE;
 
+  // Validate and normalize fields. Returns cleaned values and valid flag.
+  const validateFields = () => {
+    // helper
+    const normalize = (v: any) => {
+      if (v === undefined || v === null) return '';
+      let s = typeof v === 'string' ? v : String(v);
+      s = s.replace(/\u00A0/g, ' ');
+      s = s.trim();
+      try { if (typeof (s as any).normalize === 'function') s = (s as any).normalize('NFKC'); } catch (e) {}
+      s = s.replace(/\s+/g, ' ');
+      return s;
+    };
+
+    // Clear previous field errors
+    setNameError(''); setPhoneError(''); setAddressError(''); setCityError(''); setPostalError(''); setError('');
+
+    const cleanName = normalize(name);
+    const cleanPhoneRaw = normalize(phone);
+    const cleanPhone = (cleanPhoneRaw.startsWith('+') ? '+' : '') + cleanPhoneRaw.replace(/[^\d]/g, '');
+    const cleanAddress = normalize(addressLine);
+    const cleanCity = normalize(city);
+    const cleanPostal = normalize(postal);
+
+    let ok = true;
+    if (!cleanName || cleanName.length < 2) { setNameError('Please enter your full name (at least 2 characters)'); ok = false; }
+    if (!cleanPhone || !/^\+?\d{7,15}$/.test(cleanPhone)) { setPhoneError('Please enter a valid phone number (digits only, optional +)'); ok = false; }
+    if (!cleanAddress || cleanAddress.length < 5) { setAddressError('Please enter a valid delivery address'); ok = false; }
+    // optional checks for city/postal (if provided)
+    if (cleanCity && cleanCity.length < 2) { setCityError('City value is too short'); ok = false; }
+    if (cleanPostal && cleanPostal.length < 2) { setPostalError('Postal code looks invalid'); ok = false; }
+
+    return { valid: ok, cleanName, cleanPhone, cleanAddress, cleanCity, cleanPostal };
+  };
+
   const placeOrder = async () => {
     if (!cart.length) return setError('Cart is empty');
-    if (!name || !phone || !addressLine) return setError('Please complete delivery and contact details');
+
+    // Validate fields and get cleaned values
+    const validated = validateFields();
+    if (!validated.valid) return;
 
     setLoading(true);
     setError('');
@@ -51,13 +94,13 @@ const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // Create order payload
+      // Create order payload using cleaned values from validation
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
         subtotal,
         serviceFee: SERVICE_FEE,
         total,
-        deliveryAddress: { name, phone, addressLine, city, postal },
+        deliveryAddress: { name: validated.cleanName, phone: validated.cleanPhone, addressLine: validated.cleanAddress, city: validated.cleanCity, postal: validated.cleanPostal },
         status: 'pending_payment',
         createdAt: new Date().toISOString(),
         userId: user?.uid || 'guest',
@@ -116,6 +159,9 @@ const CheckoutPage: React.FC = () => {
             payfastFormRef.current?.appendChild(input);
           });
           
+          // Optional: log formData briefly for debugging (remove after verification)
+          // console.log('Submitting PayFast form data:', formData);
+
           // Submit the form
           payfastFormRef.current.submit();
         } else {
@@ -164,23 +210,52 @@ const CheckoutPage: React.FC = () => {
         <label>
           Full name
         </label>
-          <input value={name} onChange={e => setName(e.target.value)} />
-        <label>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            aria-invalid={!!nameError}
+            required
+            maxLength={100}
+            pattern={"[\\p{L} '\\-\\.]{2,100}"}
+            title="Enter your full name (letters, spaces, - ' . allowed)"
+          />
+        {nameError && <div className="field-error">{nameError}</div>}
+         <label>
           Phone
         </label>
-          <input value={phone} onChange={e => setPhone(e.target.value)} />
-        <label>
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            aria-invalid={!!phoneError}
+            required
+            inputMode="tel"
+            maxLength={20}
+            pattern="[+0-9 ()-]{7,20}"
+            title="Enter a valid phone number"
+          />
+        {phoneError && <div className="field-error">{phoneError}</div>}
+         <label>
           Address
         </label>
-          <input value={addressLine} onChange={e => setAddressLine(e.target.value)} />
-        <label>
+          <input
+            value={addressLine}
+            onChange={e => setAddressLine(e.target.value)}
+            aria-invalid={!!addressError}
+            required
+            maxLength={200}
+            title="Enter delivery address"
+          />
+        {addressError && <div className="field-error">{addressError}</div>}
+         <label>
           City
         </label>
-          <input value={city} onChange={e => setCity(e.target.value)} />
-        <label>
+          <input value={city} onChange={e => setCity(e.target.value)} maxLength={100} aria-invalid={!!cityError} />
+        {cityError && <div className="field-error">{cityError}</div>}
+         <label>
           Postal code
         </label>
-          <input value={postal} onChange={e => setPostal(e.target.value)} />
+          <input value={postal} onChange={e => setPostal(e.target.value)} maxLength={20} aria-invalid={!!postalError} />
+        {postalError && <div className="field-error">{postalError}</div>}
 
         <div className="payfast-information">
           <div className="payfast-logos">
