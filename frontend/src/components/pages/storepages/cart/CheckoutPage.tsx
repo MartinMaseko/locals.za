@@ -34,7 +34,33 @@ const CheckoutPage: React.FC = () => {
 
   const placeOrder = async () => {
     if (!cart.length) return setError('Cart is empty');
-    if (!name || !phone || !addressLine) return setError('Please complete delivery and contact details');
+
+    // Client-side normalization helper (trim + NFKC + collapse spaces)
+    const normalize = (v: any) => {
+      if (v === undefined || v === null) return '';
+      let s = typeof v === 'string' ? v : String(v);
+      s = s.replace(/\u00A0/g, ' '); // replace non-breaking spaces
+      s = s.trim();
+      try {
+        if (typeof (s as any).normalize === 'function') s = (s as any).normalize('NFKC');
+      } catch (e) { /* ignore */ }
+      s = s.replace(/\s+/g, ' ');
+      return s;
+    };
+
+    // Clean inputs
+    const cleanName = normalize(name);
+    const cleanPhoneRaw = normalize(phone);
+    // Keep only digits and leading + sign for phone
+    const cleanPhone = (cleanPhoneRaw.startsWith('+') ? '+' : '') + cleanPhoneRaw.replace(/[^\d]/g, '');
+    const cleanAddress = normalize(addressLine);
+    const cleanCity = normalize(city);
+    const cleanPostal = normalize(postal);
+
+    // Basic client-side validation
+    if (!cleanName || cleanName.length < 2) return setError('Please enter a valid full name');
+    if (!cleanPhone || !/^\+?\d{7,15}$/.test(cleanPhone)) return setError('Please enter a valid phone number');
+    if (!cleanAddress || cleanAddress.length < 5) return setError('Please enter a valid address');
 
     setLoading(true);
     setError('');
@@ -51,13 +77,13 @@ const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // Create order payload
+      // Create order payload using cleaned values
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
         subtotal,
         serviceFee: SERVICE_FEE,
         total,
-        deliveryAddress: { name, phone, addressLine, city, postal },
+        deliveryAddress: { name: cleanName, phone: cleanPhone, addressLine: cleanAddress, city: cleanCity, postal: cleanPostal },
         status: 'pending_payment',
         createdAt: new Date().toISOString(),
         userId: user?.uid || 'guest',
@@ -116,6 +142,9 @@ const CheckoutPage: React.FC = () => {
             payfastFormRef.current?.appendChild(input);
           });
           
+          // Optional: log formData briefly for debugging (remove after verification)
+          // console.log('Submitting PayFast form data:', formData);
+
           // Submit the form
           payfastFormRef.current.submit();
         } else {
@@ -164,23 +193,44 @@ const CheckoutPage: React.FC = () => {
         <label>
           Full name
         </label>
-          <input value={name} onChange={e => setName(e.target.value)} />
-        <label>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            maxLength={100}
+            pattern={"[\\p{L} '\\-\\.]{2,100}"}
+            title="Enter your full name (letters, spaces, - ' . allowed)"
+          />
+         <label>
           Phone
         </label>
-          <input value={phone} onChange={e => setPhone(e.target.value)} />
-        <label>
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            required
+            inputMode="tel"
+            maxLength={20}
+            pattern="[+0-9 ()-]{7,20}"
+            title="Enter a valid phone number"
+          />
+         <label>
           Address
         </label>
-          <input value={addressLine} onChange={e => setAddressLine(e.target.value)} />
-        <label>
+          <input
+            value={addressLine}
+            onChange={e => setAddressLine(e.target.value)}
+            required
+            maxLength={200}
+            title="Enter delivery address"
+          />
+         <label>
           City
         </label>
-          <input value={city} onChange={e => setCity(e.target.value)} />
-        <label>
+          <input value={city} onChange={e => setCity(e.target.value)} maxLength={100} />
+         <label>
           Postal code
         </label>
-          <input value={postal} onChange={e => setPostal(e.target.value)} />
+          <input value={postal} onChange={e => setPostal(e.target.value)} maxLength={20} />
 
         <div className="payfast-information">
           <div className="payfast-logos">
