@@ -25,7 +25,7 @@
 /* Category Grid */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
   gap: 1.25rem;
   margin-bottom: 2.5rem;
   padding: 0 0.5rem;
@@ -53,8 +53,8 @@
 }
 
 .category-icon {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -72,8 +72,8 @@
 }
 
 .allCategoriesIcon {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
 }
 
 .category-icon.all-categories {
@@ -84,10 +84,11 @@
 }
 
 .category-name {
-  font-size: 0.9rem;
+  font-size: 0.65rem;
   text-align: center;
   color: #fff;
   font-weight: 500;
+  padding: 0.5rem;
 }
 
 .category-card.selected .category-name {
