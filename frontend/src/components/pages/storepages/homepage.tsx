@@ -355,13 +355,41 @@ const HomePage = () => {
               {Object.keys(groupedProducts).map(category => (
                 <section key={category} className="products-category-group">
                   <h4 className="products-category-title">{category}</h4>
-                  <ul className='products-list'>
-                    {groupedProducts[category].map(product => (
-                      <li key={product.id} className='products-list-item'>
-                        <ProductCard product={product} />
-                      </li>
-                    ))}
-                  </ul>
+
+                  {/* Group products by brand within this category */}
+                  {(() => {
+                    const productsInCategory = groupedProducts[category] || [];
+                    const brandGroups: Record<string, any[]> = {};
+
+                    productsInCategory.forEach((p: any) => {
+                      const brand = (p.brand && p.brand.trim()) || 'Other';
+                      if (!brandGroups[brand]) brandGroups[brand] = [];
+                      brandGroups[brand].push(p);
+                    });
+
+                    // Sort brand names alphabetically (case-insensitive)
+                    const sortedBrands = Object.keys(brandGroups).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+                    return (
+                      <div className="category-brands">
+                        {sortedBrands.map(brand => {
+                          const productsForBrand = brandGroups[brand].slice().sort((x, y) => (x.name || '').toLowerCase().localeCompare((y.name || '').toLowerCase()));
+                          return (
+                            <div key={brand} className="brand-group">
+                              <h5 className="brand-title">{brand}</h5>
+                              <ul className='products-list'>
+                                {productsForBrand.map((product: any) => (
+                                  <li key={product.id} className='products-list-item'>
+                                    <ProductCard product={product} />
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </section>
               ))}
             </>

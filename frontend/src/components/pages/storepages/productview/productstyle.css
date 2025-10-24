@@ -57,15 +57,27 @@
     justify-content: center;
     gap: 0.25rem;
 }
-.product-card-name {
+
+.products-category-title {
   font-size: 1rem;
+}
+
+.product-card-name {
+  font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
 }
 .product-card-price {
-  font-size: 0.95rem;
+  font-size: 1.25rem;
   color: #FFB803;
   font-weight: 700;
+}
+
+.brand-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #FFB803;
+  margin-bottom: 1rem;
 }
 
 

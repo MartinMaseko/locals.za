@@ -15,7 +15,6 @@
   justify-content: center;
   text-align: center;
   color: #FFB803;
-  padding: 1rem;
   max-width: 100%;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -31,16 +30,16 @@
 /* Category Suggestion*/
 .categories-suggestions {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
   align-items: flex-start;
   justify-content: center;
-  margin-top: 1rem;
+  padding: 1rem;
 }
 
 .category-image {
-  width: 150px;
-  height: 150px;
+  width: 75px;
+  height: 75px;
 }
 
 .suggestion-icon {
@@ -54,6 +53,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  font-size: 0.75rem;
 }
 
 /* PRODUCTS AREA STYLING */
