@@ -343,8 +343,6 @@ const HomePage = () => {
 
         {/* Add ref to the products section */}
         <div className='products-section' ref={productsSectionRef}>
-          <h2 className="products-section-title">{ selectedCategory || 'Browse Products' }</h2>
-
           {/* Rest of your products section remains unchanged */}
           {productsLoading ? (
             <div>Loading products...</div>
