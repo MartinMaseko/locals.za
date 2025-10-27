@@ -180,9 +180,9 @@ const ProductDetailPage: React.FC = () => {
         <div className="product-detail-info">
           <h1 className="product-modal-title">{product.name}</h1>
           <p className="product-modal-price">R {product.price}</p>
-          {product.brand && <p><strong>Brand:</strong> {product.brand}</p>}
-          {product.category && <p><strong>Category:</strong> {product.category}</p>}
-          {product.description && <p className="product-modal-desc">{product.description}</p>}
+          {product.brand && <p className='product-modal-subtext'><strong>Brand:</strong> {product.brand}</p>}
+          {product.category && <p className='product-modal-subtext'><strong>Category:</strong> {product.category}</p>}
+          {product.description && <p className='product-modal-description'>{product.description}</p>}
 
           {/* Add / Remove cart controls */}
           <div className="product-detail-actions">
