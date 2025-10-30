@@ -64,7 +64,7 @@ const ProductCard: React.FC<Props> = ({ product, onClick }) => {
           )}
         </button>
         <div className="product-card-name">{product.name}</div>
-        <div className="product-card-price">R {product.price}</div>
+        <div className="product-card-price">R {Number(product.price || 0).toFixed(2)}</div>
       </div>
     </div>
   );

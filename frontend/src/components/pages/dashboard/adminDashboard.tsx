@@ -23,8 +23,16 @@ const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
   'Groceries & Pantry',
+  'Spices & Seasoning',
+  'Canned Foods',
+  'Sugar',
+  'Flour',
+  'Cooking Oils & Fats',
+  'Rice',
+  'Maize Meal',
   'Snacks & Confectionery',
   'Household Cleaning & Goods',
+  'Laundry Supplies',
   'Personal Care',
 
   // Hair Care & Cosmetics Categories
