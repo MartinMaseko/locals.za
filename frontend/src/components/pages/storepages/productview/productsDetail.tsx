@@ -16,8 +16,11 @@ const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(location.state?.product || null);
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(!product);
-  const [error, setError] = useState('');
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [relatedFilter, setRelatedFilter] = useState<{type: 'brand'|'category'|null; value: string | null}>({ type: null, value: null });
+   const [loading, setLoading] = useState(!product);
+   const [error, setError] = useState('');
   
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
   const { addToCart, removeFromCart, isInCart, getQty, increaseQty, decreaseQty } = useCart();
@@ -69,91 +72,130 @@ const ProductDetailPage: React.FC = () => {
             : (typeof data === 'object' && data !== null && 'products' in data && Array.isArray(data.products)
                ? data.products as Product[]
                : []);
++
++          // store all products to use for related/filters
++          setAllProducts(allProducts);
 
-          const recommendations = getEnhancedRecommendations(allProducts, currentProduct);
-          setSuggestedProducts(recommendations);
-        }
-      } catch (err: any) {
-        console.error('Failed to load product or suggestions:', err);
-        setError(err.message || 'Failed to load product');
-      } finally {
-        setLoading(false);
-      }
-    };
+           const recommendations = getEnhancedRecommendations(allProducts, currentProduct);
+           setSuggestedProducts(recommendations);
+         }
+       } catch (err: any) {
+         console.error('Failed to load product or suggestions:', err);
+         setError(err.message || 'Failed to load product');
+       } finally {
+         setLoading(false);
+       }
+     };
     
-    fetchProductAndSuggestions();
-  }, [id, location.state]);
+     fetchProductAndSuggestions();
+   }, [id, location.state]);
   
-  /**
-   * Enhanced recommendation algorithm that uses multiple factors:
-   * 1. Exact category match (highest priority)
-   * 2. Same brand (second priority)
-   * 3. Similar price range (third priority)
-   * 4. Product name keyword matching (additional relevance)
-   */
-  const getEnhancedRecommendations = (allProducts: Product[], currentProduct: Product): Product[] => {
-    // Remove the current product from consideration
-    const otherProducts = allProducts.filter(p => p.id !== currentProduct.id);
-    
-    // Define price range (±25% of current product price)
-    const currentPrice = parseFloat(String(currentProduct.price));
-    const minPrice = currentPrice * 0.75;
-    const maxPrice = currentPrice * 1.25;
-    
-    // Extract keywords from product name
-    const nameKeywords = (currentProduct.name ?? '')
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(word => word.length > 3) // Only consider meaningful words (longer than 3 chars)
-      .filter(word => !['with', 'and', 'for', 'the'].includes(word)); // Remove common words
-    
-    // Score and rank products
-    const scoredProducts = otherProducts.map(product => {
-      let score = 0;
-      
-      // Category match (highest weight: 10 points)
-      if (product.category === currentProduct.category) {
-        score += 10;
-      }
-      
-      // Brand match (high weight: 8 points)
-      if (product.brand && currentProduct.brand && product.brand === currentProduct.brand) {
-        score += 8;
-      }
-      
-      // Price range match (medium weight: 5 points)
-      const productPrice = parseFloat(String(product.price));
-      if (productPrice >= minPrice && productPrice <= maxPrice) {
-        score += 5;
-      }
-      
-      // Name keyword matches (1 point per matching keyword)
-      if (product.name) {
-        const productNameLower = product.name.toLowerCase();
-        nameKeywords.forEach(keyword => {
-          if (productNameLower.includes(keyword)) {
-            score += 1;
-          }
-        });
-      }
-      
-      return { product, score };
-    });
-    
-    // Sort by score (highest first)
-    scoredProducts.sort((a, b) => b.score - a.score);
-    
-    // Return top 5 products
-    return scoredProducts
-      .slice(0, 5)
-      .map(item => item.product);
-  };
+   /**
+    * Enhanced recommendation algorithm that uses multiple factors:
+    * 1. Exact category match (highest priority)
+    * 2. Same brand (second priority)
+    * 3. Similar price range (third priority)
+    * 4. Product name keyword matching (additional relevance)
+    */
+   const getEnhancedRecommendations = (allProducts: Product[], currentProduct: Product): Product[] => {
+     // Remove the current product from consideration
+     const otherProducts = allProducts.filter(p => p.id !== currentProduct.id);
+     
+     // Define price range (±25% of current product price)
+     const currentPrice = parseFloat(String(currentProduct.price));
+     const minPrice = currentPrice * 0.75;
+     const maxPrice = currentPrice * 1.25;
+     
+     // Extract keywords from product name
+     const nameKeywords = (currentProduct.name ?? '')
+       .toLowerCase()
+       .split(/\s+/)
+       .filter(word => word.length > 3) // Only consider meaningful words (longer than 3 chars)
+       .filter(word => !['with', 'and', 'for', 'the'].includes(word)); // Remove common words
+   
+     // Score and rank products
+     const scoredProducts = otherProducts.map(product => {
+       let score = 0;
+       
+       // Category match (highest weight: 10 points)
+       if (product.category === currentProduct.category) {
+         score += 10;
+       }
+       
+       // Brand match (high weight: 8 points)
+       if (product.brand && currentProduct.brand && product.brand === currentProduct.brand) {
+         score += 8;
+       }
+       
+       // Price range match (medium weight: 5 points)
+       const productPrice = parseFloat(String(product.price));
+       if (productPrice >= minPrice && productPrice <= maxPrice) {
+         score += 5;
+       }
+       
+       // Name keyword matches (1 point per matching keyword)
+       if (product.name) {
+         const productNameLower = product.name.toLowerCase();
+         nameKeywords.forEach(keyword => {
+           if (productNameLower.includes(keyword)) {
+             score += 1;
+           }
+         });
+       }
+       
+       return { product, score };
+     });
+     
+     // Sort by score (highest first)
+     scoredProducts.sort((a, b) => b.score - a.score);
+     
+     // Return top 5 products
+     return scoredProducts
+       .slice(0, 5)
+       .map(item => item.product);
+   };
 
-  // Updated back button handler with explicit scrollToTop state
-  const handleBackNavigation = () => {
-    // Pass scrollToTop state to ensure scroll position is reset
-    navigate("..", { state: { scrollToTop: true } });
-  };
+   // Updated back button handler with explicit scrollToTop state
+   const handleBackNavigation = () => {
+     // Pass scrollToTop state to ensure scroll position is reset
+     navigate("..", { state: { scrollToTop: true } });
+   };
+
+   // Ensure we have products available if handlers are called later
+   const fetchAllProducts = async (): Promise<Product[]> => {
+     if (allProducts && allProducts.length > 0) return allProducts;
+     try {
+       const resp = await axios.get(`${API_URL}/api/api/products`);
+       const data = resp.data;
+       const list = Array.isArray(data)
+         ? (data as Product[])
+         : (typeof data === 'object' && data !== null && 'products' in data && Array.isArray((data as any).products)
+            ? (data as any).products as Product[]
+            : []);
+       setAllProducts(list);
+       return list;
+     } catch (e) {
+       return [];
+     }
+   };
+
+   const showProductsByBrand = async (brand: string) => {
+     if (!brand) return;
+     const list = await fetchAllProducts();
+     const matches = list.filter(p => p.brand === brand && p.id !== product?.id);
+     setRelatedFilter({ type: 'brand', value: brand });
+     setRelatedProducts(matches);
+     const el = document.getElementById('related-products'); if (el) el.scrollIntoView({ behavior: 'smooth' });
+   };
+
+   const showProductsByCategory = async (category: string) => {
+     if (!category) return;
+     const list = await fetchAllProducts();
+     const matches = list.filter(p => p.category === category && p.id !== product?.id);
+     setRelatedFilter({ type: 'category', value: category });
+     setRelatedProducts(matches);
+     const el = document.getElementById('related-products'); if (el) el.scrollIntoView({ behavior: 'smooth' });
+   };
 
   if (loading) return (
     <div className='loading-container'>
@@ -179,9 +221,19 @@ const ProductDetailPage: React.FC = () => {
         {product.image_url && <img src={product.image_url} alt={product.name} className="product-detail-image" />}
         <div className="product-detail-info">
           <h1 className="product-modal-title">{product.name}</h1>
-          <p className="product-modal-price">R {product.price}</p>
-          {product.brand && <p className='product-modal-subtext'><strong>Brand:</strong> {product.brand}</p>}
-          {product.category && <p className='product-modal-subtext'><strong>Category:</strong> {product.category}</p>}
+          <p className="product-modal-price">R {Number(product.price || 0).toFixed(2)}</p>
+          {product.brand && (
+            <p className='product-modal-subtext'>
+              <strong>Brand:</strong>{' '}
+              <button className="link-button" onClick={() => showProductsByBrand(product.brand)}>{product.brand}</button>
+            </p>
+          )}
+          {product.category && (
+            <p className='product-modal-subtext'>
+              <strong>Category:</strong>{' '}
+              <button className="link-button" onClick={() => showProductsByCategory(product.category)}>{product.category}</button>
+            </p>
+          )}
           {product.description && <p className='product-modal-description'>{product.description}</p>}
 
           {/* Add / Remove cart controls */}
@@ -248,8 +300,29 @@ const ProductDetailPage: React.FC = () => {
            </div>
          </div>
        )}
-    </div>
-  );
-};
 
-export default ProductDetailPage;
+       {/* Related products section (brand/category) */}
+       {relatedProducts.length > 0 && (
+         <div id="related-products" className="related-products-section">
+           <h2>
+             {relatedFilter.type === 'brand' ? `More from ${relatedFilter.value}` : `More in ${relatedFilter.value}`}
+           </h2>
+           <div className="related-products-grid">
+             {relatedProducts.map(p => (
+               <ProductCard
+                 key={p.id}
+                 product={p}
+                 onClick={(prod) => {
+                   navigate(`/product/${prod.id}`, { state: { product: prod } });
+                   try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0,0); }
+                 }}
+               />
+             ))}
+           </div>
+         </div>
+       )}
+     </div>
+   );
+ };
+
+ export default ProductDetailPage;

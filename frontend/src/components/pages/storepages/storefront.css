@@ -20,11 +20,12 @@
   overflow-wrap: break-word;
 }
 
-.homepage-appbanner{
+.homepage-appbanner {
   width: 100%;
   max-height: 320px;
   object-fit: cover;
   display: block;
+  margin-bottom: 0.5rem;
 }
 
 /* Category Suggestion*/

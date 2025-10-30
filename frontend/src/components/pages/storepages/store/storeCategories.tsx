@@ -20,14 +20,33 @@ import RelaxersPermKits from '../../../assets/images/Relaxers.webp';
 import shampoosCleansers from '../../../assets/images/Shampoo.webp';
 import SnacksConfectionery from '../../../assets/images/Snacks.webp';
 import ConditionersTreatments from '../../../assets/images/ConditionerTreatments.webp';
+import SpicesSeasoning from '../../../assets/images/spices.webp';
+import CannedFoods from '../../../assets/images/canned.webp';
+import SugarImage from '../../../assets/images/sugar.webp';
+import FlourImage from '../../../assets/images/flour.webp';
+import CookingOils from '../../../assets/images/oil.webp';
+import RiceImage from '../../../assets/images/rice.webp';
+import MaizeMealImage from '../../../assets/images/maize.webp';
+import LaundrySuppliesImage from '../../../assets/images/laundry.webp';
 
 // Category definitions
 const productCategories = [
+  // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
   'Groceries & Pantry',
+  'Spices & Seasoning',
+  'Canned Foods',
+  'Sugar',
+  'Flour',
+  'Cooking Oils & Fats',
+  'Rice',
+  'Maize Meal',
   'Snacks & Confectionery',
   'Household Cleaning & Goods',
+  'Laundry Supplies',
   'Personal Care',
+
+  // Hair Care & Cosmetics Categories
   'Shampoos & Cleansers',
   'Conditioners & Treatments',
   'Relaxers & Perm Kits',
@@ -40,8 +59,16 @@ const productCategories = [
 const categoryImages: {[key: string]: string} = {
   'Beverages': Beverages,
   'Groceries & Pantry': GroceriesPantry,
+  'Spices & Seasoning': SpicesSeasoning,
+  'Canned Foods': CannedFoods,
+  'Sugar': SugarImage,
+  'Flour': FlourImage,
+  'Cooking Oils & Fats': CookingOils,
+  'Rice': RiceImage,
+  'Maize Meal': MaizeMealImage,
   'Snacks & Confectionery': SnacksConfectionery,
   'Household Cleaning & Goods': HouseholdCleaningGoods,
+  'Laundry Supplies': LaundrySuppliesImage,
   'Personal Care': PersonalCare,
   'Shampoos & Cleansers': shampoosCleansers,
   'Conditioners & Treatments': ConditionersTreatments,
@@ -55,8 +82,16 @@ const categoryImages: {[key: string]: string} = {
 const categoryDisplayNames: {[key: string]: string} = {
   'Beverages': 'Beverages',
   'Groceries & Pantry': 'Groceries',
+  'Spices & Seasoning': 'Spices',
+  'Canned Foods': 'Canned Foods',
+  'Sugar': 'Sugar',
+  'Flour': 'Flour',
+  'Cooking Oils & Fats': 'Cooking Oils',
+  'Rice': 'Rice',
+  'Maize Meal': 'Maize Meal',
   'Snacks & Confectionery': 'Snacks',
   'Household Cleaning & Goods': 'Household',
+  'Laundry Supplies': 'Laundry',
   'Personal Care': 'Personal Care',
   'Shampoos & Cleansers': 'Shampoos',
   'Conditioners & Treatments': 'Conditioners',
@@ -207,29 +242,15 @@ const StoreCategories: React.FC = () => {
         <p>Select a category to see products</p>
       </div>
 
-      {/* Category Icons Grid */}
+      {/* Categories grid (image + name) */}
       <div className="categories-grid">
-        {/* All Categories option */}
-        <div 
-          className={`category-card ${selectedCategory === '' ? 'selected' : ''}`} 
-          onClick={() => handleCategorySelect('')}
-        >
-          <div className="category-icon all-categories"></div>
-          <span className="category-name">All Categories</span>
-        </div>
-
-        {/* Category Cards */}
-        {productCategories.map(category => (
-          <div
-            key={category}
-            className={`category-card ${selectedCategory === category ? 'selected' : ''}`}
-            onClick={() => handleCategorySelect(category)}
-          >
-            <div className="category-icon">
-              <img src={categoryImages[category]} alt={category} />
-            </div>
-            <span className="category-name">{categoryDisplayNames[category] || category}</span>
-          </div>
+        {productCategories.map(cat => (
+          <button key={cat} className="category-tile" onClick={() => handleCategorySelect(cat)}>
+            {categoryImages[cat] ? (
+              <img src={categoryImages[cat]} alt={categoryDisplayNames[cat] || cat} className="category-image" />
+            ) : null}
+            <div className="category-name">{categoryDisplayNames[cat] || cat}</div>
+          </button>
         ))}
       </div>
 
