@@ -129,9 +129,17 @@
   font-weight: 700;
 }
 
-.product-modal-subtext{
+.product-modal-subtext .link-button{
   font-size: 0.875rem;
   color: #ffb803;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.product-modal-subtext .link-button:hover,
+.product-modal-subtext .link-button:focus {
+  color: #191919;
 }
 
 .product-modal-description {

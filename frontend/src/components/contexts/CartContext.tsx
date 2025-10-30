@@ -17,10 +17,38 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Normalize legacy cart shapes from localStorage into { product, qty } items
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const raw = localStorage.getItem('cart');
-      return raw ? JSON.parse(raw) : [];
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+
+      const normalized: CartItem[] = parsed
+        .map((item: any) => {
+          if (!item || typeof item !== 'object') return null;
+
+          // Already correct shape
+          if (item.product && typeof item.product === 'object') {
+            return { product: item.product as Product, qty: Number(item.qty || 1) };
+          }
+
+          // Legacy shape: { id, name, qty, price, image_url, ... }
+          if (item.id) {
+            const productObj: any = {
+              id: String(item.id),
+              name: item.name || item.product_name || '',
+              price: item.price != null ? item.price : 0,
+              image_url: item.image_url || item.image || ''
+            };
+            return { product: productObj as Product, qty: Number(item.qty || item.quantity || 1) };
+          }
+
+          return null;
+        })
+        .filter(Boolean) as CartItem[];
+
+      return normalized;
     } catch {
       return [];
     }
@@ -49,10 +77,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const decreaseQty = (id: string) =>
     setCart((prev) => prev.map((i) => (i.product.id === id ? { ...i, qty: Math.max(1, i.qty - 1) } : i)));
 
-  const isInCart = (id: string) => cart.some((i) => i.product.id === id);
+  const isInCart = (id: string) => cart.some((i) => Boolean(i && i.product && i.product.id === id));
   const getQty = (id: string) => {
-    const it = cart.find((i) => i.product.id === id);
-    return it ? it.qty : 0;
+    const it = cart.find((i) => Boolean(i && i.product && i.product.id === id));
+    return it ? (it.qty || 0) : 0;
   };
   const clearCart = () => setCart([]);
 

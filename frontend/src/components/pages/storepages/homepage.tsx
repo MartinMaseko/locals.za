@@ -8,15 +8,13 @@ import ProductCard from './productview/productsCard';
 import LogoAnime from '../../assets/logos/locals-svg.gif';
 import AppBanner from '../../assets/images/appbanner.webp';
 import Beverages from '../../assets/images/Beverages.webp';
-import GroceriesPantry from '../../assets/images/Groceries.webp';
-import HairColoring from '../../assets/images/HairColour.webp';
-import HairFoodOils from '../../assets/images/HairFood.webp';
-import HairStylingProducts from '../../assets/images/HairStyling.webp';
-import HouseholdCleaningGoods from '../../assets/images/HouseholdCleaning.webp';
-import PersonalCare from '../../assets/images/PersonalCare.webp';
+import Maize from '../../assets/images/maize.webp';
+import rice from '../../assets/images/rice.webp';
+import CannedFood from '../../assets/images/canned.webp';
+import Sugar from '../../assets/images/sugar.webp';
+import Oil from '../../assets/images/oil.webp';
 import RelaxersPermKits from '../../assets/images/Relaxers.webp';
 import shampoosCleansers from '../../assets/images/Shampoo.webp';
-import SnacksConfectionery from '../../assets/images/Snacks.webp';
 import ConditionersTreatments from '../../assets/images/ConditionerTreatments.webp';
 import { useLocation } from 'react-router-dom';
 
@@ -26,8 +24,16 @@ const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
   'Groceries & Pantry',
+  'Spices & Seasoning',
+  'Canned Foods',
+  'Sugar',
+  'Flour',
+  'Cooking Oils & Fats',
+  'Rice',
+  'Maize Meal',
   'Snacks & Confectionery',
   'Household Cleaning & Goods',
+  'Laundry Supplies',
   'Personal Care',
 
   // Hair Care & Cosmetics Categories
@@ -267,34 +273,41 @@ const HomePage = () => {
               <span className="category-label">Beverages</span>
             </div>
 
-            {/* Category Card for Groceries */}
-            <div className="category-item" onClick={() => handleCategorySelect('Groceries & Pantry')}>
+            {/* Category Card for Maize Meal */}
+            <div className="category-item" onClick={() => handleCategorySelect('Maize Meal')}>
               <div className="suggestion-icon">
-                <img className="category-image" src={GroceriesPantry} alt="Groceries & Pantry" />
+                <img className="category-image" src={Maize} alt="Maize Meal" />
               </div>
-              <span className="category-label">Groceries</span>
+              <span className="category-label">Maize Meal</span>
             </div>
 
             {/* Continue updating all other category items the same way */}
-            <div className="category-item" onClick={() => handleCategorySelect('Snacks & Confectionery')}>
+            <div className="category-item" onClick={() => handleCategorySelect('Rice')}>
               <div className="suggestion-icon">
-                <img className="category-image" src={SnacksConfectionery} alt="Snacks & Confectionery" />
+                <img className="category-image" src={rice} alt="Rice" />
               </div>
-              <span className="category-label">Snacks</span>
+              <span className="category-label">Rice</span>
             </div>
 
-            <div className="category-item" onClick={() => handleCategorySelect('Household Cleaning & Goods')}>
+            <div className="category-item" onClick={() => handleCategorySelect('Canned Foods')}>
               <div className="suggestion-icon">
-                <img className="category-image" src={HouseholdCleaningGoods} alt="Household Cleaning & Goods" />
+                <img className="category-image" src={CannedFood} alt="Canned Foods" />
               </div>
-              <span className="category-label">Household</span>
+              <span className="category-label">Canned Foods</span>
             </div>
 
-            <div className="category-item" onClick={() => handleCategorySelect('Personal Care')}>
+            <div className="category-item" onClick={() => handleCategorySelect('Sugar')}>
               <div className="suggestion-icon">
-                <img className="category-image" src={PersonalCare} alt="Personal Care" />
+                <img className="category-image" src={Sugar} alt="Sugar" />
               </div>
-              <span className="category-label">Personal Care</span>
+              <span className="category-label">Sugar</span>
+            </div>
+
+            <div className="category-item" onClick={() => handleCategorySelect('Cooking Oils & Fats')}>
+              <div className="suggestion-icon">
+                <img className="category-image" src={Oil} alt="Cooking Oils & Fats" />
+              </div>
+              <span className="category-label">Cooking Oils & Fats</span>
             </div>
 
             <div className="category-item" onClick={() => handleCategorySelect('Shampoos & Cleansers')}>
@@ -316,27 +329,6 @@ const HomePage = () => {
                 <img className="category-image" src={RelaxersPermKits} alt="Relaxers & Perm Kits" />
               </div>
               <span className="category-label">Relaxers</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Hair Styling Products')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={HairStylingProducts} alt="Hair Styling Products" />
-              </div>
-              <span className="category-label">Hair Styling</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Hair Food & Oils')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={HairFoodOils} alt="Hair Food & Oils" />
-              </div>
-              <span className="category-label">Hair Food</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Hair Coloring')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={HairColoring} alt="Hair Coloring" />
-              </div>
-              <span className="category-label">Hair Coloring</span>
             </div>
           </div>
         </div>
