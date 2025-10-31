@@ -10,7 +10,45 @@ import './cartstyle.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const SERVICE_FEE = 80;
+// Service fee rules: light vehicle categories = R60, van vehicle categories = R80
+const VAN_FEE = 80;
+const LIGHT_FEE = 60;
+
+// Categories that require van vs light
+const vanCategories = new Set([
+  'Beverages', 'Canned Foods', 'Sugar', 'Flour', 'Cooking Oils & Fats', 'Rice', 'Maize Meal'
+]);
+const lightCategories = new Set([
+  'Spices & Seasoning', 'Snacks & Confectionery', 'Household Cleaning & Goods', 'Laundry Supplies', 'Personal Care',
+  'Shampoos & Cleansers','Conditioners & Treatments','Relaxers & Perm Kits','Hair Styling Products','Hair Food & Oils','Hair Coloring'
+]);
+
+const computeServiceFee = (cartItems: { product: any; qty: number }[]) => {
+  let hasVan = false;
+  let hasLight = false;
+  for (const it of cartItems) {
+    const cat = (it.product && it.product.category) ? String(it.product.category).trim() : '';
+    if (!cat) {
+      // Unknown category — treat conservatively as van
+      hasVan = true;
+      continue;
+    }
+    if (vanCategories.has(cat)) hasVan = true;
+    else if (lightCategories.has(cat)) hasLight = true;
+    else {
+      // Unknown category name — treat as van to be safe
+      hasVan = true;
+    }
+    // If both detected we can stop early
+    if (hasVan && hasLight) break;
+  }
+
+  if (hasVan && hasLight) return { fee: VAN_FEE, type: 'Mixed' };
+  if (hasVan) return { fee: VAN_FEE, type: 'Heavy' };
+  if (hasLight) return { fee: LIGHT_FEE, type: 'Light' };
+  // Default
+  return { fee: VAN_FEE, type: 'Van' };
+};
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +74,8 @@ const CheckoutPage: React.FC = () => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
     return s + (isNaN(price) ? 0 : price * it.qty);
   }, 0);
-  const total = subtotal + SERVICE_FEE;
+  const { fee: serviceFee, type: deliveryType } = computeServiceFee(cart);
+  const total = subtotal + serviceFee;
 
   // Validate and normalize fields. Returns cleaned values and valid flag.
   const validateFields = () => {
@@ -98,7 +137,8 @@ const CheckoutPage: React.FC = () => {
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
         subtotal,
-        serviceFee: SERVICE_FEE,
+        serviceFee,
+        deliveryType,
         total,
         deliveryAddress: { name: validated.cleanName, phone: validated.cleanPhone, addressLine: validated.cleanAddress, city: validated.cleanCity, postal: validated.cleanPostal },
         status: 'pending_payment',
@@ -197,7 +237,7 @@ const CheckoutPage: React.FC = () => {
 
             <div className='billing-summary'>
               <div>Subtotal: R {subtotal.toFixed(2)}</div>
-              <div>Service fee: R {SERVICE_FEE.toFixed(2)}</div>
+              <div>Service fee: R {Number(serviceFee).toFixed(2)}</div>
               <div className='total-bill'><strong>Total: R {total.toFixed(2)}</strong></div>
             </div>
           </>
