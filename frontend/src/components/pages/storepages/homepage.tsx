@@ -22,27 +22,27 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
-  'Beverages',
+  'Beverages', // Van Vehicle
   'Groceries & Pantry',
-  'Spices & Seasoning',
-  'Canned Foods',
-  'Sugar',
-  'Flour',
-  'Cooking Oils & Fats',
-  'Rice',
-  'Maize Meal',
-  'Snacks & Confectionery',
-  'Household Cleaning & Goods',
-  'Laundry Supplies',
-  'Personal Care',
+  'Spices & Seasoning', //light Vehicle
+  'Canned Foods', // Van Vehicle
+  'Sugar', // Van Vehicle
+  'Flour', // Van Vehicle
+  'Cooking Oils & Fats', // Van Vehicle
+  'Rice', // Van Vehicle
+  'Maize Meal', // Van Vehicle
+  'Snacks & Confectionery', //light Vehicle
+  'Household Cleaning & Goods', //light Vehicle
+  'Laundry Supplies', //light Vehicle
+  'Personal Care', //light Vehicle
 
   // Hair Care & Cosmetics Categories
-  'Shampoos & Cleansers',
-  'Conditioners & Treatments',
-  'Relaxers & Perm Kits',
-  'Hair Styling Products',
-  'Hair Food & Oils',
-  'Hair Coloring'
+  'Shampoos & Cleansers', //light Vehicle
+  'Conditioners & Treatments', //light Vehicle
+  'Relaxers & Perm Kits', //light Vehicle
+  'Hair Styling Products', //light Vehicle
+  'Hair Food & Oils', //light Vehicle
+  'Hair Coloring' //light Vehicle
 ];
 
 const HomePage = () => {
