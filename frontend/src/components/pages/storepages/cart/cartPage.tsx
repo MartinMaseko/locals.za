@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import './cartstyle.css';
 import { useFavorites } from '../../../contexts/FavoritesContext';
 import type { Product } from '../../../contexts/FavoritesContext';
@@ -8,6 +8,11 @@ import { useNavigate, Link } from 'react-router-dom';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
+  const [shareLink, setShareLink] = useState<string>('');
+  const [generatingShare, setGeneratingShare] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareInputRef = useRef<HTMLInputElement | null>(null);
+
   // favorites functionality
   const { favorites, removeFavorite } = useFavorites();
 
@@ -18,6 +23,46 @@ const CartPage: React.FC = () => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
     return sum + (isNaN(price) ? 0 : price * it.qty);
   }, 0);
+
+  const generateShareLink = () => {
+    if (!cart || cart.length === 0) return;
+    setGeneratingShare(true);
+    try {
+      const payload = cart.map(it => ({ id: it.product.id || it.product.product_id, qty: it.qty }));
+      const json = JSON.stringify({ items: payload, createdAt: new Date().toISOString() });
+      // safe base64 for unicode
+      const b64 = typeof window !== 'undefined' ? window.btoa(unescape(encodeURIComponent(json))) : Buffer.from(json).toString('base64');
+      const link = `${window.location.origin}/shared-cart?d=${encodeURIComponent(b64)}`;
+      setShareLink(link);
+      setCopied(false);
+    } catch (err) {
+      console.error('Failed to generate share link', err);
+    } finally {
+      setGeneratingShare(false);
+    }
+  };
+
+  const copyLink = async () => {
+    if (!shareLink) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareLink);
+      } else if (shareInputRef.current) {
+        shareInputRef.current.select();
+        document.execCommand('copy');
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
+
+  const shareViaWhatsApp = () => {
+    if (!shareLink) return;
+    const message = `Please complete this cart: ${shareLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  };
 
   return (
     <div className="cart-container">
@@ -56,6 +101,17 @@ const CartPage: React.FC = () => {
               <div className='cart-summary-total'><strong>Total:</strong> R {Number.isFinite(total) ? total.toFixed(2) : '0.00'}</div>
               <button className='checkout-btn' onClick={() => navigate('/checkout')}>Checkout</button>
               <button className='clearcart-btn' onClick={() => clearCart()} type="button">Clear cart</button>
+              <button className='sharecart-btn' onClick={generateShareLink} disabled={cart.length===0 || generatingShare}>{generatingShare ? 'Generating…' : 'Share Cart'}</button>
+
+              {shareLink && (
+                <div className="share-link-block">
+                  <input ref={shareInputRef} readOnly value={shareLink} className="share-link-input" onFocus={(e)=> (e.target as HTMLInputElement).select()} />
+                  <div className="share-link-btns">
+                    <button className="share-button" onClick={copyLink}>{copied ? 'Copied' : 'Copy'}</button>
+                    <button className="share-button" onClick={shareViaWhatsApp}>WhatsApp</button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
