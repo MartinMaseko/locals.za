@@ -40,6 +40,16 @@
     color: #212529;
 }
 
+#driver-login-input {
+    color: #212529;
+}
+
+.help-cta {
+    color: #FFB803;
+    cursor: pointer;
+}
+
+
 .app-btn,
 .google-btn {
     background-color: #FFB803;

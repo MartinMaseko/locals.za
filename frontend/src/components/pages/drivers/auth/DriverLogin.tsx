@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
 import axios from 'axios';
-import Logo from '../../../assets/logos/LZAWHTTRP.webp';
+import Logo from '../../../assets/logos/LZABLKTRP.webp';
 import '../../../assets/UI/loginReg.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -150,7 +150,7 @@ const DriverLogin: React.FC = () => {
             onChange={handleChange}
             placeholder="Full Name"
             required
-            className="app-input"
+            id="driver-login-input"
           />
         </div>
         
@@ -162,7 +162,7 @@ const DriverLogin: React.FC = () => {
             onChange={handleChange}
             placeholder="Driver ID"
             required
-            className="app-input"
+            id="driver-login-input"
           />
         </div>
         
@@ -175,12 +175,25 @@ const DriverLogin: React.FC = () => {
         </button>
       </form>
       
-      <div className="login-redirect-user">
-        <p>Customer? <Link to="/login">Sign in here</Link></p>
-      </div>
-      
       <div className="driver-help">
-        <p>Need help? Contact your administrator or support at <strong>support@locals-za.co.za</strong></p>
+        <p>Need help? Email support at <strong className='help-cta'>admin@locals-za.co.za</strong></p>
+        <p>WhatsApp Support</p> 
+        <a 
+                href="https://wa.me/27629973007" // Replace with business No.
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whatsapp-link"
+                aria-label="Contact us on WhatsApp"
+              >
+                <div className="whatsapp-icon pulsate">
+                  <img 
+                    width="48" 
+                    height="48" 
+                    src="https://img.icons8.com/color/48/whatsapp--v1.png" 
+                    alt="WhatsApp Support"
+                  />
+                </div>
+              </a>
       </div>
     </div>
   );
