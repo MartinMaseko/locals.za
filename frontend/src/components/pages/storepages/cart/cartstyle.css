@@ -2,11 +2,26 @@
 
 .cart-container,
 .checkout-page,
-.order-confirmation-wrapper {
+.order-confirmation-wrapper,
+.shared-cart-page {
     min-height: 100vh;
     max-width: 100vw;
 }
 
+.shared-cart-page h1{
+  text-align: center;
+  color: #ffb803;
+}
+
+.shared-cart-page {
+  padding: 0rem 1rem;
+}
+
+.shared-item-meta {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+
+}
 .favorites-section,
 .cart-section,
 .order-confirmation-content {
@@ -35,7 +50,9 @@
 
 .cart-item-action,
 .checkout-btn,
-.clearcart-btn {
+.clearcart-btn,
+.sharecart-btn,
+.share-button {
   border: none;
   border-radius: 5px;
   background: #191919;
@@ -63,15 +80,53 @@
 }
 
 .cart-item-action:hover,
-.cart-item-action:focus {
+.cart-item-action:focus,
+.sharecart-btn:hover,
+.sharecart-btn:focus,
+.share-button:hover,
+.share-button:focus {
   background: #ffb803;
   color: #191919;
+}
+
+.sharecart-btn {
+  height: 50px;
+  cursor: pointer;
+}
+
+.share-link-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.share-link-input {
+  width: 80%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 0.5rem;
+}
+
+.share-link-btns {
+  display: flex;
+  margin-top: 0.5rem;
 }
 
 .cart-section h2 {
   text-align: center;
   font-size: 1.5rem;
   color: #ffb803;
+}
+
+.shared-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .cart-summary {
@@ -306,7 +361,56 @@
   margin-top: 0.5rem;
 }
 
-/* Desktop (large screens) */
+/* Shared cart grid - mobile first */
+.shared-items-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.shared-item {
+  background: #1f1f1f;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.shared-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.shared-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.shared-item-title {
+  font-weight: 700;
+  color: #ffb803;
+}
+
+.shared-item-meta {
+  color: #ddd;
+  font-size: 0.9rem;
+}
+
+.shared-actions {
+  margin-top: 0.5rem;;
+}
+
+/* Ensure ProductCard inside shared-item scales nicely */
+.shared-item .product-card {
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Desktop (large screens) - align with storefront behavior */
 @media (min-width: 992px) {
   .cart-container {
     margin: 0 auto;
@@ -399,5 +503,25 @@
   .view-orders-button:focus {
     background: #FFB803;
     color: #212529;
+  }
+
+  .shared-items-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  .shared-item {
+    padding: 1rem;
+  }
+
+  .shared-item .product-card {
+    max-width: none;
+  }
+
+  /* Make cart container layout match storefront spacing */
+  .shared-cart-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
   }
 }

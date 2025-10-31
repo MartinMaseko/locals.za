@@ -29,6 +29,7 @@ import DriverDeliveries from './components/pages/drivers/driverDeliveries';
 import DriverRevenue from './components/pages/drivers/driverRevenue';
 import FloatingSupport from './components/common/FloatingSupport';
 import PaymentCancelledPage from './components/pages/storepages/cart/PaymentCancelledPage';
+import SharedCartPage from './components/pages/storepages/cart/SharedCartPage';
 
 function App() {
   return (
@@ -93,6 +94,7 @@ function App() {
                   {/* Public routes */}
                   <Route path="product/:id" element={<ProductDetailPage />} />
                   <Route path="/cart" element={<CartPage />} />
+                  <Route path="/shared-cart" element={<SharedCartPage />} />
                   
                   {/* Protected checkout route */}
                   <Route path="/checkout" element={
