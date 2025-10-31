@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { openWazeNavigation, convertAddressesToCoordinates } from '../../../utils/wazeHelper';
+import { convertAddressesToCoordinates } from '../../../utils/wazeHelper';
 import './driverStyles.css';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -172,7 +172,34 @@ const RouteOptimizer: React.FC = () => {
         })).filter(stop => stop.lat !== 0 && stop.lng !== 0);
         
         if (stopsWithCoordinates.length > 0) {
-          openWazeNavigation(stopsWithCoordinates);
+          // Build a Waze app deep link using the first coordinate and include others in the query when possible
+          const first = stopsWithCoordinates[0];
+          const coordsQuery = `${first.lat},${first.lng}`;
+          
+          // Build a 'q' param containing all coordinates or names as a fallback
+          const qParam = stopsWithCoordinates.map(s => `${s.lat},${s.lng}`).join(',');
+          
+          const wazeAppUrl = `waze://?navigate=yes&ll=${coordsQuery}&q=${encodeURIComponent(qParam)}`;
+          const wazeWebUrl = `https://www.waze.com/ul?navigate=yes&ll=${coordsQuery}&q=${encodeURIComponent(qParam)}`;
+          
+          // Try to open the Waze app by assigning the deep link. On mobile this should prompt to open the app.
+          try {
+            window.location.href = wazeAppUrl;
+          } catch (e) {
+            // If direct assignment fails, attempt opening via an anchor click
+            const a = document.createElement('a');
+            a.href = wazeAppUrl;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }
+          
+          // After a short timeout, open the web fallback if the app didn't handle the link
+          setTimeout(() => {
+            try { window.open(wazeWebUrl, '_blank'); } catch (err) { /* ignore */ }
+          }, 1200);
+          
           setIsLoading(false);
           return;
         }
@@ -195,8 +222,27 @@ const RouteOptimizer: React.FC = () => {
         throw new Error("Failed to convert addresses to coordinates");
       }
       
-      // Open Waze with the stops
-      openWazeNavigation(stopsWithCoordinates);
+      // Build Waze deep link using the first geocoded coordinate and include others in q
+      const firstGeo = stopsWithCoordinates[0];
+      const coordsQueryGeo = `${firstGeo.lat},${firstGeo.lng}`;
+      const qParamGeo = stopsWithCoordinates.map(s => `${s.lat},${s.lng}`).join(',');
+      const wazeAppUrlGeo = `waze://?navigate=yes&ll=${coordsQueryGeo}&q=${encodeURIComponent(qParamGeo)}`;
+      const wazeWebUrlGeo = `https://www.waze.com/ul?navigate=yes&ll=${coordsQueryGeo}&q=${encodeURIComponent(qParamGeo)}`;
+      
+      try {
+        window.location.href = wazeAppUrlGeo;
+      } catch (e) {
+        const a = document.createElement('a');
+        a.href = wazeAppUrlGeo;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      
+      setTimeout(() => {
+        try { window.open(wazeWebUrlGeo, '_blank'); } catch (err) { /* ignore */ }
+      }, 1200);
     } catch (error) {
       console.error('Failed to start navigation:', error);
       alert('Failed to start navigation. Please try again.');
