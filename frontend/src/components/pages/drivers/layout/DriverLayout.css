@@ -4,6 +4,41 @@
   min-height: 100vh;
   background-color: #f7f7f7;
   width: 100vw;
+  box-sizing: border-box;
+  max-width: 420px; /* strict mobile max width */
+  margin: 0 auto; /* center on larger screens */
+  overflow-x: hidden;
+}
+
+/* Utility container to ensure content stays within mobile width */
+.driver-layout-content,
+.driver-dashboard,
+.driver-container {
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+/* Ensure large child elements wrap on mobile */
+.driver-layout img,
+.driver-layout .map,
+.driver-layout table {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Slightly larger max-width for small tablets while keeping centered */
+@media (min-width: 421px) and (max-width: 768px) {
+  .driver-layout {
+    max-width: 600px;
+  }
+  .driver-layout-content { padding: 18px; }
+}
+
+/* For very small phones reduce padding */
+@media (max-width: 360px) {
+  .driver-layout-content { padding: 10px; }
 }
 
 /* Loading State */
@@ -71,4 +106,9 @@
   .driver-layout-content {
     padding: 15px;
   }
+}
+
+.driver-logo {
+  width: 50px;
+  margin-bottom: 20px;
 }
