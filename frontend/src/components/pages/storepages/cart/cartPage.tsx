@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './cartstyle.css';
 import { useFavorites } from '../../../contexts/FavoritesContext';
 import type { Product } from '../../../contexts/FavoritesContext';
 import ProductCard from '../productview/productsCard';
 import { useCart } from '../../../contexts/CartContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { Analytics } from '../../../../utils/analytics';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,6 +24,17 @@ const CartPage: React.FC = () => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
     return sum + (isNaN(price) ? 0 : price * it.qty);
   }, 0);
+
+  // Track cart abandonment
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (cart.length > 0) {
+        Analytics.trackCartAbandonment(cart, total);
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [cart, total]);
 
   const generateShareLink = () => {
     if (!cart || cart.length === 0) return;
@@ -64,6 +76,17 @@ const CartPage: React.FC = () => {
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
+  const handleCheckout = () => {
+    Analytics.trackCheckoutStep(1, 'begin_checkout');
+    Analytics.trackUserPath('cart', 'checkout', 'checkout_button');
+    navigate('/checkout');
+  };
+
+  const handleShareCart = () => {
+    generateShareLink();
+    Analytics.trackUserPath('cart', 'share_cart', 'share_button');
+  };
+
   return (
     <div className="cart-container">
       {/* CART SECTION */}
@@ -99,9 +122,11 @@ const CartPage: React.FC = () => {
 
             <div className='cart-summary'>
               <div className='cart-summary-total'><strong>Total:</strong> R {Number.isFinite(total) ? total.toFixed(2) : '0.00'}</div>
-              <button className='checkout-btn' onClick={() => navigate('/checkout')}>Checkout</button>
+              <button className='checkout-btn' onClick={handleCheckout}>Checkout</button>
               <button className='clearcart-btn' onClick={() => clearCart()} type="button">Clear cart</button>
-              <button className='sharecart-btn' onClick={generateShareLink} disabled={cart.length===0 || generatingShare}>{generatingShare ? 'Generating…' : 'Share Cart'}</button>
+              <button className='sharecart-btn' onClick={handleShareCart} disabled={cart.length===0 || generatingShare}>
+                {generatingShare ? 'Generating…' : 'Share Cart'}
+              </button>
 
               {shareLink && (
                 <div className="share-link-block">
