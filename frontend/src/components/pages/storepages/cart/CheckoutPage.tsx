@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../../contexts/CartContext';
+import { Analytics } from '../../../../utils/analytics';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
@@ -77,6 +78,24 @@ const CheckoutPage: React.FC = () => {
   const { fee: serviceFee, type: deliveryType } = computeServiceFee(cart);
   const total = subtotal + serviceFee;
 
+  // Track cart abandonment when leaving checkout
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (cart.length > 0) {
+        Analytics.trackCartAbandonment(cart, total);
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [cart, total]);
+
+  // Track initial checkout step
+  useEffect(() => {
+    if (cart.length > 0) {
+      Analytics.trackCheckoutStep(1, 'delivery_details');
+    }
+  }, [cart.length]);
+
   // Validate and normalize fields. Returns cleaned values and valid flag.
   const validateFields = () => {
     // helper
@@ -101,13 +120,24 @@ const CheckoutPage: React.FC = () => {
     const cleanPostal = normalize(postal);
 
     let ok = true;
-    if (!cleanName || cleanName.length < 2) { setNameError('Please enter your full name (at least 2 characters)'); ok = false; }
-    if (!cleanPhone || !/^\+?\d{7,15}$/.test(cleanPhone)) { setPhoneError('Please enter a valid phone number (digits only, optional +)'); ok = false; }
+    if (!cleanName || cleanName.length < 2) { 
+      setNameError('Please enter your full name (at least 2 characters)'); 
+      ok = false;
+      Analytics.trackFormCompletion('checkout_form', false, 'invalid_name');
+    }
+    if (!cleanPhone || !/^\+?\d{7,15}$/.test(cleanPhone)) { 
+      setPhoneError('Please enter a valid phone number (digits only, optional +)'); 
+      ok = false;
+      Analytics.trackFormCompletion('checkout_form', false, 'invalid_phone');
+    }
     if (!cleanAddress || cleanAddress.length < 5) { setAddressError('Please enter a valid delivery address'); ok = false; }
     // optional checks for city/postal (if provided)
     if (cleanCity && cleanCity.length < 2) { setCityError('City value is too short'); ok = false; }
     if (cleanPostal && cleanPostal.length < 2) { setPostalError('Postal code looks invalid'); ok = false; }
 
+    if (ok) {
+      Analytics.trackFormCompletion('checkout_form', true);
+    }
     return { valid: ok, cleanName, cleanPhone, cleanAddress, cleanCity, cleanPostal };
   };
 
@@ -212,6 +242,7 @@ const CheckoutPage: React.FC = () => {
         throw new Error('Payment data not received');
       }
     } catch (err: any) {
+      Analytics.trackFormCompletion('checkout_form', false, 'api_error');
       console.error('Order placement error:', err);
       setError(err?.response?.data?.message || 'Failed to place order');
       setLoading(false);
