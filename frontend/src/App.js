@@ -1,0 +1,37 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import './App.css';
+import { AuthProvider } from './Auth/AuthProvider';
+import { ProtectedRoute } from './Auth/ProtectedRoute';
+import LayOut from './components/pages/LayOut';
+import UserAccount from './components/pages/userpages/userAccount';
+import UserProfile from './components/pages/userpages/userProfile';
+import UserOrders from './components/pages/userpages/userOrders';
+import LoginPage from './components/pages/storepages/loginPage';
+import AdminLogin from './components/pages/dashboard/adminLogin';
+import AdminDashboard from './components/pages/dashboard/adminDashboard';
+import UserRegistration from './components/pages/userpages/userReg';
+import HomePage from './components/pages/storepages/homepage';
+import ProductDetailPage from './components/pages/storepages/productview/productsDetail';
+import CartPage from './components/pages/storepages/cart/cartPage';
+import MessagesPage from './components/pages/storepages/messages/messagesPage';
+import StoreCategories from './components/pages/storepages/store/storeCategories';
+import SupportPage from './components/pages/storepages/support/supportPage';
+import ScrollToTop from './components/ScrollToTop';
+import { FavoritesProvider } from './components/contexts/FavoritesContext';
+import { CartProvider } from './components/contexts/CartContext';
+import { WazeRouteProvider } from './components/contexts/WazeRouteContext';
+import CheckoutPage from './components/pages/storepages/cart/CheckoutPage';
+import OrderConfirmationPage from './components/pages/storepages/cart/OrderConfirmationPage';
+import DriverLayout from './components/pages/drivers/layout/DriverLayout';
+import DriversDash from './components/pages/drivers/driversDash';
+import DriverLogin from './components/pages/drivers/auth/DriverLogin';
+import DriverDeliveries from './components/pages/drivers/driverDeliveries';
+import DriverRevenue from './components/pages/drivers/driverRevenue';
+import FloatingSupport from './components/common/FloatingSupport';
+import PaymentCancelledPage from './components/pages/storepages/cart/PaymentCancelledPage';
+import SharedCartPage from './components/pages/storepages/cart/SharedCartPage';
+function App() {
+    return (_jsx(Router, { children: _jsx(AuthProvider, { children: _jsx(FavoritesProvider, { children: _jsx(CartProvider, { children: _jsxs(WazeRouteProvider, { children: [_jsx(ScrollToTop, {}), _jsxs(Routes, { children: [_jsx(Route, { path: "/register", element: _jsx(UserRegistration, {}) }), _jsx(Route, { path: "/login", element: _jsx(LoginPage, {}) }), _jsx(Route, { path: "/adminlogin", element: _jsx(AdminLogin, {}) }), _jsx(Route, { path: "/admindashboard", element: _jsx(ProtectedRoute, { redirectTo: "/adminlogin", children: _jsx(AdminDashboard, {}) }) }), _jsx(Route, { path: "/driver-login", element: _jsx(DriverLogin, {}) }), _jsxs(Route, { path: "/driver", element: _jsx(ProtectedRoute, { redirectTo: "/driver-login", children: _jsx(DriverLayout, {}) }), children: [_jsx(Route, { path: "dashboard", element: _jsx(DriversDash, {}) }), _jsx(Route, { path: "deliveries/:orderId", element: _jsx(DriverDeliveries, {}) }), _jsx(Route, { path: "revenue", element: _jsx(DriverRevenue, {}) })] }), _jsx(Route, { path: "/driversdashboard", element: _jsx(Navigate, { to: "/driver/dashboard", replace: true }) }), _jsxs(Route, { path: "/", element: _jsx(LayOut, {}), children: [_jsx(Route, { index: true, element: _jsx(HomePage, {}) }), _jsx(Route, { path: "/useraccount", element: _jsx(ProtectedRoute, { children: _jsx(UserAccount, {}) }) }), _jsx(Route, { path: "/userprofile", element: _jsx(ProtectedRoute, { children: _jsx(UserProfile, {}) }) }), _jsx(Route, { path: "/messages", element: _jsx(ProtectedRoute, { children: _jsx(MessagesPage, {}) }) }), _jsx(Route, { path: "/userorders", element: _jsx(ProtectedRoute, { children: _jsx(UserOrders, {}) }) }), _jsx(Route, { path: "product/:id", element: _jsx(ProductDetailPage, {}) }), _jsx(Route, { path: "/cart", element: _jsx(CartPage, {}) }), _jsx(Route, { path: "/shared-cart", element: _jsx(SharedCartPage, {}) }), _jsx(Route, { path: "/checkout", element: _jsx(ProtectedRoute, { children: _jsx(CheckoutPage, {}) }) }), _jsx(Route, { path: "/order-confirmation/:id", element: _jsx(OrderConfirmationPage, {}) }), _jsx(Route, { path: "/payment-cancelled/:id", element: _jsx(PaymentCancelledPage, {}) }), _jsx(Route, { path: "/shop", element: _jsx(StoreCategories, {}) }), _jsx(Route, { path: "/support", element: _jsx(SupportPage, {}) })] })] }), _jsx(FloatingSupport, {})] }) }) }) }) }));
+}
+export default App;
