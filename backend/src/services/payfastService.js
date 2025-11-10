@@ -19,7 +19,7 @@ class PayfastService {
       returnUrl: process.env.PAYFAST_RETURN_URL,
       cancelUrl: process.env.PAYFAST_CANCEL_URL,
       notifyUrl: process.env.PAYFAST_NOTIFY_URL,
-      testMode: process.env.PAYFAST_TEST_MODE === 'true',
+      testMode: false, // Set to production mode
       
       // URLs for sandbox and production environments
       sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
