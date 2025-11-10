@@ -16,9 +16,9 @@ class PayfastService {
       merchantId: process.env.PAYFAST_MERCHANT_ID,
       merchantKey: process.env.PAYFAST_MERCHANT_KEY,
       passphrase: process.env.PAYFAST_PASSPHRASE || '',
-      returnUrl: process.env.PAYFAST_RETURN_URL,
-      cancelUrl: process.env.PAYFAST_CANCEL_URL,
-      notifyUrl: process.env.PAYFAST_NOTIFY_URL,
+      returnUrl: process.env.PAYFAST_RETURN_URL || 'https://locals-za.co.za/payment/success',
+      cancelUrl: process.env.PAYFAST_CANCEL_URL || 'https://locals-za.co.za/payment/cancelled',
+      notifyUrl: process.env.PAYFAST_NOTIFY_URL || 'https://europe-west4-localsza.cloudfunctions.net/api/payment/notify',
       testMode: false, // Set to production mode
       
       // URLs for sandbox and production environments
@@ -121,12 +121,20 @@ class PayfastService {
       // Determine the correct payment URL (sandbox or production)
       const paymentUrl = this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl;
 
-      // Return the payment details using the normalized object
-      return {
+      // Prepare return data for checkout page
+      const returnData = {
         formData: normalized,
-        url: paymentUrl,
-        fullUrl: this.buildFullUrl(paymentUrl, normalized)
+        url: 'https://www.payfast.co.za/eng/process',
+        fullUrl: this.buildFullUrl('https://www.payfast.co.za/eng/process', normalized),
+        paymentId: orderId
       };
+
+      console.log('Payment request prepared:', {
+        ...returnData,
+        formData: { ...returnData.formData, signature: '***' }
+      });
+
+      return returnData;
     } catch (error) {
       console.error('Error creating PayFast payment request:', error);
       throw new Error('Failed to create payment request');
