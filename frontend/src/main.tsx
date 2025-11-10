@@ -15,7 +15,7 @@ registerSW({
   onRegisteredSW() {
     // Handle SW registered
   },
-  onRegisterError(error) {
+  onRegisterError(error: Error) {
     console.error('SW registration failed:', error)
   }
 })
