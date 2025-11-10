@@ -22,12 +22,12 @@ class PayfastService {
       testMode: false, // Set to production mode
       
       // URLs for sandbox and production environments
-      sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
-      productionUrl: 'https://www.payfast.co.za/eng/process',
+      sandboxUrl: 'https://sandbox.payfast.co.za/onsite/process',
+      productionUrl: 'https://www.payfast.co.za/onsite/process',
       
       // Validation URLs
-      validateUrlSandbox: 'https://sandbox.payfast.co.za/eng/query/validate',
-      validateUrlProduction: 'https://www.payfast.co.za/eng/query/validate'
+      validateUrlSandbox: 'https://api.payfast.co.za/ping',
+      validateUrlProduction: 'https://api.payfast.co.za/ping'
     };
     
     console.log(`PayFast initialized in ${this.config.testMode ? 'SANDBOX' : 'PRODUCTION'} mode`);
@@ -260,6 +260,9 @@ class PayfastService {
       // Send validation request to PayFast
       const response = await axios.post(validateUrl, validateData, {
         headers: {
+          'merchant-id': this.config.merchantId,
+          'version': 'v1',
+          'timestamp': new Date().toISOString(),
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': validateData.length
         },
