@@ -1,0 +1,2 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://europe-west4-localsza.cloudfunctions.net https://firebasestorage.googleapis.com https://www.google-analytics.com https://www.payfast.co.za https://analytics.google.com; form-action https://www.payfast.co.za; frame-src https://www.payfast.co.za; img-src 'self' data: https:;

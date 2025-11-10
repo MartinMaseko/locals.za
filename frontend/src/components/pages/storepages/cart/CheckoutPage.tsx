@@ -199,9 +199,30 @@ const CheckoutPage: React.FC = () => {
         fullUrl?: string;
       };
 
-      const paymentRes = await axios.post<PaymentInitResponse>(`${API_URL}/api/api/payment/process/${orderId}`, {}, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
+      const paymentRes = await axios.post<PaymentInitResponse>(
+        `${API_URL}/api/api/payment/process/${orderId}`,
+        {
+          name_first: validated.cleanName.split(' ')[0],
+          name_last: validated.cleanName.split(' ').slice(1).join(' '),
+          email_address: user.email,
+          cell_number: validated.cleanPhone,
+          amount: total.toFixed(2),
+          item_name: `Order #${orderId}`,
+          item_description: `Order containing ${cart.length} items`,
+          custom_str1: user.uid,
+          custom_str2: btoa(JSON.stringify({
+            address: validated.cleanAddress,
+            city: validated.cleanCity,
+            postal: validated.cleanPostal
+          }))
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
       
       // Clear cart after successful order creation
       clearCart();
@@ -365,6 +386,8 @@ const CheckoutPage: React.FC = () => {
         method="POST" 
         action=""
         style={{ display: 'none' }}
+        acceptCharset="UTF-8"
+        encType="application/x-www-form-urlencoded"
       ></form>
     </div>
   );
