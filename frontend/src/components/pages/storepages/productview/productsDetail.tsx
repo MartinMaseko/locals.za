@@ -7,6 +7,7 @@ import type { Product } from '../../../contexts/FavoritesContext';
 import ProductCard from './productsCard';
 import LogoAnime from '../../../assets/logos/locals-svg.gif';
 import LoadingContext from '../LoadingContext';
+import { Analytics } from '../../../../utils/analytics';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -81,6 +82,11 @@ const ProductDetailPage: React.FC = () => {
          }
        } catch (err: any) {
          console.error('Failed to load product or suggestions:', err);
+         Analytics.trackApiError(
+           `${API_URL}/api/api/products/${id}`,
+           err.response?.status || 500,
+           err.message || 'Failed to load product'
+         );
          setError(err.message || 'Failed to load product');
        } finally {
          setLoading(false);
@@ -157,6 +163,7 @@ const ProductDetailPage: React.FC = () => {
 
    // Updated back button handler with explicit scrollToTop state
    const handleBackNavigation = () => {
+     Analytics.trackUserPath('product_detail', 'product_list', 'back_button');
      // Pass scrollToTop state to ensure scroll position is reset
      navigate("..", { state: { scrollToTop: true } });
    };
@@ -197,7 +204,27 @@ const ProductDetailPage: React.FC = () => {
      const el = document.getElementById('related-products'); if (el) el.scrollIntoView({ behavior: 'smooth' });
    };
 
-  if (loading) return (
+   useEffect(() => {
+     if (product) {
+       Analytics.trackProductView(product);
+     }
+   }, [product]);
+
+   const handleAddToCart = () => {
+     if (product) {
+       Analytics.trackAddToCart(product, 1);
+       addToCart(product);
+     }
+   };
+
+   const handleSuggestedProductClick = (prod: Product) => {
+     Analytics.trackUserPath(`product_${product?.id}`, `product_${prod.id}`, 'suggestion_click');
+     navigate(`/product/${prod.id}`, { state: { product: prod } });
+     try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } 
+     catch (e) { window.scrollTo(0,0); }
+   };
+
+   if (loading) return (
     <div className='loading-container'>
       <img src={LogoAnime} alt="Loading..." className="loading-gif" />
       Loading...
@@ -241,9 +268,7 @@ const ProductDetailPage: React.FC = () => {
             {!inCart ? (
               <button
                 className="add-to-cart"
-                onClick={() => {
-                  addToCart(product);
-                }}
+                onClick={handleAddToCart}
                 type="button"
               >
                 Add to cart
@@ -289,12 +314,7 @@ const ProductDetailPage: React.FC = () => {
               <ProductCard
                 key={p.id}
                 product={p}
-                onClick={(prod) => {
-                  // Navigate to the selected suggested product and pass product in state
-                  navigate(`/product/${prod.id}`, { state: { product: prod } });
-                  // Ensure top of page
-                  try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0,0); }
-                }}
+                onClick={handleSuggestedProductClick}
               />
             ))}
            </div>

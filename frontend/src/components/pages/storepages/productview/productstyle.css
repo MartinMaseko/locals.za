@@ -132,6 +132,7 @@
 .product-modal-subtext .link-button{
   font-size: 0.875rem;
   color: #ffb803;
+  background: none;
   border: none;
   font-family: inherit;
   cursor: pointer;
