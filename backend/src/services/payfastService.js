@@ -19,20 +19,19 @@ class PayfastService {
       returnUrl: process.env.PAYFAST_RETURN_URL || 'https://locals-za.co.za/payment/success',
       cancelUrl: process.env.PAYFAST_CANCEL_URL || 'https://locals-za.co.za/payment/cancelled',
       notifyUrl: process.env.PAYFAST_NOTIFY_URL || 'https://europe-west4-localsza.cloudfunctions.net/api/payment/notify',
-      testMode: false, // Set to production mode
+      testMode: process.env.PAYFAST_TEST_MODE === 'true',
       
-      // URLs for sandbox and production environments
-      sandboxUrl: 'https://sandbox.payfast.co.za/onsite/process',
-      productionUrl: 'https://www.payfast.co.za/onsite/process',
+      // Correct URLs per PayFast documentation
+      sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
+      productionUrl: 'https://www.payfast.co.za/eng/process',
       
       // Validation URLs
-      validateUrlSandbox: 'https://api.payfast.co.za/ping',
-      validateUrlProduction: 'https://api.payfast.co.za/ping'
+      validateUrlSandbox: 'https://sandbox.payfast.co.za/eng/query/validate',
+      validateUrlProduction: 'https://www.payfast.co.za/eng/query/validate'
     };
     
     console.log(`PayFast initialized in ${this.config.testMode ? 'SANDBOX' : 'PRODUCTION'} mode`);
-    console.log(`Merchant ID: ${this.config.merchantId}, Merchant Key: ${this.config.merchantKey}`);
-    console.log(`Using passphrase: ${this.config.passphrase ? 'Yes' : 'No'}`);
+    console.log(`Merchant ID: ${this.config.merchantId}`);
   }
   
   /**
@@ -47,9 +46,9 @@ class PayfastService {
     try {
       // Extract customer name from delivery address
       const fullName = orderData.deliveryAddress?.name || 'Customer';
-      const nameParts = fullName.split(' ');
-      const firstName = nameParts[0];
-      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+      const nameParts = fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || 'Customer';
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
       
       // Ensure we have a valid email
       const email = orderData.email || 
@@ -58,14 +57,24 @@ class PayfastService {
       // Format amount with exactly 2 decimal places
       const amount = parseFloat(orderData.total).toFixed(2);
       
-      // Create the payment data object with required fields
-      // https://developers.payfast.co.za/docs#request_parameters
+      // Extract phone number and clean it
+      let cellNumber = orderData.deliveryAddress?.phone || '';
+      cellNumber = cellNumber.replace(/[^\d]/g, ''); // Remove non-digits
+      if (cellNumber.startsWith('0')) {
+        cellNumber = '27' + cellNumber.substring(1); // Convert to international format
+      }
+      if (!cellNumber.startsWith('27')) {
+        cellNumber = '27' + cellNumber;
+      }
+      
+      // Create the payment data object with required fields ONLY
+      // https://developers.payfast.co.za/docs#step_1_form_fields
       const data = {
         // Merchant details
         merchant_id: this.config.merchantId,
         merchant_key: this.config.merchantKey,
         
-        // Return URLs
+        // Return URLs  
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
@@ -74,75 +83,67 @@ class PayfastService {
         name_first: firstName,
         name_last: lastName,
         email_address: email,
-        cell_number: orderData.deliveryAddress?.phone || '',
         
         // Transaction details
         m_payment_id: orderId,
         amount: amount,
-        item_name: `LocalsZA Order #${orderId.slice(-6)}`,
-        
-        // Custom fields for additional data
-        custom_str1: userId || '',
-        custom_str2: 'web_order',
+        item_name: `Order ${orderId.slice(-8)}`,
+        item_description: `${orderData.items?.length || 0} items`,
       };
       
-      // Add optional fields only if they have values
-      if (orderData.items && orderData.items.length) {
-        data.item_description = `Order with ${orderData.items.length} items`;
+      // Add optional cell number only if valid
+      if (cellNumber && cellNumber.length >= 10) {
+        data.cell_number = cellNumber;
       }
       
+      // Add custom fields for tracking
+      if (userId) {
+        data.custom_str1 = userId;
+      }
+      
+      // Add custom string with delivery address (max 255 chars)
       if (orderData.deliveryAddress?.addressLine) {
-        data.custom_str3 = orderData.deliveryAddress.addressLine;
-      }
-      
-      // Add test mode flag if in sandbox mode - must be present BEFORE signature generation
-      if (this.config.testMode) {
-        data.testing = 'true';
-      }
-
-      // --- NORMALIZE/TRIM ALL VALUES BEFORE SIGNING ---
-      const normalized = {};
-      Object.keys(data).sort().forEach((key) => {
-        const v = data[key];
-        if (typeof v === 'string') {
-          // trim and normalize unicode to a consistent form (NFKC)
-          normalized[key] = v.trim().normalize ? v.trim().normalize('NFKC') : v.trim();
-        } else if (v === undefined || v === null) {
-          normalized[key] = '';
-        } else {
-          normalized[key] = v;
+        const addressData = {
+          address: orderData.deliveryAddress.addressLine,
+          city: orderData.deliveryAddress.city || '',
+          postal: orderData.deliveryAddress.postal || ''
+        };
+        const addressString = JSON.stringify(addressData);
+        if (addressString.length <= 255) {
+          data.custom_str2 = addressString;
         }
-      });
+      }
 
-      // Generate signature using the normalized data
-      const signature = this.generateSignature(normalized);
-      normalized.signature = signature;
+      // Generate signature BEFORE adding test mode flag
+      const signature = this.generateSignature(data);
+      data.signature = signature;
 
-      // Determine the correct payment URL (sandbox or production)
+      // Determine the correct payment URL
       const paymentUrl = this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl;
 
-      // Prepare return data for checkout page
-      const returnData = {
-        formData: normalized,
-        url: 'https://www.payfast.co.za/eng/process',
-        fullUrl: this.buildFullUrl('https://www.payfast.co.za/eng/process', normalized),
-        paymentId: orderId
-      };
-
-      console.log('Payment request prepared:', {
-        ...returnData,
-        formData: { ...returnData.formData, signature: '***' }
+      console.log('Payment request created:', {
+        orderId,
+        amount: data.amount,
+        merchant_id: data.merchant_id,
+        email: data.email_address,
+        url: paymentUrl,
+        hasSignature: !!signature
       });
 
-      return returnData;
+      return {
+        formData: data,
+        url: paymentUrl,
+        paymentId: orderId
+      };
     } catch (error) {
       console.error('Error creating PayFast payment request:', error);
-      throw new Error('Failed to create payment request');
+      throw new Error('Failed to create payment request: ' + error.message);
     }
   }
   
   /**
-   * Generate MD5 signature for request data - Using PayFast's exact algorithm
+   * Generate MD5 signature for request data - PayFast's exact algorithm
+   * https://developers.payfast.co.za/docs#signature
    * 
    * @param {Object} data - The payment data
    * @returns {String} MD5 signature
@@ -152,15 +153,16 @@ class PayfastService {
       // Create parameter string
       let pfOutput = "";
       
-      // Get the keys and sort them
-      const keys = Object.keys(data).sort();
+      // Sort keys alphabetically (case-sensitive)
+      const sortedKeys = Object.keys(data).sort();
       
-      // Build the parameter string exactly as PayFast expects
-      for (let key of keys) {
-        if (data.hasOwnProperty(key)) {
-          if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
-            pfOutput += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, "+")}&`;
-          }
+      // Build the parameter string
+      for (const key of sortedKeys) {
+        const value = data[key];
+        // Skip empty values
+        if (value !== "" && value !== undefined && value !== null) {
+          // URL encode the value using PHP's urlencode equivalent
+          pfOutput += `${key}=${encodeURIComponent(String(value).trim()).replace(/%20/g, "+")}&`;
         }
       }
 
@@ -168,35 +170,22 @@ class PayfastService {
       let getString = pfOutput.slice(0, -1);
       
       // Add passphrase if it exists
-      if (this.config.passphrase !== null && this.config.passphrase !== '') {
+      if (this.config.passphrase) {
         getString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
       }
       
-      console.log('Signature string:', getString);
+      console.log('Signature string (first 100 chars):', getString.substring(0, 100) + '...');
       
       // Generate MD5 hash
-      return crypto.createHash("md5").update(getString).digest("hex");
+      const signature = crypto.createHash("md5").update(getString).digest("hex");
+      
+      console.log('Generated signature:', signature);
+      
+      return signature;
     } catch (error) {
       console.error('Error generating signature:', error);
       throw error;
     }
-  }
-  
-  /**
-   * Build full URL with query parameters
-   * 
-   * @param {String} baseUrl - Base URL
-   * @param {Object} data - Query parameters
-   * @returns {String} Full URL with query string
-   */
-  buildFullUrl(baseUrl, data) {
-    const encodeRFC1738 = (v) => encodeURIComponent(String(v)).replace(/%20/g, '+');
-    const queryString = Object.keys(data)
-      .sort()
-      .map(key => `${encodeRFC1738(key)}=${encodeRFC1738(data[key] === undefined || data[key] === null ? '' : data[key])}`)
-      .join('&');
-    
-    return `${baseUrl}?${queryString}`;
   }
   
   /**
@@ -231,7 +220,7 @@ class PayfastService {
     const paymentData = {...data};
     delete paymentData.signature;
     
-    // Generate signature using PayFast's algorithm
+    // Generate signature
     const calculatedSignature = this.generateSignature(paymentData);
     
     console.log('Received signature:', receivedSignature);
@@ -242,42 +231,28 @@ class PayfastService {
   }
   
   /**
-   * Validate ITN with PayFast server (security check)
+   * Validate ITN with PayFast server
    * 
    * @param {Object} data - ITN data
    * @returns {Promise<Boolean>} Validation result
    */
   async validateWithPayfast(data) {
     try {
-      // Only perform validation in production mode
-      if (this.config.testMode) {
-        console.log('Skipping server validation in test mode');
-        return true;
-      }
-      
-      // Get validation URL based on mode
       const validateUrl = this.config.testMode ?
         this.config.validateUrlSandbox :
         this.config.validateUrlProduction;
       
-      // Format data for validation request
       const validateData = Object.keys(data)
         .map(key => `${key}=${encodeURIComponent(data[key])}`)
         .join('&');
       
-      // Send validation request to PayFast
       const response = await axios.post(validateUrl, validateData, {
         headers: {
-          'merchant-id': this.config.merchantId,
-          'version': 'v1',
-          'timestamp': new Date().toISOString(),
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Content-Length': validateData.length
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
-        timeout: 10000 // 10 second timeout
+        timeout: 10000
       });
       
-      // Check validation response
       return response.data.trim() === 'VALID';
     } catch (error) {
       console.error('Error validating with PayFast:', error);
@@ -293,22 +268,22 @@ class PayfastService {
    */
   async processItn(data) {
     try {
-      // Extract signature
+      // Extract and verify signature
       const signature = data.signature;
-      
-      // Verify signature
       const isSignatureValid = this.verifySignature(data, signature);
+      
       if (!isSignatureValid) {
         console.error('Invalid signature in ITN');
         return { success: false, error: 'Invalid signature' };
       }
       
-      // 4. Get order details from Firestore
+      // Get order ID
       const orderId = data.m_payment_id;
       if (!orderId) {
         return { success: false, error: 'No order ID in ITN data' };
       }
       
+      // Get order from Firestore
       const orderRef = admin.firestore().collection('orders').doc(orderId);
       const orderDoc = await orderRef.get();
       
@@ -320,7 +295,7 @@ class PayfastService {
       const orderData = orderDoc.data();
       const userId = orderData.userId || data.custom_str1;
       
-      // 5. Store the ITN notification for audit trail
+      // Store ITN for audit trail
       await admin.firestore().collection('payment_notifications').add({
         orderId,
         paymentData: data,
@@ -328,7 +303,7 @@ class PayfastService {
         environment: this.config.testMode ? 'sandbox' : 'production'
       });
       
-      // 6. Process based on payment status
+      // Process based on payment status
       const paymentStatus = data.payment_status;
       const updateData = {
         paymentData: data,
@@ -337,35 +312,30 @@ class PayfastService {
       
       switch (paymentStatus) {
         case 'COMPLETE':
-          updateData.status = 'pending'; // Change from pending_payment to pending
+          updateData.status = 'pending';
           updateData.paymentStatus = 'paid';
           updateData.paymentCompleted = true;
           updateData.paymentCompletedAt = admin.firestore.FieldValue.serverTimestamp();
           updateData.pf_payment_id = data.pf_payment_id;
-          updateData.transaction_id = data.transaction_id;
           break;
           
         case 'FAILED':
           updateData.status = 'payment_failed';
           updateData.paymentStatus = 'failed';
-          updateData.paymentFailedAt = admin.firestore.FieldValue.serverTimestamp();
           break;
           
         case 'CANCELLED':
           updateData.status = 'cancelled';
           updateData.paymentStatus = 'cancelled';
-          updateData.paymentCancelledAt = admin.firestore.FieldValue.serverTimestamp();
           break;
           
         default:
           updateData.paymentStatus = paymentStatus.toLowerCase();
-          console.log(`Unhandled payment status: ${paymentStatus}`);
       }
       
-      // 7. Update the order in Firestore
+      // Update order
       await orderRef.update(updateData);
       
-      // 8. Return success with details
       return {
         success: true,
         orderId,
