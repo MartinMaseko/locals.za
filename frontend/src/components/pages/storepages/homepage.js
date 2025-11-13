@@ -34,6 +34,8 @@ const productCategories = [
     'Household Cleaning & Goods', //light Vehicle
     'Laundry Supplies', //light Vehicle
     'Personal Care', //light Vehicle
+    'Food Packaging', //Van Vehicle
+    'Sauces', //Van Vehicle
     // Hair Care & Cosmetics Categories
     'Shampoos & Cleansers', //light Vehicle
     'Conditioners & Treatments', //light Vehicle

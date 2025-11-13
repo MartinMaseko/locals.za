@@ -31,6 +31,8 @@ const productCategories = [
     'Household Cleaning & Goods',
     'Laundry Supplies',
     'Personal Care',
+    'Food Packaging',
+    'Sauces',
     // Hair Care & Cosmetics Categories
     'Shampoos & Cleansers',
     'Conditioners & Treatments',
