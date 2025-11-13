@@ -28,6 +28,8 @@ import CookingOils from '../../../assets/images/oil.webp';
 import RiceImage from '../../../assets/images/rice.webp';
 import MaizeMealImage from '../../../assets/images/maize.webp';
 import LaundrySuppliesImage from '../../../assets/images/laundry.webp';
+import FoodPackaging from '../../../assets/images/FoodPackaging.webp';
+import Sauces from '../../../assets/images/sauces.webp';
 
 // Category definitions
 const productCategories = [
@@ -45,6 +47,8 @@ const productCategories = [
   'Household Cleaning & Goods',
   'Laundry Supplies',
   'Personal Care',
+  'Food Packaging',
+  'Sauces',
 
   // Hair Care & Cosmetics Categories
   'Shampoos & Cleansers',
@@ -75,7 +79,9 @@ const categoryImages: {[key: string]: string} = {
   'Relaxers & Perm Kits': RelaxersPermKits,
   'Hair Styling Products': HairStylingProducts,
   'Hair Food & Oils': HairFoodOils,
-  'Hair Coloring': HairColoring
+  'Hair Coloring': HairColoring,
+  'Food Packaging': FoodPackaging,
+  'Sauces': Sauces
 };
 
 // Display names
@@ -98,7 +104,9 @@ const categoryDisplayNames: {[key: string]: string} = {
   'Relaxers & Perm Kits': 'Relaxers',
   'Hair Styling Products': 'Hair Styling',
   'Hair Food & Oils': 'Hair Food',
-  'Hair Coloring': 'Hair Color'
+  'Hair Coloring': 'Hair Color',
+  'Food Packaging': 'Food Packaging',
+  'Sauces': 'Sauces'
 };
 
 // Price range options
