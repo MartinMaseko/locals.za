@@ -22,13 +22,19 @@ const Navbar = () => {
     }
   };
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Force a full page reload to check for PWA updates
+    window.location.href = '/';
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-content">
         <div className="navbar-logo">
-          <Link to="/" className="appnav-icon" title="Home">
+          <a href="/" onClick={handleLogoClick} className="appnav-icon" title="Refresh App">
             <img src={Logo} alt="Logo" className='navbar-logo'/>
-          </Link>
+          </a>
         </div>
         <div className="navbar-menu">
           <button

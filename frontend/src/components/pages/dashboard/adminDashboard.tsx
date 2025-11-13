@@ -34,6 +34,8 @@ const productCategories = [
   'Household Cleaning & Goods',
   'Laundry Supplies',
   'Personal Care',
+  'Food Packaging',
+  'Sauces',
 
   // Hair Care & Cosmetics Categories
   'Shampoos & Cleansers',
@@ -1052,7 +1054,14 @@ const AdminDashboard: React.FC = () => {
                 <div className="form-group"><input name="product_id" type="text" placeholder="Product ID" value={productForm.product_id} readOnly className="readonly-input" /></div>
                 <div className="form-group"><input name="name" type="text" placeholder="Product Name" value={productForm.name} onChange={handleProductChange} required /></div>
                 <div className="form-group"><input name="brand" type="text" placeholder="Brand" value={productForm.brand} onChange={handleProductChange} required /></div>
-                <div className="form-group"><select name="category" value={productForm.category} onChange={handleProductChange} required><option value="">Select Category</option>{productCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}</select></div>
+                <div className="form-group">
+                  <select name="category" value={productForm.category} onChange={handleProductChange} required>
+                    <option value="">Select Category</option>
+                    {productCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    {!productCategories.includes('Food Packaging') && <option value="Food Packaging">Food Packaging</option>}
+                    {!productCategories.includes('Sauces') && <option value="Sauces">Sauces</option>}
+                  </select>
+                </div>
                 <div className="form-group"><input name="description" type="text" placeholder="Description" value={productForm.description} onChange={handleProductChange} required /></div>
                 <div className="form-group"><input name="price" type="number" placeholder="Price" value={productForm.price} onChange={handleProductChange} required /></div>
                 <div className="form-group file-input-group"><label>Product Image:</label><input name="image" type="file" accept="image/*" onChange={handleProductImageChange} /></div>
