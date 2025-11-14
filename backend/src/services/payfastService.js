@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const admin = require('../../firebase');
+const functions = require('firebase-functions');
 require('dotenv').config();
 
 /**
@@ -11,15 +12,17 @@ require('dotenv').config();
  */
 class PayfastService {
   constructor() {
-    // Load configuration from environment variables
+    // Load configuration from Firebase Functions config (production) or .env (local)
+    const config = functions.config();
+    
     this.config = {
-      merchantId: process.env.PAYFAST_MERCHANT_ID,
-      merchantKey: process.env.PAYFAST_MERCHANT_KEY,
-      passphrase: process.env.PAYFAST_PASSPHRASE || '',
-      returnUrl: process.env.PAYFAST_RETURN_URL || 'https://locals-za.co.za/payment/success',
-      cancelUrl: process.env.PAYFAST_CANCEL_URL || 'https://locals-za.co.za/payment/cancelled',
-      notifyUrl: process.env.PAYFAST_NOTIFY_URL || 'https://europe-west4-localsza.cloudfunctions.net/api/payment/notify',
-      testMode: process.env.PAYFAST_TEST_MODE === 'true',
+      merchantId: config.payfast?.merchant_id || process.env.PAYFAST_MERCHANT_ID,
+      merchantKey: config.payfast?.merchant_key || process.env.PAYFAST_MERCHANT_KEY,
+      passphrase: config.payfast?.passphrase || process.env.PAYFAST_PASSPHRASE || '',
+      returnUrl: config.payfast?.return_url || process.env.PAYFAST_RETURN_URL || 'https://locals-za.co.za/payment/success',
+      cancelUrl: config.payfast?.cancel_url || process.env.PAYFAST_CANCEL_URL || 'https://locals-za.co.za/payment/cancelled',
+      notifyUrl: config.payfast?.notify_url || process.env.PAYFAST_NOTIFY_URL || 'https://europe-west4-localsza.cloudfunctions.net/api/payment/notify',
+      testMode: config.payfast?.test_mode === 'true' || process.env.PAYFAST_TEST_MODE === 'true',
       
       // Correct URLs per PayFast documentation
       sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
@@ -32,6 +35,7 @@ class PayfastService {
     
     console.log(`PayFast initialized in ${this.config.testMode ? 'SANDBOX' : 'PRODUCTION'} mode`);
     console.log(`Merchant ID: ${this.config.merchantId}`);
+    console.log(`Payment URL: ${this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl}`);
   }
   
   /**
