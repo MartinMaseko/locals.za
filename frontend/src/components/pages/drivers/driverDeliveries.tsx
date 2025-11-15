@@ -181,7 +181,7 @@ const DriverDeliveries = () => {
         }
         
         // Try to get full order details including products
-        const response = await axios.get<Order>(`${API_URL}/api/api/orders/${orderId}`, {
+        const response = await axios.get<Order>(`${API_URL}/api/orders/${orderId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -251,7 +251,7 @@ const DriverDeliveries = () => {
         throw new Error('Authentication required');
       }
       
-      await axios.put(`${API_URL}/api/api/orders/${orderId}/status`, 
+      await axios.put(`${API_URL}/api/orders/${orderId}/status`, 
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -364,7 +364,7 @@ const DriverDeliveries = () => {
       // Use the status update endpoint which is already working
       // Include the missing items data there
       await axios.put(
-        `${API_URL}/api/api/orders/${orderId}/status`, 
+        `${API_URL}/api/orders/${orderId}/status`, 
         { 
           status: 'in transit',
           missingItems: missingItems.length > 0 ? missingItems : [],

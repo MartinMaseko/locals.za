@@ -48,7 +48,7 @@ const DriverLogin: React.FC = () => {
 
     try {
       // Step 1: Verify driver credentials
-      const verifyResponse = await axios.post<VerifyCredentialsResponse>(`${API_URL}/api/api/drivers/verify-credentials`, {
+      const verifyResponse = await axios.post<VerifyCredentialsResponse>(`${API_URL}/api/drivers/verify-credentials`, {
         full_name: formData.full_name,
         driver_id: formData.driver_id
       });
@@ -61,7 +61,7 @@ const DriverLogin: React.FC = () => {
       // Step 2: Get temporary login credentials
       const { firebase_uid } = verifyResponse.data;
 
-      const loginResponse = await axios.post<LoginLinkResponse>(`${API_URL}/api/api/drivers/login-link`, {
+      const loginResponse = await axios.post<LoginLinkResponse>(`${API_URL}/api/drivers/login-link`, {
         driver_id: formData.driver_id,
         firebase_uid: firebase_uid
       });

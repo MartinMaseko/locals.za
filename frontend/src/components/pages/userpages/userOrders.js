@@ -44,7 +44,7 @@ const UserOrders = () => {
                 // Get token for authentication
                 const token = await user.getIdToken();
                 // Use API endpoint
-                const response = await axios.get(`${API_URL}/api/api/orders/user/${user.uid}`, {
+                const response = await axios.get(`${API_URL}/api/orders/user/${user.uid}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

@@ -27,7 +27,7 @@ const AdminLogin = () => {
       if (!access_token) throw new Error('Login failed. No access token returned.');
 
       // Fetch user profile to check if admin
-      const { data: profile } = await axios.get<{ user_type: string }>(`${API_URL}/api/api/users/me`, {
+      const { data: profile } = await axios.get<{ user_type: string }>(`${API_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
 

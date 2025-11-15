@@ -125,7 +125,7 @@ const DriverDeliveries = () => {
                     throw new Error('Authentication required');
                 }
                 // Try to get full order details including products
-                const response = await axios.get(`${API_URL}/api/api/orders/${orderId}`, {
+                const response = await axios.get(`${API_URL}/api/orders/${orderId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (response.data && response.data.id) {
@@ -193,7 +193,7 @@ const DriverDeliveries = () => {
             if (!token) {
                 throw new Error('Authentication required');
             }
-            await axios.put(`${API_URL}/api/api/orders/${orderId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${API_URL}/api/orders/${orderId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
             // Update local state
             setOrder(prev => prev ? { ...prev, status: newStatus } : null);
         }
@@ -282,7 +282,7 @@ const DriverDeliveries = () => {
             const refundAmount = missingItems.length > 0 ? missingItems.reduce((total, item) => total + (item.price * item.missingQuantity), 0) : 0;
             // Use the status update endpoint which is already working
             // Include the missing items data there
-            await axios.put(`${API_URL}/api/api/orders/${orderId}/status`, {
+            await axios.put(`${API_URL}/api/orders/${orderId}/status`, {
                 status: 'in transit',
                 missingItems: missingItems.length > 0 ? missingItems : [],
                 refundAmount,

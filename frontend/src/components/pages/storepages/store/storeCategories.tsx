@@ -147,7 +147,7 @@ const StoreCategories: React.FC = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get<any[]>(`${API_URL}/api/api/products`);
+        const { data } = await axios.get<any[]>(`${API_URL}/api/products`);
         const productsData = Array.isArray(data) ? data : [];
         setProducts(productsData);
         

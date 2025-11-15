@@ -58,7 +58,7 @@ const ProductDetailPage: React.FC = () => {
             setProduct(currentProduct);
           } else {
             if (!id) throw new Error('Missing product id');
-            const { data } = await axios.get<Product>(`${API_URL}/api/api/products/${id}`);
+            const { data } = await axios.get<Product>(`${API_URL}/api/products/${id}`);
             currentProduct = data;
             setProduct(data);
           }
@@ -66,7 +66,7 @@ const ProductDetailPage: React.FC = () => {
 
         if (currentProduct) {
           // Fetch all products to apply our enhanced recommendation algorithm
-          const response = await axios.get(`${API_URL}/api/api/products`);
+          const response = await axios.get(`${API_URL}/api/products`);
           const data = response.data;
           const allProducts = Array.isArray(data)
             ? data as Product[]
@@ -83,7 +83,7 @@ const ProductDetailPage: React.FC = () => {
        } catch (err: any) {
          console.error('Failed to load product or suggestions:', err);
          Analytics.trackApiError(
-           `${API_URL}/api/api/products/${id}`,
+           `${API_URL}/api/products/${id}`,
            err.response?.status || 500,
            err.message || 'Failed to load product'
          );
@@ -172,7 +172,7 @@ const ProductDetailPage: React.FC = () => {
    const fetchAllProducts = async (): Promise<Product[]> => {
      if (allProducts && allProducts.length > 0) return allProducts;
      try {
-       const resp = await axios.get(`${API_URL}/api/api/products`);
+       const resp = await axios.get(`${API_URL}/api/products`);
        const data = resp.data;
        const list = Array.isArray(data)
          ? (data as Product[])

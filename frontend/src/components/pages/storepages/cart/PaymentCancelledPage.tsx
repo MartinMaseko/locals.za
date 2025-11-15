@@ -86,7 +86,7 @@ const PaymentCancelledPage: React.FC = () => {
             const token = await user.getIdToken();
             console.log("Token obtained, trying authenticated request");
             
-            const response = await axios.get<Order>(`${API_URL}/api/api/orders/${id}`, {
+            const response = await axios.get<Order>(`${API_URL}/api/orders/${id}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -94,7 +94,7 @@ const PaymentCancelledPage: React.FC = () => {
           } else if (isFromPayFast) {
             // If coming from PayFast and no user is logged in, try a special endpoint
             console.log("No user logged in, but coming from PayFast. Trying public endpoint");
-            const response = await axios.get<Order>(`${API_URL}/api/api/orders/public/${id}`);
+            const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
             orderData = response.data;
           } else {
             throw new Error('Authentication required');
@@ -105,7 +105,7 @@ const PaymentCancelledPage: React.FC = () => {
           // As a last resort for PayFast returns, try the public endpoint
           if (isFromPayFast) {
             console.log("Trying public endpoint as fallback");
-            const response = await axios.get<Order>(`${API_URL}/api/api/orders/public/${id}`);
+            const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
             orderData = response.data;
           } else {
             throw authError;
@@ -127,7 +127,7 @@ const PaymentCancelledPage: React.FC = () => {
             statusUpdatedRef.current = true;
             
             const token = await user.getIdToken();
-            await axios.put(`${API_URL}/api/api/orders/${id}/status`, 
+            await axios.put(`${API_URL}/api/orders/${id}/status`, 
               { status: 'cancelled' },
               { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -147,7 +147,7 @@ const PaymentCancelledPage: React.FC = () => {
             console.log("Updating order status to 'cancelled' via public endpoint");
             statusUpdatedRef.current = true;
             
-            await axios.put(`${API_URL}/api/api/orders/public/${id}/cancel`, {
+            await axios.put(`${API_URL}/api/orders/public/${id}/cancel`, {
               cancelReason: 'payment_cancelled_by_user'
             });
             

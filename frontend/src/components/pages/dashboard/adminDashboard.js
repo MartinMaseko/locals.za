@@ -155,7 +155,7 @@ const AdminDashboard = () => {
             }
             try {
                 const token = await user.getIdToken();
-                const { data } = await axios.get(`${API_URL}/api/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+                const { data } = await axios.get(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
                 if (data?.user_type !== 'admin') {
                     navigate('/adminlogin');
                     return;
@@ -179,7 +179,7 @@ const AdminDashboard = () => {
         setOrderError('');
         try {
             const token = await getToken();
-            const url = orderStatusFilter ? `${API_URL}/api/api/orders/all?status=${encodeURIComponent(orderStatusFilter)}` : `${API_URL}/api/api/orders/all`;
+            const url = orderStatusFilter ? `${API_URL}/api/orders/all?status=${encodeURIComponent(orderStatusFilter)}` : `${API_URL}/api/orders/all`;
             const { data } = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
             setOrders(Array.isArray(data) ? data : []);
         }
@@ -198,7 +198,7 @@ const AdminDashboard = () => {
     const fetchUserCount = useCallback(async () => {
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/admin/stats/users`, {
+            const { data } = await axios.get(`${API_URL}/api/admin/stats/users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUserCount(data.count);
@@ -228,7 +228,7 @@ const AdminDashboard = () => {
         setLoadingCustomer(prev => ({ ...prev, [userId]: true }));
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await axios.get(`${API_URL}/api/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
             const userData = data;
             setCustomerDetails(prev => ({
                 ...prev,
@@ -255,7 +255,7 @@ const AdminDashboard = () => {
         setLoadingDrivers(true);
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/drivers`, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await axios.get(`${API_URL}/api/drivers`, { headers: { Authorization: `Bearer ${token}` } });
             if (Array.isArray(data)) {
                 setDrivers(data.map((d) => ({ id: d.driver_id || d.id, name: d.full_name || d.email || d.id })));
             }
@@ -278,7 +278,7 @@ const AdminDashboard = () => {
         setOrderError('');
         try {
             const token = await getToken();
-            await axios.put(`${API_URL}/api/api/orders/${orderId}/assign-driver`, { driver_id: driverId }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${API_URL}/api/orders/${orderId}/assign-driver`, { driver_id: driverId }, { headers: { Authorization: `Bearer ${token}` } });
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, driver_id: driverId } : o));
             if (selectedOrder?.id === orderId)
                 setSelectedOrder(prev => prev ? { ...prev, driver_id: driverId } : null);
@@ -292,7 +292,7 @@ const AdminDashboard = () => {
         setOrderError('');
         try {
             const token = await getToken();
-            await axios.put(`${API_URL}/api/api/orders/${orderId}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${API_URL}/api/orders/${orderId}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
             if (selectedOrder?.id === orderId)
                 setSelectedOrder(prev => prev ? { ...prev, status } : null);
@@ -321,7 +321,7 @@ const AdminDashboard = () => {
         setProductsError('');
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/products`, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await axios.get(`${API_URL}/api/products`, { headers: { Authorization: `Bearer ${token}` } });
             setProductsList(Array.isArray(data) ? data : []);
         }
         catch (err) {
@@ -401,7 +401,7 @@ const AdminDashboard = () => {
             };
             console.log('Sending payload:', payload);
             // Send the request
-            await axios.put(`${API_URL}/api/api/products/${docId}`, payload, {
+            await axios.put(`${API_URL}/api/products/${docId}`, payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -455,7 +455,7 @@ const AdminDashboard = () => {
                 await uploadBytes(imageRef, driverForm.license_image);
                 licenseImageUrl = await getDownloadURL(imageRef);
             }
-            await axios.post(`${API_URL}/api/api/drivers/register`, {
+            await axios.post(`${API_URL}/api/drivers/register`, {
                 driver_id: driverForm.driver_id, firebase_uid: driverUid,
                 full_name: driverForm.full_name, phone_number: driverForm.phone_number,
                 user_type: 'driver', vehicle_type: driverForm.vehicle_type, vehicle_model: driverForm.vehicle_model,
@@ -503,7 +503,7 @@ const AdminDashboard = () => {
                     setProductError(`Image upload failed: ${uploadErr.message}. Product will be created without an image.`);
                 }
             }
-            await axios.post(`${API_URL}/api/api/products`, {
+            await axios.post(`${API_URL}/api/products`, {
                 product_id: productForm.product_id,
                 name: productForm.name,
                 description: productForm.description,
@@ -527,7 +527,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         setPromoteMsg('');
         try {
-            await axios.post(`${API_URL}/api/api/auth/promote-admin`, { uid: promoteUid });
+            await axios.post(`${API_URL}/api/auth/promote-admin`, { uid: promoteUid });
             setPromoteMsg('User promoted to admin!');
             setPromoteUid('');
         }
@@ -577,7 +577,7 @@ const AdminDashboard = () => {
             const token = await getToken();
             // Get stats from the backend endpoint
             try {
-                const { data } = await axios.get(`${API_URL}/api/api/admin/stats?period=${statsPeriod}`, {
+                const { data } = await axios.get(`${API_URL}/api/admin/stats?period=${statsPeriod}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (data) {
@@ -662,7 +662,7 @@ const AdminDashboard = () => {
     const fetchAllOrders = async () => {
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/orders/all`, {
+            const { data } = await axios.get(`${API_URL}/api/orders/all`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return Array.isArray(data) ? data : [];
@@ -682,7 +682,7 @@ const AdminDashboard = () => {
         setDriversError('');
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/drivers/all`, {
+            const { data } = await axios.get(`${API_URL}/api/drivers/all`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (Array.isArray(data)) {
@@ -708,7 +708,7 @@ const AdminDashboard = () => {
         try {
             const token = await getToken();
             try {
-                const { data } = await axios.get(`${API_URL}/api/api/orders/driver/${driverId}`, {
+                const { data } = await axios.get(`${API_URL}/api/orders/driver/${driverId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDriverOrders(Array.isArray(data) ? data : []);
@@ -717,7 +717,7 @@ const AdminDashboard = () => {
                 console.error('Error fetching driver orders:', err);
                 // Fallback: If the dedicated endpoint fails, get all orders and filter client-side
                 if (err?.response?.status === 403 || err?.response?.status === 404) {
-                    const { data } = await axios.get(`${API_URL}/api/api/orders/all`, {
+                    const { data } = await axios.get(`${API_URL}/api/orders/all`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     if (Array.isArray(data)) {
@@ -750,7 +750,7 @@ const AdminDashboard = () => {
         setPaymentHistoryLoading(true);
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/admin/drivers/${driverId}/payments`, {
+            const { data } = await axios.get(`${API_URL}/api/admin/drivers/${driverId}/payments`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDriverPaymentHistory(Array.isArray(data) ? data : []);
@@ -769,7 +769,7 @@ const AdminDashboard = () => {
         setCashoutError('');
         try {
             const token = await getToken();
-            const { data } = await axios.get(`${API_URL}/api/api/admin/cashouts`, {
+            const { data } = await axios.get(`${API_URL}/api/admin/cashouts`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCashoutList(Array.isArray(data) ? data : []);
@@ -789,7 +789,7 @@ const AdminDashboard = () => {
         setProcessingPayment(true);
         try {
             const token = await getToken();
-            await axios.put(`${API_URL}/api/api/admin/cashouts/${cashoutId}/complete`, {}, {
+            await axios.put(`${API_URL}/api/admin/cashouts/${cashoutId}/complete`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Update the local state
@@ -835,7 +835,7 @@ const AdminDashboard = () => {
             }
             try {
                 const token = await user.getIdToken();
-                const { data } = await axios.get(`${API_URL}/api/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+                const { data } = await axios.get(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
                 if (data?.user_type !== 'admin') {
                     navigate('/adminlogin');
                     return;
@@ -854,7 +854,7 @@ const AdminDashboard = () => {
     if (loading)
         return _jsx("div", { className: "admin-loading", children: "Loading dashboard..." });
     // Render
-    return (_jsx("div", { className: "admin-dashboard", children: _jsxs("div", { className: "admin-layout", children: [_jsxs("div", { className: "admin-sidebar", children: [_jsxs("div", { className: "admin-header", children: [_jsx("img", { src: Logo, className: 'dashLogo', alt: 'Logo' }), _jsx("h3", { children: "Dashboard" }), _jsx("div", { className: "admin-info", children: admin?.full_name || admin?.email })] }), _jsxs("nav", { className: "admin-nav", children: [_jsx("button", { className: `nav-item ${activeSection === 'dashboard' ? 'active' : ''}`, onClick: () => setActiveSection('dashboard'), children: "Dashboard" }), _jsx("button", { className: `nav-item ${activeSection === 'drivers' ? 'active' : ''}`, onClick: () => setActiveSection('drivers'), children: "Register Driver" }), _jsx("button", { className: `nav-item ${activeSection === 'ManageDrivers' ? 'active' : ''}`, onClick: () => setActiveSection('ManageDrivers'), children: "Manage Drivers" }), _jsx("button", { className: `nav-item ${activeSection === 'products' ? 'active' : ''}`, onClick: () => setActiveSection('products'), children: "Add Product" }), _jsx("button", { className: `nav-item ${activeSection === 'ProductManagement' ? 'active' : ''}`, onClick: () => setActiveSection('ProductManagement'), children: "Manage Products" }), _jsx("button", { className: `nav-item ${activeSection === 'admin' ? 'active' : ''}`, onClick: () => setActiveSection('admin'), children: "Promote to Admin" }), _jsx("button", { className: `nav-item ${activeSection === 'orders' ? 'active' : ''}`, onClick: () => setActiveSection('orders'), children: "Manage Orders" }), _jsx("div", { className: "nav-spacer" }), _jsx("button", { className: "nav-item signout-btn", onClick: handleSignOut, children: "Sign Out" })] })] }), _jsxs("div", { className: "admin-content", children: [activeSection === 'dashboard' && (_jsxs("div", { className: "dashboard-overview", children: [_jsxs("div", { className: 'dashboard-overview-header', children: [_jsx("div", { className: 'dashboard-overview-title', children: "Dashboard Overview" }), _jsxs("div", { className: "welcome-message", children: ["User: ", admin?.full_name || admin?.email] }), _jsxs("div", { className: "stats-period-filter", children: [_jsx("label", { children: "Period: " }), _jsxs("div", { className: "period-options", children: [_jsx("button", { className: `period-option ${statsPeriod === '30' ? 'active' : ''}`, onClick: () => setStatsPeriod('30'), children: "30 Days" }), _jsx("button", { className: `period-option ${statsPeriod === '60' ? 'active' : ''}`, onClick: () => setStatsPeriod('60'), children: "60 Days" }), _jsx("button", { className: `period-option ${statsPeriod === '90' ? 'active' : ''}`, onClick: () => setStatsPeriod('90'), children: "90 Days" }), _jsx("button", { className: `period-option ${statsPeriod === 'all' ? 'active' : ''}`, onClick: () => setStatsPeriod('all'), children: "All Time" })] })] })] }), _jsxs("div", { className: "dashboard-stats", children: [_jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Products" }), _jsx("p", { className: "stat-number", children: productsList.length })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Drivers" }), _jsx("p", { className: "stat-number", children: drivers.length })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Orders" }), _jsx("p", { className: "stat-number", children: orders.length })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Service Revenue" }), _jsxs("p", { className: "stat-number", children: ["R", dashboardStats.serviceRevenue.toFixed(2)] }), _jsxs("p", { className: "stat-period", children: ["Last ", statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`] })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Order Revenue" }), _jsxs("p", { className: "stat-number", children: ["R", dashboardStats.orderRevenue.toFixed(2)] }), _jsxs("p", { className: "stat-period", children: ["Last ", statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`] })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Users" }), _jsx("p", { className: "stat-number", children: userCount }), _jsx("p", { className: "stat-period", children: "Total registered users" })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Driver Payments" }), _jsxs("p", { className: "stat-number", children: ["R", (orders.filter(o => (o.status === 'delivered' || o.status === 'completed') && o.driver_id).length * 40).toFixed(2)] }), _jsx("p", { className: "stat-period", children: "Total driver payments" })] }), _jsxs("div", { className: "stat-card top-products", children: [_jsx("h3", { children: "Top Selling Products" }), dashboardStats.topProducts.length > 0 ? (dashboardStats.topProducts.map((product, idx) => (_jsxs("div", { className: "stat-product", children: [_jsx("span", { className: "product-name", children: product.name }), _jsxs("span", { className: "product-count", children: [product.count, " sold"] })] }, idx)))) : (_jsx("p", { className: "no-data", children: "No product data" })), _jsxs("p", { className: "stat-period", children: ["Last ", statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`] })] })] })] })), activeSection === 'drivers' && (_jsxs("div", { className: "driver-form-section", children: [_jsx("h2", { children: "Register New Driver" }), _jsxs("form", { onSubmit: handleRegisterDriver, className: "admin-form", children: [_jsx("div", { className: "form-group", children: _jsx("input", { name: "email", type: "email", placeholder: "Driver Email", value: driverForm.email, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "password", type: "password", placeholder: "Password", value: driverForm.password, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "full_name", type: "text", placeholder: "Full Name", value: driverForm.full_name, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "phone_number", type: "tel", placeholder: "Phone Number", value: driverForm.phone_number, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsxs("select", { name: "vehicle_type", value: driverForm.vehicle_type, onChange: handleDriverChange, required: true, className: 'form-select', children: [_jsx("option", { value: "", children: "Select Vehicle Type" }), vehicleTypes.map(t => _jsx("option", { value: t, children: t }, t))] }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "vehicle_model", type: "text", placeholder: "Vehicle Model", value: driverForm.vehicle_model, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "bank_details", type: "text", placeholder: "Bank Details", value: driverForm.bank_details, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "license_number", type: "text", placeholder: "License Number", value: driverForm.license_number, onChange: handleDriverChange, required: true }) }), _jsxs("div", { className: "form-group file-input-group", children: [_jsx("label", { children: "License Image:" }), _jsx("input", { name: "license_image", type: "file", accept: "image/*", onChange: handleDriverImageChange })] }), _jsx("button", { type: "submit", className: "form-button", children: "Register Driver" }), driverError && _jsx("div", { className: "error-message", children: driverError }), driverSuccess && _jsx("div", { className: "success-message", children: driverSuccess })] })] })), activeSection === 'products' && (_jsxs("div", { className: "product-form-section", children: [_jsx("h2", { children: "Add New Product" }), _jsxs("form", { onSubmit: handleAddProduct, className: "admin-form", children: [_jsx("div", { className: "form-group", children: _jsx("input", { name: "product_id", type: "text", placeholder: "Product ID", value: productForm.product_id, readOnly: true, className: "readonly-input" }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "name", type: "text", placeholder: "Product Name", value: productForm.name, onChange: handleProductChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "brand", type: "text", placeholder: "Brand", value: productForm.brand, onChange: handleProductChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsxs("select", { name: "category", value: productForm.category, onChange: handleProductChange, required: true, children: [_jsx("option", { value: "", children: "Select Category" }), productCategories.map(cat => _jsx("option", { value: cat, children: cat }, cat))] }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "description", type: "text", placeholder: "Description", value: productForm.description, onChange: handleProductChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "price", type: "number", placeholder: "Price", value: productForm.price, onChange: handleProductChange, required: true }) }), _jsxs("div", { className: "form-group file-input-group", children: [_jsx("label", { children: "Product Image:" }), _jsx("input", { name: "image", type: "file", accept: "image/*", onChange: handleProductImageChange })] }), _jsx("button", { type: "submit", className: "form-button", children: "Add Product" }), productError && _jsx("div", { className: "error-message", children: productError }), productSuccess && _jsx("div", { className: "success-message", children: productSuccess })] })] })), activeSection === 'admin' && (_jsxs("div", { className: "admin-promotion-section", children: [_jsx("h2", { children: "Promote User to Admin" }), _jsxs("form", { onSubmit: handlePromoteAdmin, className: "admin-form", children: [_jsx("div", { className: "form-group", children: _jsx("input", { type: "text", placeholder: "Firebase UID", value: promoteUid, onChange: e => setPromoteUid(e.target.value), required: true }) }), _jsx("button", { type: "submit", className: "form-button", children: "Promote to Admin" }), promoteMsg && _jsx("div", { className: promoteMsg.includes('failed') ? "error-message" : "success-message", children: promoteMsg })] })] })), activeSection === 'orders' && (_jsxs("div", { className: "orders-section", children: [_jsxs("div", { className: "orders-header", children: [_jsx("h2", { children: "Manage Orders" }), _jsx("div", { className: "order-search", children: _jsx("input", { type: "text", placeholder: "Search by Order ID", value: orderSearchQuery, onChange: e => setOrderSearchQuery(e.target.value), className: "order-search-input" }) }), _jsx("div", { className: "orders-controls", children: _jsxs("div", { className: "orders-filter", children: [_jsxs("select", { value: orderStatusFilter, onChange: e => setOrderStatusFilter(e.target.value), children: [_jsx("option", { value: "", children: "All Orders" }), _jsx("option", { value: "pending", children: "Pending" }), _jsx("option", { value: "processing", children: "Processing" }), _jsx("option", { value: "in transit", children: "In Transit" }), _jsx("option", { value: "completed", children: "Completed" }), _jsx("option", { value: "cancelled", children: "Cancelled" })] }), _jsx("button", { onClick: fetchOrders, className: "refresh-button", children: "Refresh" })] }) })] }), orderLoading ? _jsx("div", { className: "loading-indicator", children: "Loading orders..." }) :
+    return (_jsx("div", { className: "admin-dashboard", children: _jsxs("div", { className: "admin-layout", children: [_jsxs("div", { className: "admin-sidebar", children: [_jsxs("div", { className: "admin-header", children: [_jsx("img", { src: Logo, className: 'dashLogo', alt: 'Logo' }), _jsx("h3", { children: "Dashboard" }), _jsx("div", { className: "admin-info", children: admin?.full_name || admin?.email })] }), _jsxs("nav", { className: "admin-nav", children: [_jsx("button", { className: `nav-item ${activeSection === 'dashboard' ? 'active' : ''}`, onClick: () => setActiveSection('dashboard'), children: "Dashboard" }), _jsx("button", { className: `nav-item ${activeSection === 'drivers' ? 'active' : ''}`, onClick: () => setActiveSection('drivers'), children: "Register Driver" }), _jsx("button", { className: `nav-item ${activeSection === 'ManageDrivers' ? 'active' : ''}`, onClick: () => setActiveSection('ManageDrivers'), children: "Manage Drivers" }), _jsx("button", { className: `nav-item ${activeSection === 'products' ? 'active' : ''}`, onClick: () => setActiveSection('products'), children: "Add Product" }), _jsx("button", { className: `nav-item ${activeSection === 'ProductManagement' ? 'active' : ''}`, onClick: () => setActiveSection('ProductManagement'), children: "Manage Products" }), _jsx("button", { className: `nav-item ${activeSection === 'admin' ? 'active' : ''}`, onClick: () => setActiveSection('admin'), children: "Promote to Admin" }), _jsx("button", { className: `nav-item ${activeSection === 'orders' ? 'active' : ''}`, onClick: () => setActiveSection('orders'), children: "Manage Orders" }), _jsx("div", { className: "nav-spacer" }), _jsx("button", { className: "nav-item signout-btn", onClick: handleSignOut, children: "Sign Out" })] })] }), _jsxs("div", { className: "admin-content", children: [activeSection === 'dashboard' && (_jsxs("div", { className: "dashboard-overview", children: [_jsxs("div", { className: 'dashboard-overview-header', children: [_jsx("div", { className: 'dashboard-overview-title', children: "Dashboard Overview" }), _jsxs("div", { className: "welcome-message", children: ["User: ", admin?.full_name || admin?.email] }), _jsxs("div", { className: "stats-period-filter", children: [_jsx("label", { children: "Period: " }), _jsxs("div", { className: "period-options", children: [_jsx("button", { className: `period-option ${statsPeriod === '30' ? 'active' : ''}`, onClick: () => setStatsPeriod('30'), children: "30 Days" }), _jsx("button", { className: `period-option ${statsPeriod === '60' ? 'active' : ''}`, onClick: () => setStatsPeriod('60'), children: "60 Days" }), _jsx("button", { className: `period-option ${statsPeriod === '90' ? 'active' : ''}`, onClick: () => setStatsPeriod('90'), children: "90 Days" }), _jsx("button", { className: `period-option ${statsPeriod === 'all' ? 'active' : ''}`, onClick: () => setStatsPeriod('all'), children: "All Time" })] })] })] }), _jsxs("div", { className: "dashboard-stats", children: [_jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Products" }), _jsx("p", { className: "stat-number", children: productsList.length })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Drivers" }), _jsx("p", { className: "stat-number", children: drivers.length })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Orders" }), _jsx("p", { className: "stat-number", children: orders.length })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Service Revenue" }), _jsxs("p", { className: "stat-number", children: ["R", dashboardStats.serviceRevenue.toFixed(2)] }), _jsxs("p", { className: "stat-period", children: ["Last ", statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`] })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Order Revenue" }), _jsxs("p", { className: "stat-number", children: ["R", dashboardStats.orderRevenue.toFixed(2)] }), _jsxs("p", { className: "stat-period", children: ["Last ", statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`] })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Users" }), _jsx("p", { className: "stat-number", children: userCount }), _jsx("p", { className: "stat-period", children: "Total registered users" })] }), _jsxs("div", { className: "stat-card", children: [_jsx("h3", { children: "Driver Payments" }), _jsxs("p", { className: "stat-number", children: ["R", (orders.filter(o => (o.status === 'delivered' || o.status === 'completed') && o.driver_id).length * 40).toFixed(2)] }), _jsx("p", { className: "stat-period", children: "Total driver payments" })] }), _jsxs("div", { className: "stat-card top-products", children: [_jsx("h3", { children: "Top Selling Products" }), dashboardStats.topProducts.length > 0 ? (dashboardStats.topProducts.map((product, idx) => (_jsxs("div", { className: "stat-product", children: [_jsx("span", { className: "product-name", children: product.name }), _jsxs("span", { className: "product-count", children: [product.count, " sold"] })] }, idx)))) : (_jsx("p", { className: "no-data", children: "No product data" })), _jsxs("p", { className: "stat-period", children: ["Last ", statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`] })] })] })] })), activeSection === 'drivers' && (_jsxs("div", { className: "driver-form-section", children: [_jsx("h2", { children: "Register New Driver" }), _jsxs("form", { onSubmit: handleRegisterDriver, className: "admin-form", children: [_jsx("div", { className: "form-group", children: _jsx("input", { name: "email", type: "email", placeholder: "Driver Email", value: driverForm.email, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "password", type: "password", placeholder: "Password", value: driverForm.password, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "full_name", type: "text", placeholder: "Full Name", value: driverForm.full_name, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "phone_number", type: "tel", placeholder: "Phone Number", value: driverForm.phone_number, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsxs("select", { name: "vehicle_type", value: driverForm.vehicle_type, onChange: handleDriverChange, required: true, className: 'form-select', children: [_jsx("option", { value: "", children: "Select Vehicle Type" }), vehicleTypes.map(t => _jsx("option", { value: t, children: t }, t))] }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "vehicle_model", type: "text", placeholder: "Vehicle Model", value: driverForm.vehicle_model, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "bank_details", type: "text", placeholder: "Bank Details", value: driverForm.bank_details, onChange: handleDriverChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "license_number", type: "text", placeholder: "License Number", value: driverForm.license_number, onChange: handleDriverChange, required: true }) }), _jsxs("div", { className: "form-group file-input-group", children: [_jsx("label", { children: "License Image:" }), _jsx("input", { name: "license_image", type: "file", accept: "image/*", onChange: handleDriverImageChange })] }), _jsx("button", { type: "submit", className: "form-button", children: "Register Driver" }), driverError && _jsx("div", { className: "error-message", children: driverError }), driverSuccess && _jsx("div", { className: "success-message", children: driverSuccess })] })] })), activeSection === 'products' && (_jsxs("div", { className: "product-form-section", children: [_jsx("h2", { children: "Add New Product" }), _jsxs("form", { onSubmit: handleAddProduct, className: "admin-form", children: [_jsx("div", { className: "form-group", children: _jsx("input", { name: "product_id", type: "text", placeholder: "Product ID", value: productForm.product_id, readOnly: true, className: "readonly-input" }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "name", type: "text", placeholder: "Product Name", value: productForm.name, onChange: handleProductChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "brand", type: "text", placeholder: "Brand", value: productForm.brand, onChange: handleProductChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsxs("select", { name: "category", value: productForm.category, onChange: handleProductChange, required: true, children: [_jsx("option", { value: "", children: "Select Category" }), productCategories.map(cat => _jsx("option", { value: cat, children: cat }, cat)), !productCategories.includes('Food Packaging') && _jsx("option", { value: "Food Packaging", children: "Food Packaging" }), !productCategories.includes('Sauces') && _jsx("option", { value: "Sauces", children: "Sauces" })] }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "description", type: "text", placeholder: "Description", value: productForm.description, onChange: handleProductChange, required: true }) }), _jsx("div", { className: "form-group", children: _jsx("input", { name: "price", type: "number", placeholder: "Price", value: productForm.price, onChange: handleProductChange, required: true }) }), _jsxs("div", { className: "form-group file-input-group", children: [_jsx("label", { children: "Product Image:" }), _jsx("input", { name: "image", type: "file", accept: "image/*", onChange: handleProductImageChange })] }), _jsx("button", { type: "submit", className: "form-button", children: "Add Product" }), productError && _jsx("div", { className: "error-message", children: productError }), productSuccess && _jsx("div", { className: "success-message", children: productSuccess })] })] })), activeSection === 'admin' && (_jsxs("div", { className: "admin-promotion-section", children: [_jsx("h2", { children: "Promote User to Admin" }), _jsxs("form", { onSubmit: handlePromoteAdmin, className: "admin-form", children: [_jsx("div", { className: "form-group", children: _jsx("input", { type: "text", placeholder: "Firebase UID", value: promoteUid, onChange: e => setPromoteUid(e.target.value), required: true }) }), _jsx("button", { type: "submit", className: "form-button", children: "Promote to Admin" }), promoteMsg && _jsx("div", { className: promoteMsg.includes('failed') ? "error-message" : "success-message", children: promoteMsg })] })] })), activeSection === 'orders' && (_jsxs("div", { className: "orders-section", children: [_jsxs("div", { className: "orders-header", children: [_jsx("h2", { children: "Manage Orders" }), _jsx("div", { className: "order-search", children: _jsx("input", { type: "text", placeholder: "Search by Order ID", value: orderSearchQuery, onChange: e => setOrderSearchQuery(e.target.value), className: "order-search-input" }) }), _jsx("div", { className: "orders-controls", children: _jsxs("div", { className: "orders-filter", children: [_jsxs("select", { value: orderStatusFilter, onChange: e => setOrderStatusFilter(e.target.value), children: [_jsx("option", { value: "", children: "All Orders" }), _jsx("option", { value: "pending", children: "Pending" }), _jsx("option", { value: "processing", children: "Processing" }), _jsx("option", { value: "in transit", children: "In Transit" }), _jsx("option", { value: "completed", children: "Completed" }), _jsx("option", { value: "cancelled", children: "Cancelled" })] }), _jsx("button", { onClick: fetchOrders, className: "refresh-button", children: "Refresh" })] }) })] }), orderLoading ? _jsx("div", { className: "loading-indicator", children: "Loading orders..." }) :
                                     orderError ? _jsx("div", { className: "error-message", children: orderError }) :
                                         filteredOrders.length === 0 ? _jsx("div", { className: "no-orders", children: orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found' }) :
                                             _jsx("div", { className: "orders-grid", children: _jsx("div", { className: "orders-list", children: _jsxs("table", { className: "orders-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Order ID" }), _jsx("th", { children: "Date" }), _jsx("th", { children: "Customer" }), _jsx("th", { children: "Total" }), _jsx("th", { children: "Status" }), _jsx("th", { children: "Rating" }), _jsx("th", { children: "Actions" })] }) }), _jsx("tbody", { children: filteredOrders.map(order => (_jsxs("tr", { onClick: () => setSelectedOrder(order), className: selectedOrder?.id === order.id ? 'selected' : '', children: [_jsxs("td", { children: [order.id?.substring(0, 8), "..."] }), _jsx("td", { children: formatDate(order.createdAt) }), _jsxs("td", { children: [order.userId?.substring(0, 8), "..."] }), _jsxs("td", { children: ["R", Number(order.total || 0).toFixed(2)] }), _jsx("td", { children: _jsx("div", { className: `status-badge ${order.status}`, children: order.status }) }), _jsx("td", { children: order.status === 'completed' ? (order.rating ? (_jsx("div", { className: "table-rating", children: _jsx("div", { className: "table-stars", children: [1, 2, 3, 4, 5].map((star) => (_jsx("span", { className: `table-star ${star <= (order.rating || 0) ? 'filled' : ''}`, children: "\u2605" }, star))) }) })) : (_jsx("span", { className: "no-table-rating", children: "Not rated" }))) : (_jsx("span", { children: "\u2014" })) }), _jsx("td", { children: _jsx("div", { className: "action-buttons", children: _jsx("button", { onClick: (e) => { e.stopPropagation(); setSelectedOrder(order); }, className: "view-button", children: "View" }) }) })] }, order.id))) })] }) }) }), selectedOrder && (_jsx("div", { className: "order-details-overlay", onClick: () => { setSelectedOrder(null); setShowDriverDropdown(false); }, children: _jsxs("div", { className: "order-details-modal", onClick: e => e.stopPropagation(), children: [_jsx("button", { className: "modal-close", onClick: () => { setSelectedOrder(null); setShowDriverDropdown(false); }, "aria-label": "Close", children: "\u00D7" }), _jsx("h3", { children: "Order Details" }), _jsxs("div", { className: "order-info", children: [_jsxs("div", { className: "order-header", children: [_jsxs("div", { children: [_jsx("strong", { children: "Order ID:" }), " ", selectedOrder.id] }), _jsxs("div", { children: [_jsx("strong", { children: "Date:" }), " ", formatDate(selectedOrder.createdAt)] })] }), _jsxs("div", { className: "customer-info", children: [loadingCustomer[selectedOrder.userId] ? _jsx("div", { className: "customer-name-loading", children: "Loading customer info..." }) :
