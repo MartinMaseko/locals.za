@@ -54,7 +54,7 @@ const PaymentCancelledPage = () => {
                     if (user) {
                         const token = await user.getIdToken();
                         console.log("Token obtained, trying authenticated request");
-                        const response = await axios.get(`${API_URL}/api/api/orders/${id}`, {
+                        const response = await axios.get(`${API_URL}/api/orders/${id}`, {
                             headers: { Authorization: `Bearer ${token}` }
                         });
                         orderData = response.data;
@@ -62,7 +62,7 @@ const PaymentCancelledPage = () => {
                     else if (isFromPayFast) {
                         // If coming from PayFast and no user is logged in, try a special endpoint
                         console.log("No user logged in, but coming from PayFast. Trying public endpoint");
-                        const response = await axios.get(`${API_URL}/api/api/orders/public/${id}`);
+                        const response = await axios.get(`${API_URL}/api/orders/public/${id}`);
                         orderData = response.data;
                     }
                     else {
@@ -74,7 +74,7 @@ const PaymentCancelledPage = () => {
                     // As a last resort for PayFast returns, try the public endpoint
                     if (isFromPayFast) {
                         console.log("Trying public endpoint as fallback");
-                        const response = await axios.get(`${API_URL}/api/api/orders/public/${id}`);
+                        const response = await axios.get(`${API_URL}/api/orders/public/${id}`);
                         orderData = response.data;
                     }
                     else {
@@ -92,7 +92,7 @@ const PaymentCancelledPage = () => {
                         console.log("Updating order status to 'cancelled'");
                         statusUpdatedRef.current = true;
                         const token = await user.getIdToken();
-                        await axios.put(`${API_URL}/api/api/orders/${id}/status`, { status: 'cancelled' }, { headers: { Authorization: `Bearer ${token}` } });
+                        await axios.put(`${API_URL}/api/orders/${id}/status`, { status: 'cancelled' }, { headers: { Authorization: `Bearer ${token}` } });
                         setOrder(prevOrder => prevOrder ? { ...prevOrder, status: 'cancelled' } : orderData);
                     }
                     catch (err) {
@@ -107,7 +107,7 @@ const PaymentCancelledPage = () => {
                     try {
                         console.log("Updating order status to 'cancelled' via public endpoint");
                         statusUpdatedRef.current = true;
-                        await axios.put(`${API_URL}/api/api/orders/public/${id}/cancel`, {
+                        await axios.put(`${API_URL}/api/orders/public/${id}/cancel`, {
                             cancelReason: 'payment_cancelled_by_user'
                         });
                         setOrder(prevOrder => prevOrder ? { ...prevOrder, status: 'cancelled' } : orderData);

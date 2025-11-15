@@ -1,21 +1,18 @@
 export const Analytics = {
     // Product Performance Metrics
     trackProductView: (product) => {
-        if (!window.gtag || !product) return;
-        try {
-            window.gtag('event', 'view_item', {
-                currency: 'ZAR',
-                items: [{
+        if (!window.gtag)
+            return;
+        window.gtag('event', 'view_item', {
+            currency: 'ZAR',
+            items: [{
                     item_id: product.id,
                     item_name: product.name,
                     item_category: product.category,
                     item_brand: product.brand,
                     price: product.price
                 }]
-            });
-        } catch (error) {
-            console.warn('Analytics error:', error);
-        }
+        });
     },
     trackCategoryView: (category) => {
         if (!window.gtag)

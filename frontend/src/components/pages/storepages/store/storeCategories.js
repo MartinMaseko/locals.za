@@ -134,7 +134,7 @@ const StoreCategories = () => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                const { data } = await axios.get(`${API_URL}/api/api/products`);
+                const { data } = await axios.get(`${API_URL}/api/products`);
                 const productsData = Array.isArray(data) ? data : [];
                 setProducts(productsData);
                 // Extract unique brands from products

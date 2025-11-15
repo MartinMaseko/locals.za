@@ -92,7 +92,7 @@ const HomePage = () => {
       if (user) {
         const token = await user.getIdToken();
         try {
-          const { data } = await axios.get(`${API_URL}/api/api/users/me`, {
+          const { data } = await axios.get(`${API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const userData = data as { full_name?: string; email?: string };
@@ -111,7 +111,7 @@ const HomePage = () => {
     const fetchProducts = async () => {
       setProductsLoading(true);
       try {
-        const { data } = await axios.get(`${API_URL}/api/api/products`);
+        const { data } = await axios.get(`${API_URL}/api/products`);
         setProducts(data as any[]);
       } catch {
         setProducts([]);
@@ -175,7 +175,7 @@ const HomePage = () => {
     setRequestStatus(null);
     
     try {
-      await axios.post(`${API_URL}/api/api/product-requests`, {
+      await axios.post(`${API_URL}/api/product-requests`, {
         productName: productRequest,
         email: name.includes('@') ? name : undefined, // Use email if available
         timestamp: new Date().toISOString(),

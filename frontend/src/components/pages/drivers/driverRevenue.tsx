@@ -102,7 +102,7 @@ const DriverRevenue = () => {
         throw new Error('Authentication required');
       }
       
-      const response = await axios.get(`${API_URL}/api/api/drivers/info`, {
+      const response = await axios.get(`${API_URL}/api/drivers/info`, {
         params: { driver_id: driverId },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -141,7 +141,7 @@ const DriverRevenue = () => {
         throw new Error('Authentication required');
       }
       
-      const response = await axios.get(`${API_URL}/api/api/orders`, {
+      const response = await axios.get(`${API_URL}/api/orders`, {
         params: { driver_id: driverId, include_cashout_status: true },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -190,7 +190,7 @@ const DriverRevenue = () => {
       // Calculate total amount
       const amount = pendingOrders.length * 40;
 
-      await axios.post(`${API_URL}/api/api/drivers/cashout`, {
+      await axios.post(`${API_URL}/api/drivers/cashout`, {
         orderIds,
         amount,
         driverName: driver?.name || 'Driver',

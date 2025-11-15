@@ -57,7 +57,7 @@ const OrderConfirmationPage = () => {
                     if (user) {
                         const token = await user.getIdToken();
                         console.log("Token obtained, trying authenticated request");
-                        const response = await axios.get(`${API_URL}/api/api/orders/${id}`, {
+                        const response = await axios.get(`${API_URL}/api/orders/${id}`, {
                             headers: { Authorization: `Bearer ${token}` }
                         });
                         orderData = response.data;
@@ -65,7 +65,7 @@ const OrderConfirmationPage = () => {
                     else if (isFromPayFast) {
                         // If coming from PayFast and no user is logged in, try a special endpoint
                         console.log("No user logged in, but coming from PayFast. Trying public endpoint");
-                        const response = await axios.get(`${API_URL}/api/api/orders/public/${id}`);
+                        const response = await axios.get(`${API_URL}/api/orders/public/${id}`);
                         orderData = response.data;
                     }
                     else {
@@ -77,7 +77,7 @@ const OrderConfirmationPage = () => {
                     // As a last resort for PayFast returns, try the public endpoint
                     if (isFromPayFast) {
                         console.log("Trying public endpoint as fallback");
-                        const response = await axios.get(`${API_URL}/api/api/orders/public/${id}`);
+                        const response = await axios.get(`${API_URL}/api/orders/public/${id}`);
                         orderData = response.data;
                     }
                     else {
@@ -97,7 +97,7 @@ const OrderConfirmationPage = () => {
                             console.log("Updating order status to 'pending'");
                             statusUpdatedRef.current = true;
                             const token = await user.getIdToken();
-                            await axios.put(`${API_URL}/api/api/orders/${id}/status`, {
+                            await axios.put(`${API_URL}/api/orders/${id}/status`, {
                                 status: 'pending',
                                 sendConfirmation: true
                             }, { headers: { Authorization: `Bearer ${token}` } });
@@ -114,7 +114,7 @@ const OrderConfirmationPage = () => {
                             console.log("Sending order confirmation");
                             confirmationSentRef.current = true;
                             const token = await user.getIdToken();
-                            await axios.post(`${API_URL}/api/api/orders/${id}/send-confirmation`, {}, {
+                            await axios.post(`${API_URL}/api/orders/${id}/send-confirmation`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
                             });
                         }

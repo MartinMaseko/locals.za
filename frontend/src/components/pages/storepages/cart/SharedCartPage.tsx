@@ -36,7 +36,7 @@ const SharedCartPage: React.FC = () => {
       // fetch product details
       Promise.all(list.map(async (it: { id: string; qty: number }) => {
         try {
-          const res = await axios.get(`${API_URL}/api/api/products/${it.id}`);
+          const res = await axios.get(`${API_URL}/api/products/${it.id}`);
           return { ...it, product: res.data };
         } catch (e) {
           return { ...it, product: null };

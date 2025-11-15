@@ -36,7 +36,7 @@ const UserLogin = () => {
       const token = await user.getIdToken();
 
       // Fetch user profile from backend
-      const response = await axios.get(`${API_URL}/api/api/users/me`, {
+      const response = await axios.get(`${API_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Define a type for the user profile
@@ -79,7 +79,7 @@ const UserLogin = () => {
       const token = await user.getIdToken();
 
       // Fetch user profile from backend
-      const response = await axios.get(`${API_URL}/api/api/users/me`, {
+      const response = await axios.get(`${API_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       type UserProfile = {
