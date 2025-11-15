@@ -1,41 +1,38 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const admin = require('../../firebase');
-const functions = require('firebase-functions');
-require('dotenv').config();
 
 /**
  * PayFast Service - Handles all PayFast payment operations
- * 
- * Integration based on PayFast documentation:
- * https://developers.payfast.co.za/docs
+ * Production Mode: Uses process.env variables from .env
+ * Development Mode: Uses process.env variables from .env.local
  */
 class PayfastService {
   constructor() {
-    // Load configuration from Firebase Functions config (production) or .env (local)
-    const config = functions.config();
-    
+    // Use environment variables directly (no functions.config())
     this.config = {
-      merchantId: config.payfast?.merchant_id || process.env.PAYFAST_MERCHANT_ID,
-      merchantKey: config.payfast?.merchant_key || process.env.PAYFAST_MERCHANT_KEY,
-      passphrase: config.payfast?.passphrase || process.env.PAYFAST_PASSPHRASE || '',
-      returnUrl: config.payfast?.return_url || process.env.PAYFAST_RETURN_URL || 'https://locals-za.co.za/payment/success',
-      cancelUrl: config.payfast?.cancel_url || process.env.PAYFAST_CANCEL_URL || 'https://locals-za.co.za/payment/cancelled',
-      notifyUrl: config.payfast?.notify_url || process.env.PAYFAST_NOTIFY_URL || 'https://europe-west4-localsza.cloudfunctions.net/api/payment/notify',
-      testMode: false, // Set to true for sandbox testing
+      merchantId: process.env.PAYFAST_MERCHANT_ID,
+      merchantKey: process.env.PAYFAST_MERCHANT_KEY,
+      passphrase: process.env.PAYFAST_PASSPHRASE || '',
+      returnUrl: process.env.PAYFAST_RETURN_URL,
+      cancelUrl: process.env.PAYFAST_CANCEL_URL,
+      notifyUrl: process.env.PAYFAST_NOTIFY_URL,
       
-      // Correct URLs per PayFast documentation
+      // Check if test mode is explicitly set to 'true'
+      testMode: process.env.PAYFAST_TEST_MODE === 'true',
+      
       sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
       productionUrl: 'https://www.payfast.co.za/eng/process',
       
-      // Validation URLs
       validateUrlSandbox: 'https://sandbox.payfast.co.za/eng/query/validate',
       validateUrlProduction: 'https://www.payfast.co.za/eng/query/validate'
     };
     
-    console.log(`PayFast initialized in ${this.config.testMode ? 'SANDBOX' : 'PRODUCTION'} mode`);
-    console.log(`Merchant ID: ${this.config.merchantId}`);
-    console.log(`Payment URL: ${this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl}`);
+    console.log('=== PayFast Service Initialized ===');
+    console.log('Mode:', this.config.testMode ? 'SANDBOX' : 'PRODUCTION');
+    console.log('Merchant ID:', this.config.merchantId);
+    console.log('Payment URL:', this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl);
+    console.log('===================================');
   }
   
   /**
