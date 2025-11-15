@@ -22,7 +22,7 @@ class PayfastService {
       returnUrl: config.payfast?.return_url || process.env.PAYFAST_RETURN_URL || 'https://locals-za.co.za/payment/success',
       cancelUrl: config.payfast?.cancel_url || process.env.PAYFAST_CANCEL_URL || 'https://locals-za.co.za/payment/cancelled',
       notifyUrl: config.payfast?.notify_url || process.env.PAYFAST_NOTIFY_URL || 'https://europe-west4-localsza.cloudfunctions.net/api/payment/notify',
-      testMode: config.payfast?.test_mode === 'true' || process.env.PAYFAST_TEST_MODE === 'true',
+      testMode: false, // Set to true for sandbox testing
       
       // Correct URLs per PayFast documentation
       sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
