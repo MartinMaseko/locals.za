@@ -22,7 +22,6 @@ const vehicleTypes = ['van', 'sedan', 'hatch'];
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
-  'Groceries & Pantry',
   'Spices & Seasoning',
   'Canned Foods',
   'Sugar',
@@ -223,7 +222,7 @@ const AdminDashboard: React.FC = () => {
       if (!user) { navigate('/adminlogin'); return; }
       try {
         const token = await user.getIdToken();
-        const { data } = await axios.get<AdminProfile>(`${API_URL}/api/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const { data } = await axios.get<AdminProfile>(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
         if (data?.user_type !== 'admin') { navigate('/adminlogin'); return; }
         setAdmin(data);
       } catch (err) {
@@ -239,7 +238,7 @@ const AdminDashboard: React.FC = () => {
     setOrderLoading(true); setOrderError('');
     try {
       const token = await getToken();
-      const url = orderStatusFilter ? `${API_URL}/api/api/orders/all?status=${encodeURIComponent(orderStatusFilter)}` : `${API_URL}/api/api/orders/all`;
+      const url = orderStatusFilter ? `${API_URL}/api/orders/all?status=${encodeURIComponent(orderStatusFilter)}` : `${API_URL}/api/orders/all`;
       const { data } = await axios.get<Order[]>(url, { headers: { Authorization: `Bearer ${token}` } });
       setOrders(Array.isArray(data) ? data : []);
     } catch (err: any) {
@@ -255,7 +254,7 @@ const AdminDashboard: React.FC = () => {
   const fetchUserCount = useCallback(async () => {
     try {
       const token = await getToken();
-      const { data } = await axios.get<UserCountResponse>(`${API_URL}/api/api/admin/stats/users`, {
+      const { data } = await axios.get<UserCountResponse>(`${API_URL}/api/admin/stats/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserCount(data.count);
@@ -285,7 +284,7 @@ const AdminDashboard: React.FC = () => {
     setLoadingCustomer(prev => ({ ...prev, [userId]: true }));
     try {
       const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/api/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const { data } = await axios.get(`${API_URL}/api/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
       const userData = data as { full_name?: string; email?: string; phone_number?: string };
       setCustomerDetails(prev => ({
         ...prev,
@@ -309,7 +308,7 @@ const AdminDashboard: React.FC = () => {
     setLoadingDrivers(true);
     try {
       const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/api/drivers`, { headers: { Authorization: `Bearer ${token}` } });
+      const { data } = await axios.get(`${API_URL}/api/drivers`, { headers: { Authorization: `Bearer ${token}` } });
       if (Array.isArray(data)) {
         setDrivers(data.map((d: any) => ({ id: d.driver_id || d.id, name: d.full_name || d.email || d.id })));
       } else setDrivers([]);
@@ -327,7 +326,7 @@ const AdminDashboard: React.FC = () => {
     setOrderError('');
     try {
       const token = await getToken();
-      await axios.put(`${API_URL}/api/api/orders/${orderId}/assign-driver`, { driver_id: driverId }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_URL}/api/orders/${orderId}/assign-driver`, { driver_id: driverId }, { headers: { Authorization: `Bearer ${token}` } });
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, driver_id: driverId } : o));
       if (selectedOrder?.id === orderId) setSelectedOrder(prev => prev ? { ...prev, driver_id: driverId } : null);
     } catch (err: any) {
@@ -340,7 +339,7 @@ const AdminDashboard: React.FC = () => {
     setOrderError('');
     try {
       const token = await getToken();
-      await axios.put(`${API_URL}/api/api/orders/${orderId}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_URL}/api/orders/${orderId}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
       if (selectedOrder?.id === orderId) setSelectedOrder(prev => prev ? { ...prev, status } : null);
     } catch (err: any) {
@@ -367,7 +366,7 @@ const AdminDashboard: React.FC = () => {
     setProductsLoading(true); setProductsError('');
     try {
       const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/api/products`, { headers: { Authorization: `Bearer ${token}` } });
+      const { data } = await axios.get(`${API_URL}/api/products`, { headers: { Authorization: `Bearer ${token}` } });
       setProductsList(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setProductsError(err?.response?.data?.error || err?.message || 'Failed to load products');
@@ -445,7 +444,7 @@ const AdminDashboard: React.FC = () => {
       console.log('Sending payload:', payload);
 
       // Send the request
-      await axios.put(`${API_URL}/api/api/products/${docId}`, payload, {
+      await axios.put(`${API_URL}/api/products/${docId}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -501,7 +500,7 @@ const AdminDashboard: React.FC = () => {
         await uploadBytes(imageRef, driverForm.license_image);
         licenseImageUrl = await getDownloadURL(imageRef);
       }
-      await axios.post(`${API_URL}/api/api/drivers/register`, {
+      await axios.post(`${API_URL}/api/drivers/register`, {
         driver_id: driverForm.driver_id, firebase_uid: driverUid,
         full_name: driverForm.full_name, phone_number: driverForm.phone_number,
         user_type: 'driver', vehicle_type: driverForm.vehicle_type, vehicle_model: driverForm.vehicle_model,
@@ -552,7 +551,7 @@ const AdminDashboard: React.FC = () => {
         }
       }
 
-    await axios.post(`${API_URL}/api/api/products`, {
+    await axios.post(`${API_URL}/api/products`, {
       product_id: productForm.product_id,
       name: productForm.name,
       description: productForm.description,
@@ -576,7 +575,7 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     setPromoteMsg('');
     try {
-      await axios.post(`${API_URL}/api/api/auth/promote-admin`, { uid: promoteUid });
+      await axios.post(`${API_URL}/api/auth/promote-admin`, { uid: promoteUid });
       setPromoteMsg('User promoted to admin!');
       setPromoteUid('');
     } catch (err: any) {
@@ -629,7 +628,7 @@ const AdminDashboard: React.FC = () => {
           orderRevenue?: number;
           topProducts?: { name: string; count: number; revenue: number }[];
         };
-        const { data } = await axios.get<StatsResponse>(`${API_URL}/api/api/admin/stats?period=${statsPeriod}`, {
+        const { data } = await axios.get<StatsResponse>(`${API_URL}/api/admin/stats?period=${statsPeriod}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -726,7 +725,7 @@ const AdminDashboard: React.FC = () => {
   const fetchAllOrders = async (): Promise<Order[]> => {
     try {
       const token = await getToken();
-      const { data } = await axios.get<Order[]>(`${API_URL}/api/api/orders/all`, {
+      const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return Array.isArray(data) ? data : [];
@@ -746,7 +745,7 @@ const AdminDashboard: React.FC = () => {
     setDriversError('');
     try {
       const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/api/drivers/all`, {
+      const { data } = await axios.get(`${API_URL}/api/drivers/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -772,7 +771,7 @@ const AdminDashboard: React.FC = () => {
       const token = await getToken();
       
       try {
-        const { data } = await axios.get<Order[]>(`${API_URL}/api/api/orders/driver/${driverId}`, {
+        const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/driver/${driverId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -782,7 +781,7 @@ const AdminDashboard: React.FC = () => {
         
         // Fallback: If the dedicated endpoint fails, get all orders and filter client-side
         if (err?.response?.status === 403 || err?.response?.status === 404) {
-          const { data } = await axios.get<Order[]>(`${API_URL}/api/api/orders/all`, {
+          const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/all`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -814,7 +813,7 @@ const AdminDashboard: React.FC = () => {
     setPaymentHistoryLoading(true);
     try {
       const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/api/admin/drivers/${driverId}/payments`, {
+      const { data } = await axios.get(`${API_URL}/api/admin/drivers/${driverId}/payments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -833,7 +832,7 @@ const AdminDashboard: React.FC = () => {
     setCashoutError('');
     try {
       const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/api/admin/cashouts`, {
+      const { data } = await axios.get(`${API_URL}/api/admin/cashouts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -853,7 +852,7 @@ const AdminDashboard: React.FC = () => {
     setProcessingPayment(true);
     try {
       const token = await getToken();
-      await axios.put(`${API_URL}/api/api/admin/cashouts/${cashoutId}/complete`, {}, {
+      await axios.put(`${API_URL}/api/admin/cashouts/${cashoutId}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -903,7 +902,7 @@ const AdminDashboard: React.FC = () => {
       if (!user) { navigate('/adminlogin'); return; }
       try {
         const token = await user.getIdToken();
-        const { data } = await axios.get<AdminProfile>(`${API_URL}/api/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const { data } = await axios.get<AdminProfile>(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
         if (data?.user_type !== 'admin') { navigate('/adminlogin'); return; }
         setAdmin(data);
       } catch (err) {

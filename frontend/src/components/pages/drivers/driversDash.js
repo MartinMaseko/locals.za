@@ -75,7 +75,7 @@ const DriversDash = () => {
             if (!token) {
                 throw new Error('Authentication required');
             }
-            const response = await axios.get(`${API_URL}/api/api/orders`, {
+            const response = await axios.get(`${API_URL}/api/orders`, {
                 params: { driver_id: driverId },
                 headers: { Authorization: `Bearer ${token}` }
             });

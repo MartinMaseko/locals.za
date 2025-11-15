@@ -178,7 +178,7 @@ const CheckoutPage: React.FC = () => {
       };
 
       // Step 1: Create the order in the system
-      const res = await axios.post(`${API_URL}/api/api/orders`, payload, {
+      const res = await axios.post(`${API_URL}/api/orders`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
@@ -200,7 +200,7 @@ const CheckoutPage: React.FC = () => {
       };
 
       const paymentRes = await axios.post<PaymentInitResponse>(
-        `${API_URL}/api/api/payment/process/${orderId}`,
+        `${API_URL}/api/payment/process/${orderId}`,
         {
           name_first: validated.cleanName.split(' ')[0],
           name_last: validated.cleanName.split(' ').slice(1).join(' '),

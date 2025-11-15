@@ -10,7 +10,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 // Category images
 import Beverages from '../../../assets/images/Beverages.webp';
-import GroceriesPantry from '../../../assets/images/Groceries.webp';
 import HairColoring from '../../../assets/images/HairColour.webp';
 import HairFoodOils from '../../../assets/images/HairFood.webp';
 import HairStylingProducts from '../../../assets/images/HairStyling.webp';
@@ -35,7 +34,6 @@ import Sauces from '../../../assets/images/sauces.webp';
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
-  'Groceries & Pantry',
   'Spices & Seasoning',
   'Canned Foods',
   'Sugar',
@@ -62,7 +60,6 @@ const productCategories = [
 // Map for category images
 const categoryImages: {[key: string]: string} = {
   'Beverages': Beverages,
-  'Groceries & Pantry': GroceriesPantry,
   'Spices & Seasoning': SpicesSeasoning,
   'Canned Foods': CannedFoods,
   'Sugar': SugarImage,
@@ -147,7 +144,7 @@ const StoreCategories: React.FC = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get<any[]>(`${API_URL}/api/api/products`);
+        const { data } = await axios.get<any[]>(`${API_URL}/api/products`);
         const productsData = Array.isArray(data) ? data : [];
         setProducts(productsData);
         

@@ -38,7 +38,7 @@ const OrderRating: React.FC<OrderRatingProps> = ({ orderId, onRatingSubmit }) =>
           ratingComment?: string;
         }
 
-        const { data } = await axios.get<OrderData>(`${API_URL}/api/api/orders/${orderId}`, {
+        const { data } = await axios.get<OrderData>(`${API_URL}/api/orders/${orderId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -75,7 +75,7 @@ const OrderRating: React.FC<OrderRatingProps> = ({ orderId, onRatingSubmit }) =>
       
       const token = await user.getIdToken();
 
-      await axios.post(`${API_URL}/api/api/orders/${orderId}/rate`, {
+      await axios.post(`${API_URL}/api/orders/${orderId}/rate`, {
         rating: rating,
         comment: comment
       }, {

@@ -70,7 +70,7 @@ const UserAccount = () => {
       // Force a fresh token
       const token = await user.getIdToken(true);
 
-      const { data } = await axios.get<UserProfile>(`${API_URL}/api/api/users/me`, {
+      const { data } = await axios.get<UserProfile>(`${API_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -174,7 +174,7 @@ const UserAccount = () => {
 
       // Update the profile directly
       await axios.put(
-        `${API_URL}/api/api/users/me`,
+        `${API_URL}/api/users/me`,
         {
           full_name: profile.full_name,
           phone_number: profile.phone_number,

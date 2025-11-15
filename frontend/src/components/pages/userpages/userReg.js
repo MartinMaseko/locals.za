@@ -24,7 +24,7 @@ const UserRegistration = () => {
             const userCredential = await signUp(form.email, form.password);
             const user = userCredential.user;
             const token = await user.getIdToken();
-            await axios.post(`${API_URL}/api/api/users/register`, {
+            await axios.post(`${API_URL}/api/users/register`, {
                 full_name: form.full_name,
                 phone_number: form.phone_number,
                 user_type: 'customer',
@@ -49,7 +49,7 @@ const UserRegistration = () => {
             const result = await signInWithGoogle();
             const user = result.user;
             const token = await user.getIdToken();
-            await axios.post(`${API_URL}/api/api/users/register`, {
+            await axios.post(`${API_URL}/api/users/register`, {
                 full_name: user.displayName || '',
                 phone_number: '',
                 user_type: 'customer',

@@ -32,7 +32,7 @@ const UserLogin = () => {
                 throw new Error('Google sign-in failed');
             const token = await user.getIdToken();
             // Fetch user profile from backend
-            const response = await axios.get(`${API_URL}/api/api/users/me`, {
+            const response = await axios.get(`${API_URL}/api/users/me`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const profile = response.data;
@@ -70,7 +70,7 @@ const UserLogin = () => {
                 throw new Error('Login failed. No user returned.');
             const token = await user.getIdToken();
             // Fetch user profile from backend
-            const response = await axios.get(`${API_URL}/api/api/users/me`, {
+            const response = await axios.get(`${API_URL}/api/users/me`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const profile = response.data;
