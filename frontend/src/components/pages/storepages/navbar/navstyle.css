@@ -116,6 +116,9 @@
 
 /* Desktop layout */
 @media (min-width: 992px) {
+  .navbar {
+    padding: 1rem 0;
+  }
 
   .navbar-fullscreen-dropdown {
     width: 360px;          
