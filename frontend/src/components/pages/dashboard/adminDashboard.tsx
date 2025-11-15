@@ -22,7 +22,6 @@ const vehicleTypes = ['van', 'sedan', 'hatch'];
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
-  'Groceries & Pantry',
   'Spices & Seasoning',
   'Canned Foods',
   'Sugar',
