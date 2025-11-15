@@ -54,7 +54,7 @@ const UserAccount = () => {
         try {
             // Force a fresh token
             const token = await user.getIdToken(true);
-            const { data } = await axios.get(`${API_URL}/api/api/users/me`, {
+            const { data } = await axios.get(`${API_URL}/api/users/me`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             // Handle profile picture URL
@@ -148,7 +148,7 @@ const UserAccount = () => {
             // Get a fresh token
             const token = await authUser.getIdToken(true);
             // Update the profile directly
-            await axios.put(`${API_URL}/api/api/users/me`, {
+            await axios.put(`${API_URL}/api/users/me`, {
                 full_name: profile.full_name,
                 phone_number: profile.phone_number,
                 profile_picture_url: imageUrl,

@@ -32,7 +32,7 @@ const SupportPage = () => {
         const message = formData.get('message');
         try {
             // Send email to admin
-            await axios.post(`${API_URL}/api/api/support/contact`, {
+            await axios.post(`${API_URL}/api/support/contact`, {
                 name,
                 whatsapp,
                 orderNo: orderNo || 'Not provided',

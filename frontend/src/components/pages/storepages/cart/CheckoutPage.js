@@ -184,7 +184,7 @@ const CheckoutPage = () => {
                 email: user?.email || '',
             };
             // Step 1: Create the order in the system
-            const res = await axios.post(`${API_URL}/api/api/orders`, payload, {
+            const res = await axios.post(`${API_URL}/api/orders`, payload, {
                 headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             });
             // Get the order ID from response
@@ -194,7 +194,7 @@ const CheckoutPage = () => {
                 throw new Error('Failed to create order - no order ID returned');
             }
             console.log(`Order created with ID: ${orderId}`);
-            const paymentRes = await axios.post(`${API_URL}/api/api/payment/process/${orderId}`, {
+            const paymentRes = await axios.post(`${API_URL}/api/payment/process/${orderId}`, {
                 name_first: validated.cleanName.split(' ')[0],
                 name_last: validated.cleanName.split(' ').slice(1).join(' '),
                 email_address: user.email,
