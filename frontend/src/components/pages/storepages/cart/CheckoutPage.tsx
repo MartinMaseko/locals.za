@@ -144,7 +144,6 @@ const CheckoutPage: React.FC = () => {
   const placeOrder = async () => {
     if (!cart.length) return setError('Cart is empty');
 
-    // Validate fields and get cleaned values
     const validated = validateFields();
     if (!validated.valid) return;
 
@@ -152,7 +151,6 @@ const CheckoutPage: React.FC = () => {
     setError('');
 
     try {
-      // Get authentication token if user is logged in
       const auth = getAuth();
       const user = auth.currentUser;
       const token = user ? await user.getIdToken() : null;
@@ -163,28 +161,33 @@ const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // Create order payload using cleaned values from validation
+      // Create order payload
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
         subtotal,
         serviceFee,
         deliveryType,
         total,
-        deliveryAddress: { name: validated.cleanName, phone: validated.cleanPhone, addressLine: validated.cleanAddress, city: validated.cleanCity, postal: validated.cleanPostal },
+        deliveryAddress: { 
+          name: validated.cleanName, 
+          phone: validated.cleanPhone, 
+          addressLine: validated.cleanAddress, 
+          city: validated.cleanCity, 
+          postal: validated.cleanPostal 
+        },
         status: 'pending_payment',
         createdAt: new Date().toISOString(),
         userId: user?.uid || 'guest',
         email: user?.email || '',
       };
 
-      // Step 1: Create the order in the system
+      // Step 1: Create order
       const res = await axios.post(`${API_URL}/api/orders`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
-
-      // Get the order ID from response
-      const data = res.data as { id?: string; orderId?: string };
-      const orderId = data.id || data.orderId || '';
+      // Type assertion for order response
+      const orderRes = res as { data: { id?: string; orderId?: string } };
+      const orderId = orderRes.data.id || orderRes.data.orderId || '';
 
       if (!orderId) {
         throw new Error('Failed to create order - no order ID returned');
@@ -192,30 +195,10 @@ const CheckoutPage: React.FC = () => {
 
       console.log(`Order created with ID: ${orderId}`);
 
-      // Step 2: Initialize payment with PayFast
-      type PaymentInitResponse = {
-        formData?: Record<string, string | number | boolean>;
-        url?: string;
-        fullUrl?: string;
-      };
-
-      const paymentRes = await axios.post<PaymentInitResponse>(
+      // Step 2: Get payment form data from backend
+      const paymentRes = await axios.post(
         `${API_URL}/api/payment/process/${orderId}`,
-        {
-          name_first: validated.cleanName.split(' ')[0],
-          name_last: validated.cleanName.split(' ').slice(1).join(' '),
-          email_address: user.email,
-          cell_number: validated.cleanPhone,
-          amount: total.toFixed(2),
-          item_name: `Order #${orderId}`,
-          item_description: `Order containing ${cart.length} items`,
-          custom_str1: user.uid,
-          custom_str2: btoa(JSON.stringify({
-            address: validated.cleanAddress,
-            city: validated.cleanCity,
-            postal: validated.cleanPostal
-          }))
-        },
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -223,47 +206,32 @@ const CheckoutPage: React.FC = () => {
           }
         }
       );
-      
-      // Clear cart after successful order creation
+      // Type assertion for payment response
+      const paymentData = paymentRes.data as { formData?: Record<string, any>; url?: string; paymentId?: string };
       clearCart();
-      
-      // Step 3: Redirect to PayFast
-      const paymentData = paymentRes.data || {};
-      if (paymentData.formData) {
-        console.log('Redirecting to PayFast...');
-        
-        // Method 1: Form submission (recommended by PayFast)
+      // Step 3: Submit form to PayFast
+      if (paymentData.formData && paymentData.url) {
         if (payfastFormRef.current) {
-          const formData = paymentData.formData;
-          const formUrl = paymentData.url || '';
-          
-          // Set form action URL
-          payfastFormRef.current.action = formUrl;
+          payfastFormRef.current.action = paymentData.url;
           payfastFormRef.current.innerHTML = '';
-          
-          // Create hidden inputs for each field
-          Object.keys(formData).forEach(key => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = String(formData[key]);
-            payfastFormRef.current?.appendChild(input);
-          });
-          
-          // Optional: log formData briefly for debugging (remove after verification)
-          // console.log('Submitting PayFast form data:', formData);
-
-          // Submit the form
+          if (paymentData.formData) {
+            Object.keys(paymentData.formData).forEach(key => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = String(paymentData.formData ? paymentData.formData[key] : '');
+              payfastFormRef.current?.appendChild(input);
+            });
+          }
+          console.log('Submitting to PayFast:', paymentData.url);
           payfastFormRef.current.submit();
         } else {
-          // Method 2: Direct URL redirect (fallback)
-          window.location.href = paymentData.fullUrl || paymentData.url || '';
+          window.location.href = paymentData.url;
         }
       } else {
         throw new Error('Payment data not received');
       }
     } catch (err: any) {
-      Analytics.trackFormCompletion('checkout_form', false, 'api_error');
       console.error('Order placement error:', err);
       setError(err?.response?.data?.message || 'Failed to place order');
       setLoading(false);
