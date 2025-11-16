@@ -4,22 +4,36 @@ const admin = require('../../firebase');
 
 /**
  * PayFast Service - Handles all PayFast payment operations
- * Production Mode: Uses process.env variables from .env
- * Development Mode: Uses process.env variables from .env.local
+ * https://developers.payfast.co.za/docs
+ * 
+ * Production: Reads from Firebase config fallback to .env
+ * Development: Reads from .env.local
  */
 class PayfastService {
   constructor() {
-    // Use environment variables directly (no functions.config())
+    // Load environment variables with proper fallbacks
+    require('dotenv').config({ path: '.env' });
+    
+    // Try Firebase config first, then environment variables
+    let firebaseConfig = {};
+    try {
+      const functions = require('firebase-functions');
+      firebaseConfig = functions.config().payfast || {};
+    } catch (err) {
+      console.log('Firebase config not available, using environment variables');
+    }
+
+    // Build config with proper priority: env > firebase > defaults
     this.config = {
-      merchantId: process.env.PAYFAST_MERCHANT_ID,
-      merchantKey: process.env.PAYFAST_MERCHANT_KEY,
-      passphrase: process.env.PAYFAST_PASSPHRASE || '',
-      returnUrl: process.env.PAYFAST_RETURN_URL,
-      cancelUrl: process.env.PAYFAST_CANCEL_URL,
-      notifyUrl: process.env.PAYFAST_NOTIFY_URL,
+      merchantId: process.env.PAYFAST_MERCHANT_ID || firebaseConfig.merchant_id,
+      merchantKey: process.env.PAYFAST_MERCHANT_KEY || firebaseConfig.merchant_key,
+      passphrase: process.env.PAYFAST_PASSPHRASE || firebaseConfig.passphrase || '',
+      returnUrl: process.env.PAYFAST_RETURN_URL || firebaseConfig.return_url,
+      cancelUrl: process.env.PAYFAST_CANCEL_URL || firebaseConfig.cancel_url,
+      notifyUrl: process.env.PAYFAST_NOTIFY_URL || firebaseConfig.notify_url,
       
-      // Check if test mode is explicitly set to 'true'
-      testMode: process.env.PAYFAST_TEST_MODE === 'true',
+      // Test mode check
+      testMode: process.env.PAYFAST_TEST_MODE === 'true' || firebaseConfig.test_mode === 'true',
       
       sandboxUrl: 'https://sandbox.payfast.co.za/eng/process',
       productionUrl: 'https://www.payfast.co.za/eng/process',
@@ -30,79 +44,62 @@ class PayfastService {
     
     console.log('=== PayFast Service Initialized ===');
     console.log('Mode:', this.config.testMode ? 'SANDBOX' : 'PRODUCTION');
-    console.log('Merchant ID:', this.config.merchantId);
+    console.log('Merchant ID:', this.config.merchantId || 'NOT SET');
+    console.log('Merchant Key:', this.config.merchantKey ? '***SET***' : 'NOT SET');
+    console.log('Passphrase:', this.config.passphrase ? '***SET***' : 'NOT SET');
     console.log('Payment URL:', this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl);
     console.log('===================================');
   }
-  
+
   /**
    * Creates a payment request for an order
-   * 
-   * @param {Object} orderData - The order data from Firestore
-   * @param {String} orderId - The order ID
-   * @param {String} userId - The user ID (customer)
-   * @returns {Object} Payment details including URL and form data
+   * https://developers.payfast.co.za/docs#step_1_form_fields
    */
   createPaymentRequest(orderData, orderId, userId) {
     try {
-      // Extract customer name from delivery address
       const fullName = orderData.deliveryAddress?.name || 'Customer';
       const nameParts = fullName.trim().split(/\s+/);
       const firstName = nameParts[0] || 'Customer';
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
       
-      // Ensure we have a valid email
       const email = orderData.email || 
         (userId && userId.includes('@') ? userId : `${userId || 'guest'}@locals-za.co.za`);
       
-      // Format amount with exactly 2 decimal places
       const amount = parseFloat(orderData.total).toFixed(2);
       
-      // Extract phone number and clean it
       let cellNumber = orderData.deliveryAddress?.phone || '';
-      cellNumber = cellNumber.replace(/[^\d]/g, ''); // Remove non-digits
+      cellNumber = cellNumber.replace(/[^\d]/g, '');
       if (cellNumber.startsWith('0')) {
-        cellNumber = '27' + cellNumber.substring(1); // Convert to international format
+        cellNumber = '27' + cellNumber.substring(1);
       }
       if (!cellNumber.startsWith('27')) {
         cellNumber = '27' + cellNumber;
       }
       
-      // Create the payment data object with required fields ONLY
-      // https://developers.payfast.co.za/docs#step_1_form_fields
+      // Build payment data - exact PayFast format
       const data = {
-        // Merchant details
         merchant_id: this.config.merchantId,
         merchant_key: this.config.merchantKey,
-        
-        // Return URLs  
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
-        
-        // Customer details
         name_first: firstName,
         name_last: lastName,
         email_address: email,
-        
-        // Transaction details
         m_payment_id: orderId,
         amount: amount,
         item_name: `Order ${orderId.slice(-8)}`,
         item_description: `${orderData.items?.length || 0} items`,
       };
       
-      // Add optional cell number only if valid
       if (cellNumber && cellNumber.length >= 10) {
         data.cell_number = cellNumber;
       }
       
-      // Add custom fields for tracking
       if (userId) {
         data.custom_str1 = userId;
       }
       
-      // Add custom string with delivery address (max 255 chars)
       if (orderData.deliveryAddress?.addressLine) {
         const addressData = {
           address: orderData.deliveryAddress.addressLine,
@@ -115,11 +112,9 @@ class PayfastService {
         }
       }
 
-      // Generate signature BEFORE adding test mode flag
       const signature = this.generateSignature(data);
       data.signature = signature;
 
-      // Determine the correct payment URL
       const paymentUrl = this.config.testMode ? this.config.sandboxUrl : this.config.productionUrl;
 
       console.log('Payment request created:', {
@@ -143,43 +138,34 @@ class PayfastService {
   }
   
   /**
-   * Generate MD5 signature for request data - PayFast's exact algorithm
+   * Generate MD5 signature using PayFast's PHP algorithm
    * https://developers.payfast.co.za/docs#signature
-   * 
-   * @param {Object} data - The payment data
-   * @returns {String} MD5 signature
    */
   generateSignature(data) {
     try {
-      // Create parameter string
       let pfOutput = "";
-      
-      // Sort keys alphabetically (case-sensitive)
       const sortedKeys = Object.keys(data).sort();
       
-      // Build the parameter string
+      // Build string with proper encoding (matches PayFast PHP urlencode)
       for (const key of sortedKeys) {
         const value = data[key];
-        // Skip empty values
         if (value !== "" && value !== undefined && value !== null) {
-          // URL encode the value using PHP's urlencode equivalent
+          // encodeURIComponent then replace %20 with + (PHP urlencode behavior)
           pfOutput += `${key}=${encodeURIComponent(String(value).trim()).replace(/%20/g, "+")}&`;
         }
       }
 
-      // Remove last ampersand
       let getString = pfOutput.slice(0, -1);
       
       // Add passphrase if it exists
-      if (this.config.passphrase) {
+      if (this.config.passphrase && this.config.passphrase.trim()) {
         getString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
       }
       
       console.log('Signature string (first 100 chars):', getString.substring(0, 100) + '...');
+      console.log('Passphrase included:', !!this.config.passphrase);
       
-      // Generate MD5 hash
       const signature = crypto.createHash("md5").update(getString).digest("hex");
-      
       console.log('Generated signature:', signature);
       
       return signature;
@@ -189,54 +175,27 @@ class PayfastService {
     }
   }
   
-  /**
-   * Parse raw ITN data from PayFast
-   * 
-   * @param {Buffer|String} body - Raw request body
-   * @returns {Object} Parsed ITN data
-   */
   parseItnData(body) {
     const bodyString = body.toString();
     const data = {};
-    
     bodyString.split('&').forEach(pair => {
       const [key, value] = pair.split('=');
       if (key && value) {
         data[key] = decodeURIComponent(value.replace(/\+/g, ' '));
       }
     });
-    
     return data;
   }
   
-  /**
-   * Verify signature in ITN data
-   * 
-   * @param {Object} data - ITN data
-   * @param {String} receivedSignature - Signature from ITN
-   * @returns {Boolean} Is signature valid
-   */
   verifySignature(data, receivedSignature) {
-    // Create a copy of the data without the signature
     const paymentData = {...data};
     delete paymentData.signature;
-    
-    // Generate signature
     const calculatedSignature = this.generateSignature(paymentData);
-    
     console.log('Received signature:', receivedSignature);
     console.log('Calculated signature:', calculatedSignature);
-    
-    // Compare signatures
     return calculatedSignature === receivedSignature;
   }
   
-  /**
-   * Validate ITN with PayFast server
-   * 
-   * @param {Object} data - ITN data
-   * @returns {Promise<Boolean>} Validation result
-   */
   async validateWithPayfast(data) {
     try {
       const validateUrl = this.config.testMode ?
@@ -248,9 +207,7 @@ class PayfastService {
         .join('&');
       
       const response = await axios.post(validateUrl, validateData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         timeout: 10000
       });
       
@@ -261,15 +218,8 @@ class PayfastService {
     }
   }
   
-  /**
-   * Process ITN (Instant Transaction Notification) from PayFast
-   * 
-   * @param {Object} data - ITN data
-   * @returns {Promise<Object>} Processing result
-   */
   async processItn(data) {
     try {
-      // Extract and verify signature
       const signature = data.signature;
       const isSignatureValid = this.verifySignature(data, signature);
       
@@ -278,13 +228,11 @@ class PayfastService {
         return { success: false, error: 'Invalid signature' };
       }
       
-      // Get order ID
       const orderId = data.m_payment_id;
       if (!orderId) {
         return { success: false, error: 'No order ID in ITN data' };
       }
       
-      // Get order from Firestore
       const orderRef = admin.firestore().collection('orders').doc(orderId);
       const orderDoc = await orderRef.get();
       
@@ -296,7 +244,6 @@ class PayfastService {
       const orderData = orderDoc.data();
       const userId = orderData.userId || data.custom_str1;
       
-      // Store ITN for audit trail
       await admin.firestore().collection('payment_notifications').add({
         orderId,
         paymentData: data,
@@ -304,7 +251,6 @@ class PayfastService {
         environment: this.config.testMode ? 'sandbox' : 'production'
       });
       
-      // Process based on payment status
       const paymentStatus = data.payment_status;
       const updateData = {
         paymentData: data,
@@ -319,22 +265,18 @@ class PayfastService {
           updateData.paymentCompletedAt = admin.firestore.FieldValue.serverTimestamp();
           updateData.pf_payment_id = data.pf_payment_id;
           break;
-          
         case 'FAILED':
           updateData.status = 'payment_failed';
           updateData.paymentStatus = 'failed';
           break;
-          
         case 'CANCELLED':
           updateData.status = 'cancelled';
           updateData.paymentStatus = 'cancelled';
           break;
-          
         default:
           updateData.paymentStatus = paymentStatus.toLowerCase();
       }
       
-      // Update order
       await orderRef.update(updateData);
       
       return {
@@ -351,5 +293,4 @@ class PayfastService {
   }
 }
 
-// Export a singleton instance
 module.exports = new PayfastService();
