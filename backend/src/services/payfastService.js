@@ -138,34 +138,46 @@ class PayfastService {
   }
   
   /**
-   * Generate MD5 signature using PayFast's PHP algorithm
+   * Generate MD5 signature using PayFast's exact PHP algorithm
    * https://developers.payfast.co.za/docs#signature
+   * 
+   * Matches: https://developers.payfast.co.za/ Node.js example
    */
   generateSignature(data) {
     try {
       let pfOutput = "";
+      
+      // Sort keys alphabetically
       const sortedKeys = Object.keys(data).sort();
       
-      // Build string with proper encoding (matches PayFast PHP urlencode)
+      // Build querystring with proper encoding (matches PayFast PHP urlencode)
       for (const key of sortedKeys) {
         const value = data[key];
+        
+        // Skip empty values
         if (value !== "" && value !== undefined && value !== null) {
           // encodeURIComponent then replace %20 with + (PHP urlencode behavior)
           pfOutput += `${key}=${encodeURIComponent(String(value).trim()).replace(/%20/g, "+")}&`;
         }
       }
 
+      // Remove last ampersand
       let getString = pfOutput.slice(0, -1);
       
-      // Add passphrase if it exists
+      // Append passphrase if set
       if (this.config.passphrase && this.config.passphrase.trim()) {
-        getString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
+        getString += this.config.passphrase.trim();
       }
       
-      console.log('Signature string (first 100 chars):', getString.substring(0, 100) + '...');
-      console.log('Passphrase included:', !!this.config.passphrase);
+      console.log('=== Signature Generation Debug ===');
+      console.log('Querystring (first 100 chars):', getString.substring(0, 100) + '...');
+      console.log('Passphrase appended:', !!this.config.passphrase);
+      console.log('Full string length:', getString.length);
+      console.log('===================================');
       
+      // Generate MD5 hash
       const signature = crypto.createHash("md5").update(getString).digest("hex");
+      
       console.log('Generated signature:', signature);
       
       return signature;
@@ -188,12 +200,23 @@ class PayfastService {
   }
   
   verifySignature(data, receivedSignature) {
-    const paymentData = {...data};
-    delete paymentData.signature;
-    const calculatedSignature = this.generateSignature(paymentData);
-    console.log('Received signature:', receivedSignature);
-    console.log('Calculated signature:', calculatedSignature);
-    return calculatedSignature === receivedSignature;
+    try {
+      const paymentData = {...data};
+      delete paymentData.signature;
+      
+      const calculatedSignature = this.generateSignature(paymentData);
+      
+      console.log('=== Signature Verification ===');
+      console.log('Received signature:  ', receivedSignature);
+      console.log('Calculated signature:', calculatedSignature);
+      console.log('Match:', calculatedSignature === receivedSignature);
+      console.log('==============================');
+      
+      return calculatedSignature === receivedSignature;
+    } catch (error) {
+      console.error('Error verifying signature:', error);
+      return false;
+    }
   }
   
   async validateWithPayfast(data) {
