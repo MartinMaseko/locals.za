@@ -211,30 +211,68 @@ const CheckoutPage: React.FC = () => {
       
       clearCart();
       
-      // Step 3: Submit form to PayFast with proper field order
+      // Step 3: Submit form to PayFast with proper encoding
       if (paymentData.formData && paymentData.url) {
         if (payfastFormRef.current) {
-          payfastFormRef.current.action = paymentData.url;
-          payfastFormRef.current.innerHTML = '';
+          console.log('=== PayFast Form Submission ===');
+          console.log('Form data received:', paymentData.formData);
+          console.log('Target URL:', paymentData.url);
           
-          // Create hidden fields in the exact order they appear in the backend
-          Object.keys(paymentData.formData).forEach(key => {
-            if (paymentData.formData![key] !== undefined && paymentData.formData![key] !== '') {
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = key;
-              input.value = String(paymentData.formData![key]);
-              payfastFormRef.current?.appendChild(input);
-            }
+          // Reset form
+          payfastFormRef.current.innerHTML = '';
+          payfastFormRef.current.action = paymentData.url;
+          payfastFormRef.current.method = 'POST';
+          payfastFormRef.current.encType = 'application/x-www-form-urlencoded';
+          payfastFormRef.current.acceptCharset = 'UTF-8';
+          
+          // Build a list of all fields to submit
+          const fieldsToSubmit: Array<{key: string; value: string}> = [];
+          
+          // Add all fields from formData, sorted alphabetically
+          Object.keys(paymentData.formData)
+            .sort()
+            .forEach(key => {
+              const value = paymentData.formData![key];
+              
+              // Only include non-empty values
+              if (value !== undefined && value !== null) {
+                const stringValue = String(value).trim();
+                if (stringValue !== '') {
+                  fieldsToSubmit.push({ key, value: stringValue });
+                }
+              }
+            });
+          
+          console.log('Fields to submit (in order):', fieldsToSubmit);
+          
+          // Create hidden input fields
+          fieldsToSubmit.forEach(({ key, value }) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            payfastFormRef.current?.appendChild(input);
           });
           
-          console.log('Form data being submitted:', paymentData.formData);
-          console.log('Submitting to PayFast:', paymentData.url);
+          console.log('Total fields created:', fieldsToSubmit.length);
           
-          payfastFormRef.current.submit();
+          // Log the form data that will be sent
+          const formDataToBeSent = new FormData(payfastFormRef.current);
+          console.log('FormData entries:');
+          for (let [key, value] of formDataToBeSent.entries()) {
+            console.log(`  ${key}: ${value}`);
+          }
+          
+          console.log('Submitting form to:', payfastFormRef.current.action);
+          console.log('==============================\n');
+          
+          // Submit the form
+          setTimeout(() => {
+            payfastFormRef.current?.submit();
+          }, 50);
         }
       } else {
-        throw new Error('Payment data not received');
+        throw new Error('Payment data not received from backend');
       }
     } catch (err: any) {
       console.error('Order placement error:', err);
