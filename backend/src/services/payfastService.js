@@ -15,256 +15,91 @@ class PayfastService {
       const functions = require('firebase-functions');
       firebaseConfig = functions.config().payfast || {};
     } catch (err) {
-      console.log('Using .env for PayFast config');
+      // This is expected in local development
     }
 
     this.config = {
-      merchantId: String(process.env.PAYFAST_MERCHANT_ID || firebaseConfig.merchant_id || '').trim(),
-      merchantKey: String(process.env.PAYFAST_MERCHANT_KEY || firebaseConfig.merchant_key || '').trim(),
-      passphrase: String(process.env.PAYFAST_PASSPHRASE || firebaseConfig.passphrase || '').trim(),
-      returnUrl: String(process.env.PAYFAST_RETURN_URL || firebaseConfig.return_url || '').trim(),
-      cancelUrl: String(process.env.PAYFAST_CANCEL_URL || firebaseConfig.cancel_url || '').trim(),
-      notifyUrl: String(process.env.PAYFAST_NOTIFY_URL || firebaseConfig.notify_url || '').trim(),
-      testMode: (process.env.PAYFAST_TEST_MODE === 'true') || (firebaseConfig.test_mode === 'true')
+      merchantId: String(firebaseConfig.merchant_id || process.env.PAYFAST_MERCHANT_ID || '').trim(),
+      merchantKey: String(firebaseConfig.merchant_key || process.env.PAYFAST_MERCHANT_KEY || '').trim(),
+      passphrase: String(firebaseConfig.passphrase || process.env.PAYFAST_PASSPHRASE || '').trim(),
+      returnUrl: String(firebaseConfig.return_url || process.env.PAYFAST_RETURN_URL || '').trim(),
+      cancelUrl: String(firebaseConfig.cancel_url || process.env.PAYFAST_CANCEL_URL || '').trim(),
+      notifyUrl: String(firebaseConfig.notify_url || process.env.PAYFAST_NOTIFY_URL || '').trim(),
+      testMode: String(firebaseConfig.test_mode || process.env.PAYFAST_TEST_MODE) === 'true'
     };
 
     this.paymentUrl = this.config.testMode
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    console.log('PayFast Config:', {
-      merchantId: this.config.merchantId,
-      testMode: this.config.testMode,
-      hasPassphrase: !!this.config.passphrase
-    });
+    console.log('PayFast Service Initialized. Test Mode:', this.config.testMode);
   }
 
   /**
-   * Generate signature following PayFast documentation EXACTLY
-   * Based on: https://developers.payfast.co.za/docs#signature-generation
+   * Generates the PayFast signature.
+   * This function now correctly includes all form fields (including merchant_key) in the hash.
    */
   generateSignature(data, passPhrase = null) {
-    try {
-      // Create a copy without the signature field
-      const signatureData = { ...data };
-      delete signatureData.signature;
-      // CRITICAL: merchant_key must NOT be in the signature string
-      delete signatureData.merchant_key;
+    // Create a copy of the data and remove the signature field itself.
+    const signatureData = { ...data };
+    delete signatureData.signature;
 
-      // Step 1: Sort all keys alphabetically
-      const keys = Object.keys(signatureData).sort();
-      
-      // Step 2: Build the signature string
-      const parts = [];
-      
-      for (const key of keys) {
-        let value = signatureData[key];
-        
-        // Convert to string and trim
-        if (value === null || value === undefined) {
-          continue;
+    // Create the parameter string by joining key-value pairs.
+    // PayFast requires sorting keys alphabetically.
+    const paramString = Object.keys(signatureData)
+      .sort()
+      .map(key => {
+        const value = signatureData[key];
+        if (value === null || value === undefined || String(value).trim() === '') {
+          return null;
         }
-        
-        value = String(value).trim();
-        
-        // Skip empty values
-        if (value === '') {
-          continue;
-        }
-        
-        // URL encode the value
-        const encoded = encodeURIComponent(value);
-        parts.push(`${key}=${encoded}`);
-      }
-      
-      // Step 3: Join with &
-      let paramString = parts.join('&');
-      
-      // Step 4: Add passphrase if it exists
-      if (passPhrase) {
-        const cleanPass = String(passPhrase).trim();
-        if (cleanPass !== '') {
-          const encodedPass = encodeURIComponent(cleanPass);
-          paramString += `&passphrase=${encodedPass}`;
-        }
-      }
+        // URL-encode the value and replace %20 with + as per PayFast docs.
+        const encodedValue = encodeURIComponent(String(value).trim()).replace(/%20/g, '+');
+        return `${key}=${encodedValue}`;
+      })
+      .filter(Boolean) // Remove any null entries from empty values
+      .join('&');
 
-      console.log('\n=== PayFast Signature Generation ===');
-      console.log('Signature string to hash:');
-      console.log(paramString);
-      console.log('String length:', paramString.length);
-      
-      // Step 5: Generate MD5 hash (must be lowercase)
-      const signature = crypto
-        .createHash('md5')
-        .update(paramString)
-        .digest('hex')
-        .toLowerCase();
-      
-      console.log('Generated MD5 hash:', signature);
-      console.log('=====================================\n');
-      
-      return signature;
-      
-    } catch (error) {
-      console.error('Signature generation error:', error);
-      throw error;
-    }
+    // Append the passphrase to the string.
+    const fullString = passPhrase ? `${paramString}&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, '+')}` : paramString;
+
+    console.log('\n=== PayFast Signature Generation ===');
+    console.log('Data used for signature:', signatureData);
+    console.log('Final string to be hashed:', fullString);
+
+    // Generate the MD5 hash.
+    const signature = crypto.createHash('md5').update(fullString).digest('hex');
+    console.log('Generated MD5 Signature:', signature);
+    console.log('====================================\n');
+
+    return signature;
   }
 
   /**
-   * Validate PayFast data fields
-   */
-  validatePaymentData(data) {
-    const errors = [];
-    
-    // Required fields validation
-    const requiredFields = {
-      'merchant_id': data.merchant_id,
-      'merchant_key': data.merchant_key,
-      'return_url': data.return_url,
-      'cancel_url': data.cancel_url,
-      'notify_url': data.notify_url,
-      'name_first': data.name_first,
-      'name_last': data.name_last,
-      'email_address': data.email_address,
-      'm_payment_id': data.m_payment_id,
-      'amount': data.amount,
-      'item_name': data.item_name
-    };
-
-    Object.entries(requiredFields).forEach(([field, value]) => {
-      if (!value || String(value).trim() === '') {
-        errors.push(`Missing required field: ${field}`);
-      }
-    });
-
-    // Specific validations
-    const amount = parseFloat(data.amount);
-    if (isNaN(amount) || amount <= 0) {
-      errors.push('Invalid amount: must be positive number');
-    }
-
-    const email = data.email_address;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      errors.push('Invalid email address format');
-    }
-
-    // Length validations
-    if (data.name_first && data.name_first.length > 100) {
-      errors.push('name_first exceeds 100 characters');
-    }
-    if (data.name_last && data.name_last.length > 100) {
-      errors.push('name_last exceeds 100 characters');
-    }
-    if (data.email_address && data.email_address.length > 255) {
-      errors.push('email_address exceeds 255 characters');
-    }
-    if (data.item_name && data.item_name.length > 255) {
-      errors.push('item_name exceeds 255 characters');
-    }
-
-    return errors;
-  }
-
-  /**
-   * Create payment request
+   * Creates the complete payment request object to be sent to the frontend.
    */
   createPaymentRequest(orderData, orderId, userId) {
     try {
-      console.log('=== Creating PayFast Payment Request ===');
-      
-      // Validate config
       if (!this.config.merchantId || !this.config.merchantKey) {
-        throw new Error('PayFast merchant credentials not configured');
+        throw new Error('PayFast merchant_id or merchant_key is not configured.');
       }
 
-      // Parse customer name
       const fullName = String(orderData.deliveryAddress?.name || 'Customer').trim();
-      if (fullName.length < 2) {
-        throw new Error('Customer name too short');
-      }
-      
       const nameParts = fullName.split(/\s+/);
-      let firstName = nameParts[0] || 'Customer';
-      let lastName = nameParts.slice(1).join(' ') || 'User';
-      
-      // Truncate names to PayFast limits
-      firstName = firstName.substring(0, 100);
-      lastName = lastName.substring(0, 100);
+      const firstName = (nameParts[0] || 'Customer').substring(0, 100);
+      const lastName = (nameParts.slice(1).join(' ') || 'User').substring(0, 100);
+      const email = (orderData.email || `${userId}@locals-za.co.za`).substring(0, 255);
+      const amountString = parseFloat(orderData.total || 0).toFixed(2);
 
-      // Validate email
-      let email = orderData.email || `${userId}@locals-za.co.za`;
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        email = `${userId}@locals-za.co.za`;
-      }
-      email = email.substring(0, 255);
-
-      // Format amount with exactly 2 decimal places
-      const amount = parseFloat(orderData.total || 0);
-      if (amount <= 0) {
-        throw new Error('Invalid order amount');
-      }
-      const amountString = amount.toFixed(2);
-
-      // Format phone (optional)
-      let cellNumber = '';
-      const phoneInput = String(orderData.deliveryAddress?.phone || '').replace(/\D/g, '');
-      if (phoneInput) {
-        if (phoneInput.startsWith('0')) {
-          cellNumber = '27' + phoneInput.substring(1);
-        } else if (!phoneInput.startsWith('27')) {
-          cellNumber = '27' + phoneInput;
-        } else {
-          cellNumber = phoneInput;
-        }
-        
-        if (cellNumber.length < 10 || cellNumber.length > 15) {
-          cellNumber = '';
-        }
+      if (parseFloat(amountString) <= 0) {
+        throw new Error('Invalid order amount. Must be greater than zero.');
       }
 
-      // Build payment data object - NOTE: merchant_key is kept for signature generation only
-      const paymentDataForSignature = {
-        merchant_id: this.config.merchantId,
-        merchant_key: this.config.merchantKey,  // For signature only
-        return_url: `${this.config.returnUrl}/${orderId}`,
-        cancel_url: `${this.config.cancelUrl}/${orderId}`,
-        notify_url: this.config.notifyUrl,
-        name_first: firstName,
-        name_last: lastName,
-        email_address: email,
-        m_payment_id: orderId,
-        amount: amountString,
-        item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
-        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255)
-      };
-
-      if (cellNumber) {
-        paymentDataForSignature.cell_number = cellNumber;
-      }
-
-      if (userId && userId !== 'guest' && userId.length <= 255) {
-        paymentDataForSignature.custom_str1 = userId;
-      }
-
-      // Validate the payment data
-      const validationErrors = this.validatePaymentData(paymentDataForSignature);
-      if (validationErrors.length > 0) {
-        throw new Error('Validation errors: ' + validationErrors.join(', '));
-      }
-
-      console.log('Payment data before signature:', JSON.stringify(paymentDataForSignature, null, 2));
-
-      // Generate signature
-      const signature = this.generateSignature(paymentDataForSignature, this.config.passphrase);
-
-      // NOW: Build the form data WITHOUT merchant_key
+      // 1. Assemble ALL data that will be sent in the form.
+      // This time, we correctly include merchant_key.
       const formData = {
         merchant_id: this.config.merchantId,
-        // merchant_key is NOT sent in the form - only used for signature
+        merchant_key: this.config.merchantKey,
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
@@ -275,26 +110,25 @@ class PayfastService {
         amount: amountString,
         item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
         item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255),
-        signature: signature
       };
 
-      if (cellNumber) {
-        formData.cell_number = cellNumber;
+      // Add optional fields if they exist
+      if (userId && userId !== 'guest') {
+        formData.custom_str1 = userId.substring(0, 255);
+      }
+      const phoneInput = String(orderData.deliveryAddress?.phone || '').replace(/\D/g, '');
+      if (phoneInput) {
+        formData.cell_number = phoneInput.startsWith('0') ? '27' + phoneInput.substring(1) : phoneInput;
       }
 
-      if (userId && userId !== 'guest' && userId.length <= 255) {
-        formData.custom_str1 = userId;
-      }
+      // 2. Generate the signature using this complete data object.
+      formData.signature = this.generateSignature(formData, this.config.passphrase);
 
       console.log('=== PayFast Payment Request Summary ===');
-      console.log('Order ID:', orderId);
-      console.log('Amount:', amountString);
-      console.log('Test Mode:', this.config.testMode);
-      console.log('URL:', this.paymentUrl);
-      console.log('Signature:', signature);
-      console.log('Form data fields:', Object.keys(formData).length);
+      console.log('Form data being sent to frontend:', formData);
       console.log('========================================');
 
+      // 3. Return the complete object to the frontend.
       return {
         formData: formData,
         url: this.paymentUrl,
@@ -303,7 +137,7 @@ class PayfastService {
 
     } catch (error) {
       console.error('Error creating PayFast payment request:', error);
-      throw error;
+      throw error; // Re-throw to be caught by the calling function
     }
   }
 
