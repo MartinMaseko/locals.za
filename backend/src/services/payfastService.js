@@ -4,10 +4,8 @@ const admin = require('../../firebase');
 
 /**
  * PayFast Integration Service
- * Strictly follows: https://developers.payfast.co.za/docs
- * Reference: Node.js code snippets from PayFast documentation
+ * Based on official PayFast documentation: https://developers.payfast.co.za/docs
  */
-
 class PayfastService {
   constructor() {
     require('dotenv').config({ path: '.env' });
@@ -44,56 +42,79 @@ class PayfastService {
   }
 
   /**
-   * Generate signature following PayFast docs exactly
+   * Generate signature following PayFast documentation exactly
    * https://developers.payfast.co.za/docs#step_2_signature
    */
   generateSignature(data, passPhrase = null) {
-    // Create parameter string
-    let pfOutput = "";
-    for (let key in data) {
-      if (data.hasOwnProperty(key)) {
-        if (data[key] !== "") {
-          pfOutput += `${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, "+")}&`;
-        }
+    // Convert all values to strings and remove empty values
+    const cleanData = {};
+    
+    // Process data in alphabetical order by key (PayFast requirement)
+    const sortedKeys = Object.keys(data).sort();
+    
+    for (const key of sortedKeys) {
+      const value = data[key];
+      // Only include non-empty values
+      if (value !== null && value !== undefined && String(value).trim() !== '') {
+        cleanData[key] = String(value).trim();
       }
     }
 
-    // Remove last ampersand
-    let getString = pfOutput.slice(0, -1);
-    
-    // Append passphrase if provided
-    if (passPhrase !== null) {
-      getString += `&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
+    // Build parameter string
+    let paramString = '';
+    for (const key of Object.keys(cleanData).sort()) {
+      const value = cleanData[key];
+      if (paramString) {
+        paramString += '&';
+      }
+      // URL encode both key and value, but replace %20 with +
+      paramString += `${encodeURIComponent(key)}=${encodeURIComponent(value)}`.replace(/%20/g, '+');
     }
 
-    console.log('Signature string:', getString);
+    // Add passphrase if provided
+    if (passPhrase && passPhrase.trim()) {
+      paramString += `&passphrase=${encodeURIComponent(passPhrase.trim())}`.replace(/%20/g, '+');
+    }
+
+    console.log('PayFast signature string:', paramString);
 
     // Generate MD5 hash
-    return crypto.createHash("md5").update(getString).digest("hex");
+    const signature = crypto.createHash('md5').update(paramString).digest('hex');
+    console.log('Generated signature:', signature);
+    
+    return signature;
   }
 
   /**
-   * Create payment request following PayFast form example
-   * https://developers.payfast.co.za/docs#step_1_form_fields
+   * Create payment request following PayFast form requirements
    */
   createPaymentRequest(orderData, orderId, userId) {
     try {
-      // Parse name
+      // Validate required config
+      if (!this.config.merchantId || !this.config.merchantKey) {
+        throw new Error('PayFast merchant credentials not configured');
+      }
+
+      // Parse customer name
       const fullName = String(orderData.deliveryAddress?.name || 'Customer').trim();
       const nameParts = fullName.split(/\s+/);
       const firstName = nameParts[0] || 'Customer';
       const lastName = nameParts.slice(1).join(' ') || 'User';
 
-      // Validate email
+      // Validate and format email
       let email = orderData.email || `${userId}@locals-za.co.za`;
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
         email = `${userId}@locals-za.co.za`;
       }
 
-      // Format amount as string with 2 decimals
-      const amount = parseFloat(orderData.total).toFixed(2);
+      // Format amount as string with exactly 2 decimal places
+      const amount = parseFloat(orderData.total || 0).toFixed(2);
+      if (parseFloat(amount) <= 0) {
+        throw new Error('Invalid order amount');
+      }
 
-      // Format phone (optional field)
+      // Format phone number (optional field)
       let cellNumber = String(orderData.deliveryAddress?.phone || '').replace(/\D/g, '');
       if (cellNumber.startsWith('0')) {
         cellNumber = '27' + cellNumber.substring(1);
@@ -101,55 +122,58 @@ class PayfastService {
         cellNumber = '27' + cellNumber;
       }
 
-      // Build data object in PayFast order (important!)
-      const myData = {};
-      
-      // Merchant details
-      myData['merchant_id'] = this.config.merchantId;
-      myData['merchant_key'] = this.config.merchantKey;
-      myData['return_url'] = `${this.config.returnUrl}/${orderId}`;
-      myData['cancel_url'] = `${this.config.cancelUrl}/${orderId}`;
-      myData['notify_url'] = this.config.notifyUrl;
-      
-      // Buyer details
-      myData['name_first'] = firstName;
-      myData['name_last'] = lastName;
-      myData['email_address'] = email;
-      
-      // Transaction details
-      myData['m_payment_id'] = orderId;
-      myData['amount'] = amount;
-      myData['item_name'] = `Order#${orderId.slice(-8)}`;
-      myData['item_description'] = `${orderData.items?.length || 0} items`;
+      // Build payment data object - ORDER MATTERS for signature!
+      const paymentData = {};
 
-      // Optional fields - only add if valid
+      // Required merchant details
+      paymentData.merchant_id = this.config.merchantId;
+      paymentData.merchant_key = this.config.merchantKey;
+      
+      // Required URLs
+      paymentData.return_url = `${this.config.returnUrl}/${orderId}`;
+      paymentData.cancel_url = `${this.config.cancelUrl}/${orderId}`;
+      paymentData.notify_url = this.config.notifyUrl;
+      
+      // Required buyer details
+      paymentData.name_first = firstName;
+      paymentData.name_last = lastName;
+      paymentData.email_address = email;
+      
+      // Required transaction details
+      paymentData.m_payment_id = orderId;
+      paymentData.amount = amount;
+      paymentData.item_name = `LocalsZA Order ${orderId.slice(-8)}`;
+      paymentData.item_description = `${orderData.items?.length || 0} items from LocalsZA`;
+
+      // Optional fields - only add if they have valid values
       if (cellNumber && cellNumber.length >= 10) {
-        myData['cell_number'] = cellNumber;
+        paymentData.cell_number = cellNumber;
       }
 
       if (userId && userId !== 'guest') {
-        myData['custom_str1'] = userId.substring(0, 255);
+        // Limit custom_str1 to 255 characters
+        paymentData.custom_str1 = userId.substring(0, 255);
       }
 
-      // Generate signature with passphrase if set
-      const myPassphrase = this.config.passphrase || null;
-      myData['signature'] = this.generateSignature(myData, myPassphrase);
+      // Generate signature with passphrase
+      const passphrase = this.config.passphrase || null;
+      paymentData.signature = this.generateSignature(paymentData, passphrase);
 
-      console.log('=== PayFast Payment Request ===');
-      console.log('Order:', orderId);
+      console.log('=== PayFast Payment Request Created ===');
+      console.log('Order ID:', orderId);
       console.log('Amount:', amount);
       console.log('Email:', email);
-      console.log('Signature:', myData['signature']);
-      console.log('===============================');
+      console.log('Test Mode:', this.config.testMode);
+      console.log('==========================================');
 
       return {
-        formData: myData,
+        formData: paymentData,
         url: this.paymentUrl,
         paymentId: orderId
       };
 
     } catch (error) {
-      console.error('Error creating payment request:', error);
+      console.error('Error creating PayFast payment request:', error);
       throw new Error('Failed to create payment: ' + error.message);
     }
   }
@@ -158,18 +182,18 @@ class PayfastService {
    * Verify ITN signature
    */
   verifySignature(data, receivedSignature) {
-    const paymentData = { ...data };
-    delete paymentData.signature;
+    // Create a copy of data without the signature
+    const verifyData = { ...data };
+    delete verifyData.signature;
 
-    const calculatedSignature = this.generateSignature(
-      paymentData,
-      this.config.passphrase || null
-    );
+    // Calculate signature using the same method
+    const calculatedSignature = this.generateSignature(verifyData, this.config.passphrase);
 
-    console.log('Signature verification:');
-    console.log('Received:', receivedSignature);
-    console.log('Calculated:', calculatedSignature);
-    console.log('Match:', calculatedSignature === receivedSignature);
+    console.log('=== PayFast Signature Verification ===');
+    console.log('Received signature:', receivedSignature);
+    console.log('Calculated signature:', calculatedSignature);
+    console.log('Signatures match:', calculatedSignature === receivedSignature);
+    console.log('=====================================');
 
     return calculatedSignature === receivedSignature;
   }
@@ -184,7 +208,8 @@ class PayfastService {
     bodyString.split('&').forEach(pair => {
       const [key, value] = pair.split('=');
       if (key && value !== undefined) {
-        data[key] = decodeURIComponent(value.replace(/\+/g, ' '));
+        // Decode URL encoded values
+        data[decodeURIComponent(key)] = decodeURIComponent(value.replace(/\+/g, ' '));
       }
     });
 
@@ -200,18 +225,24 @@ class PayfastService {
         ? 'https://sandbox.payfast.co.za/eng/query/validate'
         : 'https://www.payfast.co.za/eng/query/validate';
 
+      // Create parameter string for validation
       const params = Object.keys(data)
-        .map(key => `${key}=${encodeURIComponent(data[key])}`)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
         .join('&');
 
       const response = await axios.post(validateUrl, params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'LocalsZA Payment Processor'
+        },
         timeout: 10000
       });
 
-      return response.data.trim() === 'VALID';
+      const isValid = response.data.trim() === 'VALID';
+      console.log('PayFast validation result:', isValid ? 'VALID' : 'INVALID');
+      return isValid;
     } catch (error) {
-      console.error('PayFast validation error:', error);
+      console.error('PayFast validation error:', error.message);
       return false;
     }
   }
@@ -221,10 +252,22 @@ class PayfastService {
    */
   async processItn(data) {
     try {
-      // Verify signature
+      console.log('=== Processing PayFast ITN ===');
+      console.log('Payment ID:', data.m_payment_id);
+      console.log('Payment Status:', data.payment_status);
+      console.log('============================');
+
+      // Step 1: Verify signature
       if (!this.verifySignature(data, data.signature)) {
-        console.error('Invalid ITN signature');
+        console.error('PayFast ITN signature verification failed');
         return { success: false, error: 'Invalid signature' };
+      }
+
+      // Step 2: Validate with PayFast server
+      const isValid = await this.validateWithPayfast(data);
+      if (!isValid) {
+        console.error('PayFast server validation failed');
+        return { success: false, error: 'Server validation failed' };
       }
 
       const orderId = data.m_payment_id;
@@ -232,7 +275,7 @@ class PayfastService {
         return { success: false, error: 'Missing order ID' };
       }
 
-      // Get order from Firestore
+      // Step 3: Get and update order
       const orderRef = admin.firestore().collection('orders').doc(orderId);
       const orderDoc = await orderRef.get();
 
@@ -240,48 +283,58 @@ class PayfastService {
         return { success: false, error: 'Order not found' };
       }
 
-      // Log ITN for records
+      // Step 4: Log ITN for audit trail
       await admin.firestore().collection('payment_notifications').add({
         orderId,
         paymentData: data,
         receivedAt: admin.firestore.FieldValue.serverTimestamp(),
-        environment: this.config.testMode ? 'sandbox' : 'production'
+        environment: this.config.testMode ? 'sandbox' : 'production',
+        verified: true
       });
 
-      // Update order based on payment status
+      // Step 5: Update order based on payment status
       const paymentStatus = data.payment_status;
       const updateData = {
         paymentData: data,
-        paymentUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
+        paymentUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        paymentVerified: true
       };
 
+      let newOrderStatus;
       if (paymentStatus === 'COMPLETE') {
         updateData.status = 'pending';
         updateData.paymentStatus = 'paid';
         updateData.paymentCompleted = true;
         updateData.paymentCompletedAt = admin.firestore.FieldValue.serverTimestamp();
         updateData.pf_payment_id = data.pf_payment_id;
+        newOrderStatus = 'pending';
       } else if (paymentStatus === 'FAILED') {
         updateData.status = 'payment_failed';
         updateData.paymentStatus = 'failed';
+        newOrderStatus = 'payment_failed';
       } else if (paymentStatus === 'CANCELLED') {
         updateData.status = 'cancelled';
         updateData.paymentStatus = 'cancelled';
+        newOrderStatus = 'cancelled';
       } else {
         updateData.paymentStatus = paymentStatus.toLowerCase();
+        newOrderStatus = paymentStatus.toLowerCase();
       }
 
       await orderRef.update(updateData);
+
+      console.log(`Order ${orderId} updated with payment status: ${paymentStatus}`);
 
       return {
         success: true,
         orderId,
         status: paymentStatus,
-        newOrderStatus: updateData.status
+        newOrderStatus,
+        userId: orderDoc.data().userId
       };
 
     } catch (error) {
-      console.error('ITN processing error:', error);
+      console.error('PayFast ITN processing error:', error);
       return { success: false, error: error.message };
     }
   }
