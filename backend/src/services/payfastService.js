@@ -48,6 +48,8 @@ class PayfastService {
       // Create a copy without the signature field
       const signatureData = { ...data };
       delete signatureData.signature;
+      // CRITICAL: merchant_key must NOT be in the signature string
+      delete signatureData.merchant_key;
 
       // Step 1: Sort all keys alphabetically
       const keys = Object.keys(signatureData).sort();
@@ -70,7 +72,7 @@ class PayfastService {
           continue;
         }
         
-        // URL encode the value (but NOT the key in the string)
+        // URL encode the value
         const encoded = encodeURIComponent(value);
         parts.push(`${key}=${encoded}`);
       }
@@ -172,7 +174,6 @@ class PayfastService {
   createPaymentRequest(orderData, orderId, userId) {
     try {
       console.log('=== Creating PayFast Payment Request ===');
-      console.log('Order data:', JSON.stringify(orderData, null, 2));
       
       // Validate config
       if (!this.config.merchantId || !this.config.merchantKey) {
@@ -225,10 +226,10 @@ class PayfastService {
         }
       }
 
-      // Build payment data object
-      const paymentData = {
+      // Build payment data object - NOTE: merchant_key is kept for signature generation only
+      const paymentDataForSignature = {
         merchant_id: this.config.merchantId,
-        merchant_key: this.config.merchantKey,
+        merchant_key: this.config.merchantKey,  // For signature only
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
@@ -241,36 +242,61 @@ class PayfastService {
         item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255)
       };
 
-      // Add optional fields only if valid
       if (cellNumber) {
-        paymentData.cell_number = cellNumber;
+        paymentDataForSignature.cell_number = cellNumber;
       }
 
       if (userId && userId !== 'guest' && userId.length <= 255) {
-        paymentData.custom_str1 = userId;
+        paymentDataForSignature.custom_str1 = userId;
       }
 
       // Validate the payment data
-      const validationErrors = this.validatePaymentData(paymentData);
+      const validationErrors = this.validatePaymentData(paymentDataForSignature);
       if (validationErrors.length > 0) {
         throw new Error('Validation errors: ' + validationErrors.join(', '));
       }
 
-      console.log('Payment data before signature:', JSON.stringify(paymentData, null, 2));
+      console.log('Payment data before signature:', JSON.stringify(paymentDataForSignature, null, 2));
 
       // Generate signature
-      paymentData.signature = this.generateSignature(paymentData, this.config.passphrase);
+      const signature = this.generateSignature(paymentDataForSignature, this.config.passphrase);
+
+      // NOW: Build the form data WITHOUT merchant_key
+      const formData = {
+        merchant_id: this.config.merchantId,
+        // merchant_key is NOT sent in the form - only used for signature
+        return_url: `${this.config.returnUrl}/${orderId}`,
+        cancel_url: `${this.config.cancelUrl}/${orderId}`,
+        notify_url: this.config.notifyUrl,
+        name_first: firstName,
+        name_last: lastName,
+        email_address: email,
+        m_payment_id: orderId,
+        amount: amountString,
+        item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
+        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255),
+        signature: signature
+      };
+
+      if (cellNumber) {
+        formData.cell_number = cellNumber;
+      }
+
+      if (userId && userId !== 'guest' && userId.length <= 255) {
+        formData.custom_str1 = userId;
+      }
 
       console.log('=== PayFast Payment Request Summary ===');
       console.log('Order ID:', orderId);
       console.log('Amount:', amountString);
       console.log('Test Mode:', this.config.testMode);
       console.log('URL:', this.paymentUrl);
-      console.log('Signature:', paymentData.signature);
+      console.log('Signature:', signature);
+      console.log('Form data fields:', Object.keys(formData).length);
       console.log('========================================');
 
       return {
-        formData: paymentData,
+        formData: formData,
         url: this.paymentUrl,
         paymentId: orderId
       };
