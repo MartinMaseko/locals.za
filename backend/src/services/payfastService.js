@@ -45,65 +45,68 @@ class PayfastService {
    */
   generateSignature(data, passPhrase = null) {
     try {
-      // Step 1: Create clean data object without signature
-      const cleanData = {};
+      // Create a copy without the signature field
+      const signatureData = { ...data };
+      delete signatureData.signature;
+
+      // Step 1: Sort all keys alphabetically
+      const keys = Object.keys(signatureData).sort();
       
-      Object.keys(data).forEach(key => {
-        if (key === 'signature') return; // Skip signature field itself
+      // Step 2: Build the signature string
+      const parts = [];
+      
+      for (const key of keys) {
+        let value = signatureData[key];
         
-        const value = data[key];
-        if (value !== null && value !== undefined && value !== '') {
-          const stringValue = String(value).trim();
-          if (stringValue !== '') {
-            cleanData[key] = stringValue;
-          }
+        // Convert to string and trim
+        if (value === null || value === undefined) {
+          continue;
         }
-      });
-
-      // Step 2: Sort keys alphabetically (PayFast requirement)
-      const sortedKeys = Object.keys(cleanData).sort();
-      
-      console.log('Sorted keys for signature:', sortedKeys);
-      console.log('Data for signature:', cleanData);
-      
-      // Step 3: Build parameter string
-      const paramPairs = [];
-      
-      for (const key of sortedKeys) {
-        const value = cleanData[key];
         
-        // URL encode both key and value
-        const encodedKey = encodeURIComponent(key);
-        const encodedValue = encodeURIComponent(value);
+        value = String(value).trim();
         
-        // Replace %20 with + as per PayFast requirement
-        const finalKey = encodedKey.replace(/%20/g, '+');
-        const finalValue = encodedValue.replace(/%20/g, '+');
+        // Skip empty values
+        if (value === '') {
+          continue;
+        }
         
-        paramPairs.push(`${finalKey}=${finalValue}`);
+        // URL encode the value (but NOT the key in the string)
+        const encoded = encodeURIComponent(value);
+        parts.push(`${key}=${encoded}`);
       }
       
-      let paramString = paramPairs.join('&');
+      // Step 3: Join with &
+      let paramString = parts.join('&');
       
-      // Step 4: Add passphrase if provided
-      if (passPhrase && String(passPhrase).trim() !== '') {
-        const cleanPassphrase = String(passPhrase).trim();
-        const encodedPassphrase = encodeURIComponent(cleanPassphrase).replace(/%20/g, '+');
-        paramString += `&passphrase=${encodedPassphrase}`;
+      // Step 4: Add passphrase if it exists
+      if (passPhrase) {
+        const cleanPass = String(passPhrase).trim();
+        if (cleanPass !== '') {
+          const encodedPass = encodeURIComponent(cleanPass);
+          paramString += `&passphrase=${encodedPass}`;
+        }
       }
 
-      console.log('PayFast signature string:', paramString);
+      console.log('\n=== PayFast Signature Generation ===');
+      console.log('Signature string to hash:');
+      console.log(paramString);
+      console.log('String length:', paramString.length);
       
-      // Step 5: Generate MD5 hash (lowercase)
-      const signature = crypto.createHash('md5').update(paramString, 'utf8').digest('hex').toLowerCase();
+      // Step 5: Generate MD5 hash (must be lowercase)
+      const signature = crypto
+        .createHash('md5')
+        .update(paramString)
+        .digest('hex')
+        .toLowerCase();
       
-      console.log('Generated signature:', signature);
+      console.log('Generated MD5 hash:', signature);
+      console.log('=====================================\n');
       
       return signature;
       
     } catch (error) {
       console.error('Signature generation error:', error);
-      throw new Error('Failed to generate signature: ' + error.message);
+      throw error;
     }
   }
 
