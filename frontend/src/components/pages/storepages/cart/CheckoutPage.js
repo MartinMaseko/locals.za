@@ -213,24 +213,26 @@ const CheckoutPage = () => {
                 if (payfastFormRef.current) {
                     payfastFormRef.current.action = paymentData.url;
                     payfastFormRef.current.innerHTML = '';
-                    if (paymentData.formData) {
-                        Object.keys(paymentData.formData).forEach(key => {
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = key;
-                            input.value = String(paymentData.formData ? paymentData.formData[key] : '');
-                            payfastFormRef.current?.appendChild(input);
-                        });
-                    }
+                    // Add all form data as hidden inputs - maintain PayFast field order
+                    Object.keys(paymentData.formData).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = String(paymentData.formData[key] || '');
+                        payfastFormRef.current?.appendChild(input);
+                    });
                     console.log('Submitting to PayFast:', paymentData.url);
+                    console.log('Form data keys:', Object.keys(paymentData.formData));
                     payfastFormRef.current.submit();
                 }
                 else {
+                    // Fallback: redirect directly if form ref is unavailable
+                    console.warn('PayFast form ref not available, redirecting directly');
                     window.location.href = paymentData.url;
                 }
             }
             else {
-                throw new Error('Payment data not received');
+                throw new Error('Payment data not received from server');
             }
         }
         catch (err) {
