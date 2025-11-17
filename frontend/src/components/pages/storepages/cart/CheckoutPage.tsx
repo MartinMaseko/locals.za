@@ -211,65 +211,46 @@ const CheckoutPage: React.FC = () => {
       
       clearCart();
       
-      // Step 3: Submit form to PayFast with proper encoding
+      // Step 3: Submit form to PayFast as traditional HTML form
       if (paymentData.formData && paymentData.url) {
         if (payfastFormRef.current) {
           console.log('=== PayFast Form Submission ===');
-          console.log('Form data received:', paymentData.formData);
           console.log('Target URL:', paymentData.url);
           
-          // Reset form
+          // Clear and configure form
           payfastFormRef.current.innerHTML = '';
           payfastFormRef.current.action = paymentData.url;
           payfastFormRef.current.method = 'POST';
           payfastFormRef.current.encType = 'application/x-www-form-urlencoded';
-          payfastFormRef.current.acceptCharset = 'UTF-8';
           
-          // Build a list of all fields to submit
-          const fieldsToSubmit: Array<{key: string; value: string}> = [];
+          // Add charset attribute
+          const charsetMeta = document.createElement('meta');
+          charsetMeta.setAttribute('charset', 'UTF-8');
           
-          // Add all fields from formData, sorted alphabetically
-          Object.keys(paymentData.formData)
-            .sort()
-            .forEach(key => {
-              const value = paymentData.formData![key];
+          // Build fields in exact order from backend
+          const fields = Object.keys(paymentData.formData).sort();
+          
+          console.log('Submitting fields:', fields);
+          
+          fields.forEach(fieldName => {
+            const fieldValue = paymentData.formData![fieldName];
+            
+            if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
+              const input = document.createElement('input');
+              input.setAttribute('type', 'hidden');
+              input.setAttribute('name', fieldName);
+              input.setAttribute('value', String(fieldValue));
+              payfastFormRef.current?.appendChild(input);
               
-              // Only include non-empty values
-              if (value !== undefined && value !== null) {
-                const stringValue = String(value).trim();
-                if (stringValue !== '') {
-                  fieldsToSubmit.push({ key, value: stringValue });
-                }
-              }
-            });
-          
-          console.log('Fields to submit (in order):', fieldsToSubmit);
-          
-          // Create hidden input fields
-          fieldsToSubmit.forEach(({ key, value }) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = value;
-            payfastFormRef.current?.appendChild(input);
+              console.log(`Added field: ${fieldName} = ${String(fieldValue)}`);
+            }
           });
           
-          console.log('Total fields created:', fieldsToSubmit.length);
-          
-          // Log the form data that will be sent
-          const formDataToBeSent = new FormData(payfastFormRef.current);
-          console.log('FormData entries:');
-          for (let [key, value] of formDataToBeSent.entries()) {
-            console.log(`  ${key}: ${value}`);
-          }
-          
-          console.log('Submitting form to:', payfastFormRef.current.action);
+          console.log('Form ready with', payfastFormRef.current.children.length, 'fields');
           console.log('==============================\n');
           
-          // Submit the form
-          setTimeout(() => {
-            payfastFormRef.current?.submit();
-          }, 50);
+          // Submit immediately - no timeout
+          payfastFormRef.current.submit();
         }
       } else {
         throw new Error('Payment data not received from backend');
