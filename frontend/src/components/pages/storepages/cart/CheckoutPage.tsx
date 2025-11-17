@@ -211,11 +211,12 @@ const CheckoutPage: React.FC = () => {
       
       clearCart();
       
-      // Step 3: Submit form to PayFast as traditional HTML form
+      // Step 3: Submit form to PayFast with comprehensive debugging
       if (paymentData.formData && paymentData.url) {
         if (payfastFormRef.current) {
-          console.log('=== PayFast Form Submission ===');
+          console.log('\n=== FRONTEND PayFast Form Submission DEBUG ===');
           console.log('Target URL:', paymentData.url);
+          console.log('Raw formData received from backend:', paymentData.formData);
           
           // Clear and configure form
           payfastFormRef.current.innerHTML = '';
@@ -223,30 +224,71 @@ const CheckoutPage: React.FC = () => {
           payfastFormRef.current.method = 'POST';
           payfastFormRef.current.encType = 'application/x-www-form-urlencoded';
           
-          // Build fields in exact order from backend
-          const fields = Object.keys(paymentData.formData).sort();
+          // CRITICAL: Use the EXACT same field order as backend (no sorting!)
+          console.log('Backend field order vs Frontend field order comparison:');
           
-          console.log('Submitting fields:', fields);
-          console.log('Field count:', fields.length);
+          // Get backend field order from the formData object keys
+          const backendFieldOrder = Object.keys(paymentData.formData);
+          console.log('Backend field order:', backendFieldOrder);
           
-          fields.forEach(fieldName => {
+          // Create form fields in EXACT backend order
+          const fieldLog: Array<{key: string; value: string}> = [];
+          
+          backendFieldOrder.forEach(fieldName => {
             const fieldValue = paymentData.formData![fieldName];
             
-            if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
-              const input = document.createElement('input');
-              input.setAttribute('type', 'hidden');
-              input.setAttribute('name', fieldName);
-              input.setAttribute('value', String(fieldValue));
-              payfastFormRef.current?.appendChild(input);
-              
-              console.log(`  ${fieldName}: ${String(fieldValue).substring(0, 50)}${String(fieldValue).length > 50 ? '...' : ''}`);
+            if (fieldValue !== undefined && fieldValue !== null) {
+              const stringValue = String(fieldValue);
+              if (stringValue.trim() !== '') {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'hidden');
+                input.setAttribute('name', fieldName);
+                input.setAttribute('value', stringValue);
+                payfastFormRef.current?.appendChild(input);
+                
+                fieldLog.push({ key: fieldName, value: stringValue });
+                console.log(`  ${fieldName}: ${stringValue.substring(0, 50)}${stringValue.length > 50 ? '...' : ''}`);
+              }
             }
           });
           
-          console.log('Form ready. Submitting...');
-          console.log('==============================\n');
+          console.log('Total fields created:', fieldLog.length);
           
-          // Submit the form
+          // Recreate the EXACT signature string that should be sent
+          let frontendPfOutput = "";
+          fieldLog.forEach(field => {
+            if (field.key !== 'signature' && field.value !== "") {
+              const value = String(field.value).trim();
+              const encodedValue = encodeURIComponent(value).replace(/%20/g, "+");
+              frontendPfOutput += `${field.key}=${encodedValue}&`;
+            }
+          });
+          
+          let frontendParamString = frontendPfOutput.slice(0, -1);
+          // Note: We can't add passphrase client-side for security
+          
+          console.log('Frontend parameter string (no passphrase):', frontendParamString);
+          console.log('Frontend parameter string length:', frontendParamString.length);
+          console.log('Backend signature received:', paymentData.formData.signature);
+          
+          // Check for field order mismatch
+          const frontendFieldOrder = fieldLog.map(f => f.key);
+          const orderMismatch = JSON.stringify(backendFieldOrder) !== JSON.stringify(frontendFieldOrder);
+          console.log('Field order mismatch detected:', orderMismatch);
+          
+          if (orderMismatch) {
+            console.error('CRITICAL: Field order mismatch between backend and frontend!');
+            console.log('Backend order:', backendFieldOrder);
+            console.log('Frontend order:', frontendFieldOrder);
+          }
+          
+          console.log('==============================================\n');
+          
+          // Don't submit yet - let's see the logs first
+          console.log('PAUSING SUBMISSION - Check logs above first');
+          console.log('To proceed, uncomment the submit line in code');
+          
+          // Uncomment this line after analyzing the logs:
           payfastFormRef.current.submit();
         }
       } else {
