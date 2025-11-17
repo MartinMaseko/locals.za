@@ -207,20 +207,13 @@ const CheckoutPage = () => {
             });
             const paymentData = paymentRes.data;
             clearCart();
-            // Step 3: Submit form to PayFast using exact field order from backend
+            // Step 3: Submit form to PayFast with proper field order
             if (paymentData.formData && paymentData.url) {
                 if (payfastFormRef.current) {
                     payfastFormRef.current.action = paymentData.url;
                     payfastFormRef.current.innerHTML = '';
-                    // Use exact field order from PayFast documentation
-                    const fieldOrder = [
-                        'merchant_id', 'merchant_key',
-                        'return_url', 'cancel_url', 'notify_url',
-                        'name_first', 'name_last', 'email_address',
-                        'm_payment_id', 'amount', 'item_name', 'item_description',
-                        'cell_number', 'custom_str1', 'signature'
-                    ];
-                    fieldOrder.forEach(key => {
+                    // Create hidden fields in the exact order they appear in the backend
+                    Object.keys(paymentData.formData).forEach(key => {
                         if (paymentData.formData[key] !== undefined && paymentData.formData[key] !== '') {
                             const input = document.createElement('input');
                             input.type = 'hidden';
@@ -229,6 +222,7 @@ const CheckoutPage = () => {
                             payfastFormRef.current?.appendChild(input);
                         }
                     });
+                    console.log('Form data being submitted:', paymentData.formData);
                     console.log('Submitting to PayFast:', paymentData.url);
                     payfastFormRef.current.submit();
                 }
