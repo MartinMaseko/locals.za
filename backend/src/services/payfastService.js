@@ -44,33 +44,40 @@ class PayfastService {
     const signatureData = { ...data };
     delete signatureData.signature;
 
-    // Create the parameter string by joining key-value pairs.
-    // PayFast requires sorting keys alphabetically.
-    const paramString = Object.keys(signatureData)
-      .sort()
-      .map(key => {
-        const value = signatureData[key];
-        if (value === null || value === undefined || String(value).trim() === '') {
-          return null;
+    // Use PayFast's EXACT algorithm from their documentation
+    let pfOutput = "";
+    
+    // DO NOT SORT - use for...in loop as per PayFast docs
+    for (let key in signatureData) {
+      if (signatureData.hasOwnProperty(key)) {
+        if (signatureData[key] !== "") {
+          const value = String(signatureData[key]).trim();
+          const encodedValue = encodeURIComponent(value).replace(/%20/g, "+");
+          pfOutput += `${key}=${encodedValue}&`;
         }
-        // URL-encode the value and replace %20 with + as per PayFast docs.
-        const encodedValue = encodeURIComponent(String(value).trim()).replace(/%20/g, '+');
-        return `${key}=${encodedValue}`;
-      })
-      .filter(Boolean) // Remove any null entries from empty values
-      .join('&');
+      }
+    }
 
-    // Append the passphrase to the string.
-    const fullString = passPhrase ? `${paramString}&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, '+')}` : paramString;
+    // Remove last ampersand
+    let getString = pfOutput.slice(0, -1);
+    
+    // Add passphrase if provided
+    if (passPhrase !== null && String(passPhrase).trim() !== "") {
+      const cleanPassphrase = String(passPhrase).trim();
+      const encodedPassphrase = encodeURIComponent(cleanPassphrase).replace(/%20/g, "+");
+      getString += `&passphrase=${encodedPassphrase}`;
+    }
 
-    console.log('\n=== PayFast Signature Generation ===');
+    console.log('\n=== PayFast Signature Generation (Fixed) ===');
     console.log('Data used for signature:', signatureData);
-    console.log('Final string to be hashed:', fullString);
+    console.log('Parameter string (no sorting):', getString);
+    console.log('String length:', getString.length);
 
-    // Generate the MD5 hash.
-    const signature = crypto.createHash('md5').update(fullString).digest('hex');
+    // Generate the MD5 hash
+    const signature = crypto.createHash("md5").update(getString).digest("hex");
+    
     console.log('Generated MD5 Signature:', signature);
-    console.log('====================================\n');
+    console.log('=============================================\n');
 
     return signature;
   }
