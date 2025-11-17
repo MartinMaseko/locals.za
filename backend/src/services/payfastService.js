@@ -60,22 +60,19 @@ class PayfastService {
     // Remove last ampersand
     let getString = pfOutput.slice(0, -1);
     
-    // Add passphrase if provided
-    if (passPhrase !== null && String(passPhrase).trim() !== "") {
-      const cleanPassphrase = String(passPhrase).trim();
-      const encodedPassphrase = encodeURIComponent(cleanPassphrase).replace(/%20/g, "+");
-      getString += `&passphrase=${encodedPassphrase}`;
-    }
-
+    // CRITICAL FIX: Do NOT add passphrase to the signature string
+    // PayFast calculates signature without passphrase because they don't receive it
+    // The passphrase is only used server-side for additional security verification
+    
     console.log('\n=== PayFast Signature Generation (Fixed) ===');
     console.log('Data used for signature:', signatureData);
-    console.log('Parameter string (no sorting):', getString);
+    console.log('Parameter string (no passphrase):', getString);
     console.log('String length:', getString.length);
 
-    // Generate the MD5 hash
+    // Generate the MD5 hash WITHOUT passphrase
     const signature = crypto.createHash("md5").update(getString).digest("hex");
     
-    console.log('Generated MD5 Signature:', signature);
+    console.log('Generated MD5 Signature (no passphrase):', signature);
     console.log('=============================================\n');
 
     return signature;
