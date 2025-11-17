@@ -80,29 +80,27 @@ class PayfastService {
         cellNumber = '27' + cellNumber;
       }
       
-      // Build payment data - EXACT PayFast format
+      // Build payment data - EXACT PayFast format using array notation like the reference
       // https://developers.payfast.co.za/docs#step_1_form_fields
-      const data = {
-        // Merchant details (REQUIRED)
-        merchant_id: this.config.merchantId,
-        merchant_key: this.config.merchantKey,
-        
-        // Buyer details (REQUIRED)
-        name_first: firstName,
-        name_last: lastName,
-        email_address: email,
-        
-        // Transaction details (REQUIRED)
-        m_payment_id: orderId,
-        amount: amount,
-        item_name: `Order ${orderId.slice(-8)}`,
-        item_description: `${orderData.items?.length || 0} items`,
-        
-        // Return URLs (REQUIRED) - MUST be full URLs
-        return_url: `${this.config.returnUrl}/${orderId}`,
-        cancel_url: `${this.config.cancelUrl}/${orderId}`,
-        notify_url: this.config.notifyUrl,
-      };
+      const data = {};
+      
+      // Merchant details (REQUIRED) - in exact order from reference
+      data.merchant_id = this.config.merchantId;
+      data.merchant_key = this.config.merchantKey;
+      data.return_url = `${this.config.returnUrl}/${orderId}`;
+      data.cancel_url = `${this.config.cancelUrl}/${orderId}`;
+      data.notify_url = this.config.notifyUrl;
+      
+      // Buyer details (REQUIRED)
+      data.name_first = firstName;
+      data.name_last = lastName;
+      data.email_address = email;
+      
+      // Transaction details (REQUIRED)
+      data.m_payment_id = orderId;
+      data.amount = amount;
+      data.item_name = `Order ${orderId.slice(-8)}`;
+      data.item_description = `${orderData.items?.length || 0} items`;
       
       // Optional fields only if valid
       if (cellNumber && cellNumber.length >= 10) {
@@ -141,12 +139,11 @@ class PayfastService {
       console.log('Notify URL:', data.notify_url);
       console.log('Payment URL:', paymentUrl);
       console.log('Signature generated:', !!signature);
-      console.log('All fields:', Object.keys(data).sort());
       console.log('================================');
 
       // Log final payload that will be sent to PayFast
       console.log('=== Final PayFast Payload ===');
-      Object.keys(data).sort().forEach(key => {
+      Object.keys(data).forEach(key => {
         console.log(`${key}: ${data[key]} (${typeof data[key]})`);
       });
       console.log('=============================');
@@ -163,51 +160,42 @@ class PayfastService {
   }
   
   /**
-   * Generate MD5 signature - EXACT PayFast algorithm
+   * Generate MD5 signature - EXACT PayFast algorithm from official docs
    * https://developers.payfast.co.za/docs#signature
-   * 
-   * KEY: Use %20 for spaces, NOT +
    */
-  generateSignature(data) {
+  generateSignature(data, passPhrase = null) {
     try {
+      // Use the passphrase from config if not provided
+      const passphraseToUse = passPhrase !== null ? passPhrase : (this.config.passphrase || null);
+      
+      // Create parameter string - DO NOT SORT, maintain order
       let pfOutput = "";
-      
-      // Sort keys alphabetically
-      const sortedKeys = Object.keys(data).sort();
-      
-      // Build querystring - NO spaces, use %20
-      for (const key of sortedKeys) {
-        const value = data[key];
-        
-        // Skip empty values and signature
-        if (value !== "" && value !== undefined && value !== null && key !== 'signature') {
-          // CRITICAL: Use encodeURIComponent without replacing %20 with +
-          // PayFast expects RFC 3986 encoding: %20 for spaces
-          const encoded = encodeURIComponent(String(value).trim());
-          pfOutput += `${key}=${encoded}&`;
+      for (let key in data) {
+        if (data.hasOwnProperty(key)) {
+          if (data[key] !== "" && data[key] !== undefined && data[key] !== null && key !== 'signature') {
+            // CRITICAL: PayFast expects %20 to be replaced with +
+            pfOutput += `${key}=${encodeURIComponent(data[key].toString().trim()).replace(/%20/g, "+")}&`;
+          }
         }
       }
 
       // Remove last ampersand
       let getString = pfOutput.slice(0, -1);
       
-      // Append passphrase DIRECTLY without & or encoding
-      if (this.config.passphrase && this.config.passphrase.trim()) {
-        getString += this.config.passphrase.trim();
+      // Append passphrase with proper format
+      if (passphraseToUse !== null && passphraseToUse.trim() !== '') {
+        getString += `&passphrase=${encodeURIComponent(passphraseToUse.trim()).replace(/%20/g, "+")}`;
       }
       
       console.log('=== Signature Generation Debug ===');
-      console.log('Data keys (sorted):', sortedKeys.join(', '));
-      console.log('Querystring (first 150 chars):', getString.substring(0, 150) + '...');
-      console.log('Passphrase appended:', !!this.config.passphrase);
-      console.log('Full string length:', getString.length);
-      console.log('===================================');
+      console.log('String to hash:', getString);
+      console.log('Passphrase used:', passphraseToUse ? '***SET***' : 'NOT SET');
       
       // Generate MD5 hash
       const signature = crypto.createHash("md5").update(getString).digest("hex");
       
       console.log('Generated MD5 signature:', signature);
-      console.log('Signature length:', signature.length);
+      console.log('===================================');
       
       return signature;
     } catch (error) {
