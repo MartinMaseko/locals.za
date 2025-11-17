@@ -217,16 +217,17 @@ const CheckoutPage: React.FC = () => {
           payfastFormRef.current.action = paymentData.url;
           payfastFormRef.current.innerHTML = '';
           
-          // Maintain exact field order from backend
+          // Use exact field order from PayFast documentation
           const fieldOrder = [
-            'merchant_id', 'merchant_key', 'return_url', 'cancel_url', 'notify_url',
+            'merchant_id', 'merchant_key', 
+            'return_url', 'cancel_url', 'notify_url',
             'name_first', 'name_last', 'email_address',
             'm_payment_id', 'amount', 'item_name', 'item_description',
             'cell_number', 'custom_str1', 'signature'
           ];
           
           fieldOrder.forEach(key => {
-            if (paymentData.formData![key]) {
+            if (paymentData.formData![key] !== undefined && paymentData.formData![key] !== '') {
               const input = document.createElement('input');
               input.type = 'hidden';
               input.name = key;
