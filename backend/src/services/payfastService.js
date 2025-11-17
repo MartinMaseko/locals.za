@@ -40,7 +40,6 @@ class PayfastService {
    * This function now correctly includes all form fields (including merchant_key) in the hash.
    */
   generateSignature(data, passPhrase = null) {
-    // Create a copy of the data and remove the signature field itself.
     const signatureData = { ...data };
     delete signatureData.signature;
 
