@@ -206,34 +206,40 @@ const CheckoutPage: React.FC = () => {
           }
         }
       );
-      // Type assertion for payment response
+      
       const paymentData = paymentRes.data as { formData?: Record<string, any>; url?: string; paymentId?: string };
+      
       clearCart();
-      // Step 3: Submit form to PayFast
+      
+      // Step 3: Submit form to PayFast using exact field order from backend
       if (paymentData.formData && paymentData.url) {
         if (payfastFormRef.current) {
           payfastFormRef.current.action = paymentData.url;
           payfastFormRef.current.innerHTML = '';
           
-          // Add all form data as hidden inputs - maintain PayFast field order
-          Object.keys(paymentData.formData).forEach(key => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = String(paymentData.formData![key] || '');
-            payfastFormRef.current?.appendChild(input);
+          // Maintain exact field order from backend
+          const fieldOrder = [
+            'merchant_id', 'merchant_key', 'return_url', 'cancel_url', 'notify_url',
+            'name_first', 'name_last', 'email_address',
+            'm_payment_id', 'amount', 'item_name', 'item_description',
+            'cell_number', 'custom_str1', 'signature'
+          ];
+          
+          fieldOrder.forEach(key => {
+            if (paymentData.formData![key]) {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = String(paymentData.formData![key]);
+              payfastFormRef.current?.appendChild(input);
+            }
           });
           
           console.log('Submitting to PayFast:', paymentData.url);
-          console.log('Form data keys:', Object.keys(paymentData.formData));
           payfastFormRef.current.submit();
-        } else {
-          // Fallback: redirect directly if form ref is unavailable
-          console.warn('PayFast form ref not available, redirecting directly');
-          window.location.href = paymentData.url;
         }
       } else {
-        throw new Error('Payment data not received from server');
+        throw new Error('Payment data not received');
       }
     } catch (err: any) {
       console.error('Order placement error:', err);
