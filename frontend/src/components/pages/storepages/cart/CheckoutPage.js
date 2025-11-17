@@ -217,12 +217,10 @@ const CheckoutPage = () => {
                     payfastFormRef.current.action = paymentData.url;
                     payfastFormRef.current.method = 'POST';
                     payfastFormRef.current.encType = 'application/x-www-form-urlencoded';
-                    // Add charset attribute
-                    const charsetMeta = document.createElement('meta');
-                    charsetMeta.setAttribute('charset', 'UTF-8');
                     // Build fields in exact order from backend
                     const fields = Object.keys(paymentData.formData).sort();
                     console.log('Submitting fields:', fields);
+                    console.log('Field count:', fields.length);
                     fields.forEach(fieldName => {
                         const fieldValue = paymentData.formData[fieldName];
                         if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
@@ -231,12 +229,12 @@ const CheckoutPage = () => {
                             input.setAttribute('name', fieldName);
                             input.setAttribute('value', String(fieldValue));
                             payfastFormRef.current?.appendChild(input);
-                            console.log(`Added field: ${fieldName} = ${String(fieldValue)}`);
+                            console.log(`  ${fieldName}: ${String(fieldValue).substring(0, 50)}${String(fieldValue).length > 50 ? '...' : ''}`);
                         }
                     });
-                    console.log('Form ready with', payfastFormRef.current.children.length, 'fields');
+                    console.log('Form ready. Submitting...');
                     console.log('==============================\n');
-                    // Submit immediately - no timeout
+                    // Submit the form
                     payfastFormRef.current.submit();
                 }
             }
