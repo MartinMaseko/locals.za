@@ -36,44 +36,53 @@ class PayfastService {
   }
 
   /**
-   * Generates the PayFast signature.
-   * This function now correctly includes all form fields (including merchant_key) in the hash.
+   * Generates the PayFast signature following their exact documentation
+   * https://developers.payfast.co.za/docs#signature-generation
    */
   generateSignature(data, passPhrase = null) {
-    const signatureData = { ...data };
-    delete signatureData.signature;
-
-    // Use PayFast's EXACT algorithm from their documentation
+    // Create parameter string exactly as PayFast docs specify
     let pfOutput = "";
     
-    // DO NOT SORT - use for...in loop as per PayFast docs
+    // Remove signature field from data copy
+    const signatureData = { ...data };
+    delete signatureData.signature;
+    
+    // Build parameter string - PayFast uses for...in loop (no sorting)
     for (let key in signatureData) {
       if (signatureData.hasOwnProperty(key)) {
-        if (signatureData[key] !== "") {
-          const value = String(signatureData[key]).trim();
-          const encodedValue = encodeURIComponent(value).replace(/%20/g, "+");
-          pfOutput += `${key}=${encodedValue}&`;
+        const value = signatureData[key];
+        // Only include non-empty values
+        if (value !== "" && value !== null && value !== undefined) {
+          const trimmedValue = String(value).trim();
+          if (trimmedValue !== "") {
+            // URL encode and replace %20 with + as per PayFast requirement
+            const encodedValue = encodeURIComponent(trimmedValue).replace(/%20/g, "+");
+            pfOutput += `${key}=${encodedValue}&`;
+          }
         }
       }
     }
 
     // Remove last ampersand
-    let getString = pfOutput.slice(0, -1);
+    let paramString = pfOutput.slice(0, -1);
     
-    // CRITICAL FIX: Do NOT add passphrase to the signature string
-    // PayFast calculates signature without passphrase because they don't receive it
-    // The passphrase is only used server-side for additional security verification
-    
-    console.log('\n=== PayFast Signature Generation (Fixed) ===');
-    console.log('Data used for signature:', signatureData);
-    console.log('Parameter string (no passphrase):', getString);
-    console.log('String length:', getString.length);
+    // Add passphrase if provided and not empty
+    if (passPhrase && String(passPhrase).trim() !== "") {
+      const encodedPassphrase = encodeURIComponent(String(passPhrase).trim()).replace(/%20/g, "+");
+      paramString += `&passphrase=${encodedPassphrase}`;
+    }
 
-    // Generate the MD5 hash WITHOUT passphrase
-    const signature = crypto.createHash("md5").update(getString).digest("hex");
+    console.log('\n=== PayFast Signature Generation ===');
+    console.log('Data for signature:', signatureData);
+    console.log('Parameter string:', paramString);
+    console.log('String length:', paramString.length);
+    console.log('Passphrase used:', passPhrase ? 'YES' : 'NO');
+
+    // Generate MD5 hash in lowercase
+    const signature = crypto.createHash("md5").update(paramString).digest("hex").toLowerCase();
     
-    console.log('Generated MD5 Signature (no passphrase):', signature);
-    console.log('=============================================\n');
+    console.log('Generated signature:', signature);
+    console.log('===================================\n');
 
     return signature;
   }
