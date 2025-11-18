@@ -28,6 +28,15 @@ class PayfastService {
       testMode: String(firebaseConfig.test_mode || process.env.PAYFAST_TEST_MODE) === 'true'
     };
 
+    // Add debugging to confirm
+    console.log('PayFast Service Initialized. Test Mode:', this.config.testMode);
+    console.log('Passphrase DEBUG:', {
+      hardcoded: this.config.passphrase,
+      firebase: firebaseConfig.passphrase,
+      env: process.env.PAYFAST_PASSPHRASE,
+      final: this.config.passphrase || 'EMPTY'
+    });
+
     this.paymentUrl = this.config.testMode
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
@@ -40,6 +49,9 @@ class PayfastService {
    * https://developers.payfast.co.za/docs#signature-generation
    */
   generateSignature(data, passPhrase = null) {
+    // Force passphrase to null
+    passPhrase = null;
+
     // Create parameter string exactly as PayFast docs specify
     let pfOutput = "";
     
@@ -65,12 +77,6 @@ class PayfastService {
 
     // Remove last ampersand
     let paramString = pfOutput.slice(0, -1);
-    
-    // Add passphrase if provided and not empty
-    if (passPhrase && String(passPhrase).trim() !== "") {
-      const encodedPassphrase = encodeURIComponent(String(passPhrase).trim()).replace(/%20/g, "+");
-      paramString += `&passphrase=${encodedPassphrase}`;
-    }
 
     console.log('\n=== PayFast Signature Generation ===');
     console.log('Data for signature:', signatureData);
