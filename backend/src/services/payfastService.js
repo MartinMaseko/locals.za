@@ -21,7 +21,7 @@ class PayfastService {
     this.config = {
       merchantId: String(firebaseConfig.merchant_id || process.env.PAYFAST_MERCHANT_ID || '').trim(),
       merchantKey: String(firebaseConfig.merchant_key || process.env.PAYFAST_MERCHANT_KEY || '').trim(),
-      passphrase: String(firebaseConfig.passphrase || process.env.PAYFAST_PASSPHRASE || '').trim(),
+      passphrase: '',
       returnUrl: String(firebaseConfig.return_url || process.env.PAYFAST_RETURN_URL || '').trim(),
       cancelUrl: String(firebaseConfig.cancel_url || process.env.PAYFAST_CANCEL_URL || '').trim(),
       notifyUrl: String(firebaseConfig.notify_url || process.env.PAYFAST_NOTIFY_URL || '').trim(),
