@@ -207,68 +207,30 @@ const CheckoutPage = () => {
             });
             const paymentData = paymentRes.data;
             clearCart();
-            // Step 3: Submit form to PayFast with comprehensive debugging
+            // Step 3: Submit form to PayFast with correct encoding
             if (paymentData.formData && paymentData.url) {
                 if (payfastFormRef.current) {
-                    console.log('\n=== FRONTEND PayFast Form Submission DEBUG ===');
-                    console.log('Target URL:', paymentData.url);
-                    console.log('Raw formData received from backend:', paymentData.formData);
-                    // Clear and configure form
+                    console.log('Processing PayFast payment...', paymentData.formData);
+                    // Clear and configure form with exact PayFast requirements
                     payfastFormRef.current.innerHTML = '';
                     payfastFormRef.current.action = paymentData.url;
                     payfastFormRef.current.method = 'POST';
                     payfastFormRef.current.encType = 'application/x-www-form-urlencoded';
-                    // CRITICAL: Use the EXACT same field order as backend (no sorting!)
-                    console.log('Backend field order vs Frontend field order comparison:');
-                    // Get backend field order from the formData object keys
-                    const backendFieldOrder = Object.keys(paymentData.formData);
-                    console.log('Backend field order:', backendFieldOrder);
-                    // Create form fields in EXACT backend order
-                    const fieldLog = [];
-                    backendFieldOrder.forEach(fieldName => {
+                    payfastFormRef.current.acceptCharset = 'UTF-8';
+                    // Use exact field order from backend (no reordering)
+                    Object.keys(paymentData.formData).forEach(fieldName => {
                         const fieldValue = paymentData.formData[fieldName];
-                        if (fieldValue !== undefined && fieldValue !== null) {
-                            const stringValue = String(fieldValue);
-                            if (stringValue.trim() !== '') {
-                                const input = document.createElement('input');
-                                input.setAttribute('type', 'hidden');
-                                input.setAttribute('name', fieldName);
-                                input.setAttribute('value', stringValue);
-                                payfastFormRef.current?.appendChild(input);
-                                fieldLog.push({ key: fieldName, value: stringValue });
-                                console.log(`  ${fieldName}: ${stringValue.substring(0, 50)}${stringValue.length > 50 ? '...' : ''}`);
-                            }
+                        if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = fieldName;
+                            // CRITICAL: Use raw value - let browser handle encoding
+                            input.value = String(fieldValue);
+                            payfastFormRef.current?.appendChild(input);
                         }
                     });
-                    console.log('Total fields created:', fieldLog.length);
-                    // Recreate the EXACT signature string that should be sent
-                    let frontendPfOutput = "";
-                    fieldLog.forEach(field => {
-                        if (field.key !== 'signature' && field.value !== "") {
-                            const value = String(field.value).trim();
-                            const encodedValue = encodeURIComponent(value).replace(/%20/g, "+");
-                            frontendPfOutput += `${field.key}=${encodedValue}&`;
-                        }
-                    });
-                    let frontendParamString = frontendPfOutput.slice(0, -1);
-                    // Note: We can't add passphrase client-side for security
-                    console.log('Frontend parameter string (no passphrase):', frontendParamString);
-                    console.log('Frontend parameter string length:', frontendParamString.length);
-                    console.log('Backend signature received:', paymentData.formData.signature);
-                    // Check for field order mismatch
-                    const frontendFieldOrder = fieldLog.map(f => f.key);
-                    const orderMismatch = JSON.stringify(backendFieldOrder) !== JSON.stringify(frontendFieldOrder);
-                    console.log('Field order mismatch detected:', orderMismatch);
-                    if (orderMismatch) {
-                        console.error('CRITICAL: Field order mismatch between backend and frontend!');
-                        console.log('Backend order:', backendFieldOrder);
-                        console.log('Frontend order:', frontendFieldOrder);
-                    }
-                    console.log('==============================================\n');
-                    // Don't submit yet - let's see the logs first
-                    console.log('PAUSING SUBMISSION - Check logs above first');
-                    console.log('To proceed, uncomment the submit line in code');
-                    // Uncomment this line after analyzing the logs:
+                    console.log('Submitting to PayFast:', payfastFormRef.current.action);
+                    // Submit immediately
                     payfastFormRef.current.submit();
                 }
             }
@@ -282,6 +244,6 @@ const CheckoutPage = () => {
             setLoading(false);
         }
     };
-    return (_jsxs("div", { className: "checkout-page", children: [_jsx("h1", { children: "Checkout" }), _jsxs("section", { className: "checkout-items", children: [_jsx("h2", { children: "Order details" }), cart.length === 0 ? _jsx("p", { children: "Your cart is empty." }) : (_jsxs(_Fragment, { children: [_jsx("ul", { className: 'checkout-list', children: cart.map(it => (_jsxs("li", { className: 'checkout-item', children: [_jsx(ProductCard, { product: it.product }), _jsxs("div", { children: ["Qty: ", it.qty] })] }, it.product.id))) }), _jsxs("div", { className: 'billing-summary', children: [_jsxs("div", { children: ["Subtotal: R ", subtotal.toFixed(2)] }), _jsxs("div", { children: ["Service fee: R ", Number(serviceFee).toFixed(2)] }), _jsx("div", { className: 'total-bill', children: _jsxs("strong", { children: ["Total: R ", total.toFixed(2)] }) })] })] }))] }), _jsxs("section", { className: "checkout-form", children: [_jsx("h2", { children: "Delivery Details" }), error && _jsx("div", { className: "error", children: error }), _jsx("label", { children: "Full name" }), _jsx("input", { value: name, onChange: e => setName(e.target.value), "aria-invalid": !!nameError, required: true, maxLength: 100, pattern: "[\\p{L} '\\-\\.]{2,100}", title: "Enter your full name (letters, spaces, - ' . allowed)" }), nameError && _jsx("div", { className: "field-error", children: nameError }), _jsx("label", { children: "Phone" }), _jsx("input", { value: phone, onChange: e => setPhone(e.target.value), "aria-invalid": !!phoneError, required: true, inputMode: "tel", maxLength: 20, pattern: "[+0-9 ()-]{7,20}", title: "Enter a valid phone number" }), phoneError && _jsx("div", { className: "field-error", children: phoneError }), _jsx("label", { children: "Address" }), _jsx("input", { value: addressLine, onChange: e => setAddressLine(e.target.value), "aria-invalid": !!addressError, required: true, maxLength: 200, title: "Enter delivery address" }), addressError && _jsx("div", { className: "field-error", children: addressError }), _jsx("label", { children: "City" }), _jsx("input", { value: city, onChange: e => setCity(e.target.value), maxLength: 100, "aria-invalid": !!cityError }), cityError && _jsx("div", { className: "field-error", children: cityError }), _jsx("label", { children: "Postal code" }), _jsx("input", { value: postal, onChange: e => setPostal(e.target.value), maxLength: 20, "aria-invalid": !!postalError }), postalError && _jsx("div", { className: "field-error", children: postalError }), _jsxs("div", { className: "payfast-information", children: [_jsxs("div", { className: "payfast-logos", children: [_jsx("img", { src: PayfastLogo, alt: "PayFast Logo", className: "payfast-logo" }), _jsx("img", { src: InstantEftLogo, alt: "Instant EFT Logo", className: "instanteft-logo" })] }), _jsx("h3", { children: "Payment via PayFast" }), _jsx("p", { children: "You will be redirected to PayFast to complete your payment securely. Please ensure all details are correct before proceeding." })] }), _jsxs("div", { className: 'checkout-actions', children: [_jsx("button", { className: 'place-order-button', type: "button", disabled: loading, onClick: placeOrder, children: loading ? 'Processing...' : 'Proceed to Payment' }), _jsx("button", { className: 'cancel-button', type: "button", onClick: () => navigate(-1), children: "Cancel" })] })] }), _jsx("form", { ref: payfastFormRef, method: "POST", action: "", style: { display: 'none' }, acceptCharset: "UTF-8", encType: "application/x-www-form-urlencoded" })] }));
+    return (_jsxs("div", { className: "checkout-page", children: [_jsx("h1", { children: "Checkout" }), _jsxs("section", { className: "checkout-items", children: [_jsx("h2", { children: "Order details" }), cart.length === 0 ? _jsx("p", { children: "Your cart is empty." }) : (_jsxs(_Fragment, { children: [_jsx("ul", { className: 'checkout-list', children: cart.map(it => (_jsxs("li", { className: 'checkout-item', children: [_jsx(ProductCard, { product: it.product }), _jsxs("div", { children: ["Qty: ", it.qty] })] }, it.product.id))) }), _jsxs("div", { className: 'billing-summary', children: [_jsxs("div", { children: ["Subtotal: R ", subtotal.toFixed(2)] }), _jsxs("div", { children: ["Service fee: R ", Number(serviceFee).toFixed(2)] }), _jsx("div", { className: 'total-bill', children: _jsxs("strong", { children: ["Total: R ", total.toFixed(2)] }) })] })] }))] }), _jsxs("section", { className: "checkout-form", children: [_jsx("h2", { children: "Delivery Details" }), error && _jsx("div", { className: "error", children: error }), _jsx("label", { children: "Full name" }), _jsx("input", { value: name, onChange: e => setName(e.target.value), "aria-invalid": !!nameError, required: true, maxLength: 100, pattern: "[\\p{L} '\\-\\.]{2,100}", title: "Enter your full name (letters, spaces, - ' . allowed)" }), nameError && _jsx("div", { className: "field-error", children: nameError }), _jsx("label", { children: "Phone" }), _jsx("input", { value: phone, onChange: e => setPhone(e.target.value), "aria-invalid": !!phoneError, required: true, inputMode: "tel", maxLength: 20, pattern: "[+\\d\\s()-]{7,20}", title: "Enter a valid phone number" }), phoneError && _jsx("div", { className: "field-error", children: phoneError }), _jsx("label", { children: "Address" }), _jsx("input", { value: addressLine, onChange: e => setAddressLine(e.target.value), "aria-invalid": !!addressError, required: true, maxLength: 200, title: "Enter delivery address" }), addressError && _jsx("div", { className: "field-error", children: addressError }), _jsx("label", { children: "City" }), _jsx("input", { value: city, onChange: e => setCity(e.target.value), maxLength: 100, "aria-invalid": !!cityError }), cityError && _jsx("div", { className: "field-error", children: cityError }), _jsx("label", { children: "Postal code" }), _jsx("input", { value: postal, onChange: e => setPostal(e.target.value), maxLength: 20, "aria-invalid": !!postalError }), postalError && _jsx("div", { className: "field-error", children: postalError }), _jsxs("div", { className: "payfast-information", children: [_jsxs("div", { className: "payfast-logos", children: [_jsx("img", { src: PayfastLogo, alt: "PayFast Logo", className: "payfast-logo" }), _jsx("img", { src: InstantEftLogo, alt: "Instant EFT Logo", className: "instanteft-logo" })] }), _jsx("h3", { children: "Payment via PayFast" }), _jsx("p", { children: "You will be redirected to PayFast to complete your payment securely. Please ensure all details are correct before proceeding." })] }), _jsxs("div", { className: 'checkout-actions', children: [_jsx("button", { className: 'place-order-button', type: "button", disabled: loading, onClick: placeOrder, children: loading ? 'Processing...' : 'Proceed to Payment' }), _jsx("button", { className: 'cancel-button', type: "button", onClick: () => navigate(-1), children: "Cancel" })] })] }), _jsx("form", { ref: payfastFormRef, style: { display: 'none' } })] }));
 };
 export default CheckoutPage;
