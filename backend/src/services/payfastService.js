@@ -102,10 +102,10 @@ class PayfastService {
         throw new Error('Invalid order amount. Must be greater than zero.');
       }
 
-      // Step 1: Build form data WITHOUT signature first
-      const formData = {
+      // Step 1: Build data WITH merchant_key for signature generation
+      const dataForSignature = {
         merchant_id: this.config.merchantId,
-        merchant_key: this.config.merchantKey,
+        merchant_key: this.config.merchantKey, 
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
@@ -118,28 +118,49 @@ class PayfastService {
         item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255)
       };
 
-      // Add optional fields if they exist
+      // Add optional fields
       if (userId && userId !== 'guest') {
-        formData.custom_str1 = userId.substring(0, 255);
+        dataForSignature.custom_str1 = userId.substring(0, 255);
       }
       const phoneInput = String(orderData.deliveryAddress?.phone || '').replace(/\D/g, '');
       if (phoneInput) {
-        formData.cell_number = phoneInput.startsWith('0') 
+        dataForSignature.cell_number = phoneInput.startsWith('0') 
           ? '27' + phoneInput.substring(1) 
           : phoneInput;
       }
 
-      // Step 2: Generate signature using the complete data
-      const signature = this.generateSignature(formData);
+      // Step 2: Generate signature WITH merchant_key
+      const signature = this.generateSignature(dataForSignature);
 
-      // Step 3: Add signature to form data
-      formData.signature = signature;
+      // Step 3: Build final form data WITHOUT merchant_key
+      const formData = {
+        merchant_id: this.config.merchantId,
+        return_url: `${this.config.returnUrl}/${orderId}`,
+        cancel_url: `${this.config.cancelUrl}/${orderId}`,
+        notify_url: this.config.notifyUrl,
+        name_first: firstName,
+        name_last: lastName,
+        email_address: email,
+        m_payment_id: orderId,
+        amount: amountString,
+        item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
+        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255),
+        signature: signature 
+      };
+
+      // Add optional fields to form data
+      if (dataForSignature.custom_str1) {
+        formData.custom_str1 = dataForSignature.custom_str1;
+      }
+      if (dataForSignature.cell_number) {
+        formData.cell_number = dataForSignature.cell_number;
+      }
 
       console.log('=== PayFast Payment Request Summary ===');
-      console.log('Form data being sent to frontend:', formData);
+      console.log('Data for signature (WITH merchant_key):', dataForSignature);
+      console.log('Form data to PayFast (NO merchant_key):', formData);
       console.log('========================================');
 
-      // Step 4: Return complete object to frontend
       return {
         formData: formData,
         url: this.paymentUrl,
