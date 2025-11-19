@@ -135,6 +135,7 @@ class PayfastService {
       // Step 3: Build final form data WITHOUT merchant_key
       const formData = {
         merchant_id: this.config.merchantId,
+        merchant_key: this.config.merchantKey,
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
