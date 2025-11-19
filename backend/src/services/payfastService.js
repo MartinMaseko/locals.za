@@ -15,7 +15,6 @@ class PayfastService {
       const functions = require('firebase-functions');
       firebaseConfig = functions.config().payfast || {};
     } catch (err) {
-      // This is expected in local development
     }
 
     this.config = {
@@ -28,20 +27,17 @@ class PayfastService {
       testMode: String(firebaseConfig.test_mode || process.env.PAYFAST_TEST_MODE) === 'true'
     };
 
-    // Add debugging to confirm
-    console.log('PayFast Service Initialized. Test Mode:', this.config.testMode);
-    console.log('Passphrase DEBUG:', {
-      hardcoded: this.config.passphrase,
-      firebase: firebaseConfig.passphrase,
-      env: process.env.PAYFAST_PASSPHRASE,
-      final: this.config.passphrase || 'EMPTY'
-    });
-
     this.paymentUrl = this.config.testMode
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    console.log('PayFast Service Initialized. Test Mode:', this.config.testMode);
+    // Add debugging to confirm
+    console.log('PayFast Merchant ID:', this.config.merchantId);
+    console.log('PayFast Merchant key:', this.config.merchantKey);
+    console.log('PayFast Return URL:', this.config.returnUrl);
+    console.log('PayFast Cancel URL:', this.config.cancelUrl);
+    console.log('PayFast Notify URL:', this.config.notifyUrl);
+    console.log('PayFast Test Mode:', this.config.testMode);
   }
 
   /**
@@ -78,15 +74,12 @@ class PayfastService {
     // Remove last ampersand
     let paramString = pfOutput.slice(0, -1);
 
-    console.log('\n=== PayFast Signature Generation ===');
-    console.log('Data for signature:', signatureData);
-    console.log('Parameter string:', paramString);
-    console.log('String length:', paramString.length);
-    console.log('Passphrase used:', passPhrase ? 'YES' : 'NO');
-
     // Generate MD5 hash in lowercase
     const signature = crypto.createHash("md5").update(paramString).digest("hex").toLowerCase();
-    
+
+    console.log('\n=== PayFast Signature Generation ===');
+    console.log('Parameter string:', paramString);
+    console.log('Passphrase used:', passPhrase ? 'YES' : 'NO');
     console.log('Generated signature:', signature);
     console.log('===================================\n');
 

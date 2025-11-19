@@ -61,7 +61,6 @@ const CheckoutPage: React.FC = () => {
   const [postal, setPostal] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // Field-level errors for inline feedback
   const [nameError, setNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -231,13 +230,13 @@ const CheckoutPage: React.FC = () => {
               const input = document.createElement('input');
               input.type = 'hidden';
               input.name = fieldName;
-              // CRITICAL: Use raw value - let browser handle encoding
               input.value = String(fieldValue);
               payfastFormRef.current?.appendChild(input);
             }
           });
           
           console.log('Submitting to PayFast:', payfastFormRef.current.action);
+          console.log('Signature Frontend:', paymentData.formData?.signature);
           
           // Submit immediately
           payfastFormRef.current.submit();
