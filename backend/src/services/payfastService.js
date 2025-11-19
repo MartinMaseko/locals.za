@@ -45,28 +45,24 @@ class PayfastService {
    * https://developers.payfast.co.za/docs#signature-generation
    */
   generateSignature(data, passPhrase = null) {
-    // Force passphrase to null
     passPhrase = null;
 
-    // Create parameter string exactly as PayFast docs specify
-    let pfOutput = "";
-    
     // Remove signature field from data copy
     const signatureData = { ...data };
     delete signatureData.signature;
-    
-    // Build parameter string - PayFast uses for...in loop (no sorting)
-    for (let key in signatureData) {
-      if (signatureData.hasOwnProperty(key)) {
-        const value = signatureData[key];
-        // Only include non-empty values
-        if (value !== "" && value !== null && value !== undefined) {
-          const trimmedValue = String(value).trim();
-          if (trimmedValue !== "") {
-            // URL encode and replace %20 with + as per PayFast requirement
-            const encodedValue = encodeURIComponent(trimmedValue).replace(/%20/g, "+");
-            pfOutput += `${key}=${encodedValue}&`;
-          }
+
+    // Sort keys alphabetically
+    const keys = Object.keys(signatureData).sort();
+
+    // Build parameter string in alphabetical order
+    let pfOutput = "";
+    for (const key of keys) {
+      const value = signatureData[key];
+      if (value !== "" && value !== null && value !== undefined) {
+        const trimmedValue = String(value).trim();
+        if (trimmedValue !== "") {
+          const encodedValue = encodeURIComponent(trimmedValue).replace(/%20/g, "+");
+          pfOutput += `${key}=${encodedValue}&`;
         }
       }
     }
