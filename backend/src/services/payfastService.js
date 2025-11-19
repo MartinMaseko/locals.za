@@ -117,6 +117,7 @@ class PayfastService {
         amount: amountString,
         item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
         item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255),
+        signature: signature
       };
 
       // Add optional fields if they exist
