@@ -102,8 +102,7 @@ class PayfastService {
         throw new Error('Invalid order amount. Must be greater than zero.');
       }
 
-      // 1. Assemble ALL data that will be sent in the form.
-      // This time, we correctly include merchant_key.
+      // Step 1: Build form data WITHOUT signature first
       const formData = {
         merchant_id: this.config.merchantId,
         merchant_key: this.config.merchantKey,
@@ -116,8 +115,7 @@ class PayfastService {
         m_payment_id: orderId,
         amount: amountString,
         item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
-        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255),
-        signature: signature
+        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255)
       };
 
       // Add optional fields if they exist
@@ -126,17 +124,22 @@ class PayfastService {
       }
       const phoneInput = String(orderData.deliveryAddress?.phone || '').replace(/\D/g, '');
       if (phoneInput) {
-        formData.cell_number = phoneInput.startsWith('0') ? '27' + phoneInput.substring(1) : phoneInput;
+        formData.cell_number = phoneInput.startsWith('0') 
+          ? '27' + phoneInput.substring(1) 
+          : phoneInput;
       }
 
-      // 2. Generate the signature using this complete data object.
-      formData.signature = this.generateSignature(formData, this.config.passphrase);
+      // Step 2: Generate signature using the complete data
+      const signature = this.generateSignature(formData);
+
+      // Step 3: Add signature to form data
+      formData.signature = signature;
 
       console.log('=== PayFast Payment Request Summary ===');
       console.log('Form data being sent to frontend:', formData);
       console.log('========================================');
 
-      // 3. Return the complete object to the frontend.
+      // Step 4: Return complete object to frontend
       return {
         formData: formData,
         url: this.paymentUrl,
@@ -145,7 +148,7 @@ class PayfastService {
 
     } catch (error) {
       console.error('Error creating PayFast payment request:', error);
-      throw error; // Re-throw to be caught by the calling function
+      throw error;
     }
   }
 
