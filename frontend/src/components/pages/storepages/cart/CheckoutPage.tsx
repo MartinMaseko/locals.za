@@ -154,12 +154,6 @@ const CheckoutPage: React.FC = () => {
       const user = auth.currentUser;
       const token = user ? await user.getIdToken() : null;
 
-      if (!user) {
-        setError('You must be logged in to place an order.');
-        setLoading(false);
-        return;
-      }
-
       // Create order payload
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
