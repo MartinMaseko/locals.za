@@ -72,7 +72,7 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
     });
     
     // Process the ITN
-    const result = await payfastService.processItn(data);
+    const result = await payfastService.processItn(data, req);
     
     if (result.success) {
       console.log(`ITN processed successfully for order ${result.orderId}, status: ${result.status}`);

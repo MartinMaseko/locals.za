@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const axios = require('axios');
+const dns = require('dns').promises;
 const admin = require('../../firebase');
 
 /**
@@ -20,7 +21,7 @@ class PayfastService {
     this.config = {
       merchantId: String(firebaseConfig.merchant_id || process.env.PAYFAST_MERCHANT_ID || '').trim(),
       merchantKey: String(firebaseConfig.merchant_key || process.env.PAYFAST_MERCHANT_KEY || '').trim(),
-      passphrase: '',
+      passphrase: '', 
       returnUrl: String(firebaseConfig.return_url || process.env.PAYFAST_RETURN_URL || '').trim(),
       cancelUrl: String(firebaseConfig.cancel_url || process.env.PAYFAST_CANCEL_URL || '').trim(),
       notifyUrl: String(firebaseConfig.notify_url || process.env.PAYFAST_NOTIFY_URL || '').trim(),
@@ -30,14 +31,6 @@ class PayfastService {
     this.paymentUrl = this.config.testMode
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
-
-    // Add debugging to confirm
-    console.log('PayFast Merchant ID:', this.config.merchantId);
-    console.log('PayFast Merchant key:', this.config.merchantKey);
-    console.log('PayFast Return URL:', this.config.returnUrl);
-    console.log('PayFast Cancel URL:', this.config.cancelUrl);
-    console.log('PayFast Notify URL:', this.config.notifyUrl);
-    console.log('PayFast Test Mode:', this.config.testMode);
   }
 
   /**
@@ -45,36 +38,30 @@ class PayfastService {
    * https://developers.payfast.co.za/docs#signature-generation
    */
   generateSignature(data, passPhrase = null) {
-    passPhrase = null;
+    // Sort keys alphabetically (IMPORTANT)
+    const sortedKeys = Object.keys(data).sort();
 
-    // Remove signature field from data copy
-    const signatureData = { ...data };
-    delete signatureData.signature;
-
-    // Sort keys alphabetically
-    const keys = Object.keys(signatureData).sort();
-
-    // Build parameter string in alphabetical order
+    // Build parameter string
     let pfOutput = "";
-    for (const key of keys) {
-      const value = signatureData[key];
-      if (value !== "" && value !== null && value !== undefined) {
-        const trimmedValue = String(value).trim();
-        if (trimmedValue !== "") {
-          const encodedValue = encodeURIComponent(trimmedValue).replace(/%20/g, "+");
-          pfOutput += `${key}=${encodedValue}&`;
+      for (let key of sortedKeys) {
+        if(data.hasOwnProperty(key)){
+          if (data[key] !== "") {
+            pfOutput +=`${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, "+")}&`
+          }
         }
       }
-    }
 
     // Remove last ampersand
-    let paramString = pfOutput.slice(0, -1);
+    let getString = pfOutput.slice(0, -1);
+    if (passPhrase !== null) {
+      getString +=`&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
+    }
 
     // Generate MD5 hash in lowercase
-    const signature = crypto.createHash("md5").update(paramString).digest("hex").toLowerCase();
+    const signature = crypto.createHash("md5").update(getString).digest("hex");
 
     console.log('\n=== PayFast Signature Generation ===');
-    console.log('Parameter string:', paramString);
+    console.log('Parameter string:', getString);
     console.log('Passphrase used:', passPhrase ? 'YES' : 'NO');
     console.log('Generated signature:', signature);
     console.log('===================================\n');
@@ -102,10 +89,10 @@ class PayfastService {
         throw new Error('Invalid order amount. Must be greater than zero.');
       }
 
-      // Step 1: Build data WITH merchant_key for signature generation
+      // Step 1: Build data FOR SIGNATURE (WITH merchant_key, matching PayFast order)
       const dataForSignature = {
         merchant_id: this.config.merchantId,
-        merchant_key: this.config.merchantKey, 
+        merchant_key: this.config.merchantKey,
         return_url: `${this.config.returnUrl}/${orderId}`,
         cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
@@ -114,25 +101,13 @@ class PayfastService {
         email_address: email,
         m_payment_id: orderId,
         amount: amountString,
-        item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
-        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255)
+        item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255)
       };
 
-      // Add optional fields
-      if (userId && userId !== 'guest') {
-        dataForSignature.custom_str1 = userId.substring(0, 255);
-      }
-      const phoneInput = String(orderData.deliveryAddress?.phone || '').replace(/\D/g, '');
-      if (phoneInput) {
-        dataForSignature.cell_number = phoneInput.startsWith('0') 
-          ? '27' + phoneInput.substring(1) 
-          : phoneInput;
-      }
+      // Step 2: Generate signature
+      const signature = this.generateSignature(dataForSignature, this.config.passphrase);
 
-      // Step 2: Generate signature WITH merchant_key
-      const signature = this.generateSignature(dataForSignature);
-
-      // Step 3: Build final form data WITHOUT merchant_key
+      // Step 3: Build final form data (SAME ORDER as dataForSignature, add signature at end)
       const formData = {
         merchant_id: this.config.merchantId,
         merchant_key: this.config.merchantKey,
@@ -145,21 +120,13 @@ class PayfastService {
         m_payment_id: orderId,
         amount: amountString,
         item_name: `LocalsZA Order #${orderId.slice(-8)}`.substring(0, 255),
-        item_description: `${orderData.items?.length || 0} item(s) from LocalsZA`.substring(0, 255),
-        signature: signature 
+        signature: signature
       };
-
-      // Add optional fields to form data
-      if (dataForSignature.custom_str1) {
-        formData.custom_str1 = dataForSignature.custom_str1;
-      }
-      if (dataForSignature.cell_number) {
-        formData.cell_number = dataForSignature.cell_number;
-      }
 
       console.log('=== PayFast Payment Request Summary ===');
       console.log('Data for signature (WITH merchant_key):', dataForSignature);
-      console.log('Form data to PayFast (NO merchant_key):', formData);
+      console.log('Form data to PayFast (WITH merchant_key + signature):', formData);
+      console.log('Passphrase:', myPassphrase);
       console.log('========================================');
 
       return {
@@ -179,16 +146,41 @@ class PayfastService {
    */
   verifySignature(data, receivedSignature) {
     try {
-      const calculatedSignature = this.generateSignature(data, this.config.passphrase);
-      const isValid = calculatedSignature === receivedSignature;
+      // Remove signature from data for recalculation
+      const dataForVerification = { ...data };
+      delete dataForVerification.signature;
+
+      // Sort keys alphabetically
+      const sortedKeys = Object.keys(dataForVerification).sort();
+
+      // Build parameter string (same as payment request)
+      let paramString = "";
+      for (let key of sortedKeys) {
+        if (dataForVerification.hasOwnProperty(key)) {
+          if (dataForVerification[key] !== "") {
+            paramString += `${key}=${encodeURIComponent(String(dataForVerification[key]).trim()).replace(/%20/g, "+")}&`;
+          }
+        }
+      }
+
+      // Remove last ampersand
+      paramString = paramString.slice(0, -1);
+
+      // Append passphrase if provided (PayFast uses null, so skip this)
+      if (this.config.passphrase !== null) {
+        paramString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
+      }
+
+      // Generate MD5 hash
+      const calculatedSignature = crypto.createHash("md5").update(paramString).digest("hex");
 
       console.log('=== PayFast Signature Verification ===');
       console.log('Received:', receivedSignature);
       console.log('Calculated:', calculatedSignature);
-      console.log('Match:', isValid);
+      console.log('Match:', calculatedSignature === receivedSignature);
       console.log('=====================================');
 
-      return isValid;
+      return calculatedSignature === receivedSignature;
     } catch (error) {
       console.error('Signature verification error:', error);
       return false;
@@ -213,6 +205,49 @@ class PayfastService {
   }
 
   /**
+   * Validate request IP is from PayFast
+   */
+  async validateIp(req) {
+    try {
+      const validHosts = [
+        'www.payfast.co.za',
+        'sandbox.payfast.co.za',
+        'w1w.payfast.co.za',
+        'w2w.payfast.co.za'
+      ];
+
+      let validIps = [];
+      const pfIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+      console.log('Validating IP:', pfIp);
+
+      // Lookup all PayFast IPs
+      for (const host of validHosts) {
+        try {
+          const addresses = await dns.lookup(host, { all: true });
+          const ips = addresses.map(item => item.address);
+          validIps = [...validIps, ...ips];
+          console.log(`IPs for ${host}:`, ips);
+        } catch (err) {
+          console.error(`DNS lookup failed for ${host}:`, err.message);
+        }
+      }
+
+      // Remove duplicates
+      const uniqueIps = [...new Set(validIps)];
+      console.log('Valid PayFast IPs:', uniqueIps);
+
+      const isValid = uniqueIps.includes(pfIp);
+      console.log(`IP ${pfIp} is ${isValid ? 'VALID' : 'INVALID'}`);
+
+      return isValid;
+    } catch (error) {
+      console.error('IP validation error:', error);
+      return false;
+    }
+  }
+
+  /**
    * Validate payment with PayFast server
    */
   async validateWithPayfast(data) {
@@ -221,9 +256,12 @@ class PayfastService {
         ? 'https://sandbox.payfast.co.za/eng/query/validate'
         : 'https://www.payfast.co.za/eng/query/validate';
 
+      // Build form data for PayFast validation
       const params = Object.keys(data)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(String(data[key]))}`)
         .join('&');
+
+      console.log('Sending validation to PayFast...');
 
       const response = await axios.post(validateUrl, params, {
         headers: { 
@@ -233,7 +271,10 @@ class PayfastService {
         timeout: 10000
       });
 
-      return response.data.trim() === 'VALID';
+      const isValid = response.data.trim() === 'VALID';
+      console.log('PayFast validation response:', response.data.trim());
+
+      return isValid;
     } catch (error) {
       console.error('PayFast validation error:', error.message);
       return false;
@@ -241,25 +282,36 @@ class PayfastService {
   }
 
   /**
-   * Process ITN callback
+   * Process ITN callback with full security validation
    */
-  async processItn(data) {
+  async processItn(data, req) {
     try {
       console.log('=== Processing PayFast ITN ===');
       console.log('Payment ID:', data.m_payment_id);
       console.log('Status:', data.payment_status);
-      console.log('============================');
 
-      // Verify signature
+      // Step 1: Validate IP address
+      const validIp = await this.validateIp(req);
+      if (!validIp) {
+        console.error('Invalid IP address for ITN');
+        return { success: false, error: 'Invalid IP address' };
+      }
+
+      // Step 2: Verify signature
       if (!this.verifySignature(data, data.signature)) {
+        console.error('Invalid signature');
         return { success: false, error: 'Invalid signature' };
       }
 
-      // Validate with PayFast
+      // Step 3: Validate with PayFast server
       const isValid = await this.validateWithPayfast(data);
       if (!isValid) {
+        console.error('Server validation failed');
         return { success: false, error: 'Server validation failed' };
       }
+
+      console.log('============================');
+      console.log('All validations passed');
 
       // Process the payment...
       const orderId = data.m_payment_id;
@@ -281,7 +333,8 @@ class PayfastService {
         paymentData: data,
         receivedAt: admin.firestore.FieldValue.serverTimestamp(),
         environment: this.config.testMode ? 'sandbox' : 'production',
-        verified: true
+        verified: true,
+        ipAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress
       });
 
       // Update order status

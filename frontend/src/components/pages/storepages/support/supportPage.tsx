@@ -112,7 +112,7 @@ const SupportPage: React.FC = () => {
             
             {expandedSection === 'service-area' && (
               <div className="faq-answer">
-                <p>We currently service the East of Johannesburg (Ekhuruleni) region. Please ensure your delivery address falls within this area when placing an order.</p>
+                <p>We currently service Katlehong, Vosloorus & Thokoza. Please ensure your delivery address falls within this area when placing an order.</p>
               </div>
             )}
           </div>
@@ -419,7 +419,7 @@ const SupportPage: React.FC = () => {
               <h3>WhatsApp Support</h3>
               <p>Get in touch with our Sales Representative</p>
               <a 
-                href="https://wa.me/27629973007" // Replace with business No.
+                href="https://wa.me/27704158880" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="whatsapp-link"
