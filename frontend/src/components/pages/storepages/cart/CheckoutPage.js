@@ -162,11 +162,6 @@ const CheckoutPage = () => {
             const auth = getAuth();
             const user = auth.currentUser;
             const token = user ? await user.getIdToken() : null;
-            if (!user) {
-                setError('You must be logged in to place an order.');
-                setLoading(false);
-                return;
-            }
             // Create order payload
             const payload = {
                 items: cart.map(i => ({ productId: i.product.id, product: i.product, qty: i.qty })),
@@ -198,7 +193,7 @@ const CheckoutPage = () => {
             }
             console.log(`Order created with ID: ${orderId}`);
             // Step 2: Get payment form data from backend
-            const paymentRes = await axios.post(`${API_URL}/api/payment/process/${orderId}`, {}, {
+            const paymentRes = await axios.post(`${API_URL}/payment/process/${orderId}`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
