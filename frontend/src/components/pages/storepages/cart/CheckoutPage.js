@@ -182,7 +182,7 @@ const CheckoutPage = () => {
                 email: user?.email || '',
             };
             // Step 1: Create order
-            const res = await axios.post(`${API_URL}/api/orders`, payload, {
+            const res = await axios.post(`${API_URL}/orders`, payload, {
                 headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             });
             // Type assertion for order response
