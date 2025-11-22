@@ -126,7 +126,7 @@ class PayfastService {
       console.log('=== PayFast Payment Request Summary ===');
       console.log('Data for signature (WITH merchant_key):', dataForSignature);
       console.log('Form data to PayFast (WITH merchant_key + signature):', formData);
-      console.log('Passphrase:', myPassphrase);
+      console.log('Passphrase:', this.config.passphrase || 'NOT USED');
       console.log('========================================');
 
       return {
