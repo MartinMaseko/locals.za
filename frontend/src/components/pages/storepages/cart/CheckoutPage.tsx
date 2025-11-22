@@ -175,7 +175,7 @@ const CheckoutPage: React.FC = () => {
       };
 
       // Step 1: Create order
-      const res = await axios.post(`${API_URL}/orders`, payload, {
+      const res = await axios.post(`${API_URL}/api/orders`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       // Type assertion for order response
