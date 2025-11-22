@@ -193,7 +193,7 @@ const CheckoutPage = () => {
             }
             console.log(`Order created with ID: ${orderId}`);
             // Step 2: Get payment form data from backend
-            const paymentRes = await axios.post(`${API_URL}/payment/process/${orderId}`, {}, {
+            const paymentRes = await axios.post(`${API_URL}/api/payment/process/${orderId}`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
