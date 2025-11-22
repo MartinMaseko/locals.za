@@ -53,16 +53,13 @@ class PayfastService {
 
     // Remove last ampersand
     let getString = pfOutput.slice(0, -1);
-    if (passPhrase !== null) {
-      getString +=`&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
-    }
 
     // Generate MD5 hash in lowercase
     const signature = crypto.createHash("md5").update(getString).digest("hex");
 
     console.log('\n=== PayFast Signature Generation ===');
     console.log('Parameter string:', getString);
-    console.log('Passphrase used:', passPhrase ? 'YES' : 'NO');
+    console.log('Passphrase used: NO');
     console.log('Generated signature:', signature);
     console.log('===================================\n');
 
@@ -126,7 +123,7 @@ class PayfastService {
       console.log('=== PayFast Payment Request Summary ===');
       console.log('Data for signature (WITH merchant_key):', dataForSignature);
       console.log('Form data to PayFast (WITH merchant_key + signature):', formData);
-      console.log('Passphrase:', this.config.passphrase || 'NOT USED');
+      console.log('Passphrase:NOT USED');
       console.log('========================================');
 
       return {
@@ -165,11 +162,6 @@ class PayfastService {
 
       // Remove last ampersand
       paramString = paramString.slice(0, -1);
-
-      // Append passphrase if provided (PayFast uses null, so skip this)
-      if (this.config.passphrase !== null) {
-        paramString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
-      }
 
       // Generate MD5 hash
       const calculatedSignature = crypto.createHash("md5").update(paramString).digest("hex");
