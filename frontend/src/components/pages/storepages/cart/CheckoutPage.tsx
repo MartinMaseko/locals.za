@@ -190,7 +190,7 @@ const CheckoutPage: React.FC = () => {
 
       // Step 2: Get payment form data from backend
       const paymentRes = await axios.post(
-        `${API_URL}/payment/process/${orderId}`,
+        `${API_URL}/api/payment/process/${orderId}`,
         {},
         {
           headers: {
