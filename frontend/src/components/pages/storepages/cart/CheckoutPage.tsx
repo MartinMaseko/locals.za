@@ -175,7 +175,7 @@ const CheckoutPage: React.FC = () => {
       };
 
       // Step 1: Create order
-      const res = await axios.post(`${API_URL}/orders`, payload, {
+      const res = await axios.post(`${API_URL}/api/orders`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       // Type assertion for order response
@@ -190,7 +190,7 @@ const CheckoutPage: React.FC = () => {
 
       // Step 2: Get payment form data from backend
       const paymentRes = await axios.post(
-        `${API_URL}/payment/process/${orderId}`,
+        `${API_URL}/api/payment/process/${orderId}`,
         {},
         {
           headers: {
