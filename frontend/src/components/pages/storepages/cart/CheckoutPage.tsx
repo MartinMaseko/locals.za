@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../../contexts/CartContext';
 import { Analytics } from '../../../../utils/analytics';
@@ -66,9 +66,6 @@ const CheckoutPage: React.FC = () => {
   const [addressError, setAddressError] = useState('');
   const [cityError, setCityError] = useState('');
   const [postalError, setPostalError] = useState('');
-  
-  // Create a ref for PayFast form
-  const payfastFormRef = useRef<HTMLFormElement>(null);
 
   const subtotal = cart.reduce((s, it) => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
@@ -204,37 +201,26 @@ const CheckoutPage: React.FC = () => {
       
       clearCart();
       
-      // Step 3: Submit form to PayFast with correct encoding
+      // Step 3: Redirect to PayFast with URL parameters (bypasses CSP form-action)
       if (paymentData.formData && paymentData.url) {
-        if (payfastFormRef.current) {
-          console.log('Processing PayFast payment...', paymentData.formData);
-          
-          // Clear and configure form with exact PayFast requirements
-          payfastFormRef.current.innerHTML = '';
-          payfastFormRef.current.action = paymentData.url;
-          payfastFormRef.current.method = 'POST';
-          payfastFormRef.current.encType = 'application/x-www-form-urlencoded';
-          payfastFormRef.current.acceptCharset = 'UTF-8';
-          
-          // Use exact field order from backend (no reordering)
-          Object.keys(paymentData.formData).forEach(fieldName => {
-            const fieldValue = paymentData.formData![fieldName];
-            
-            if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = fieldName;
-              input.value = String(fieldValue);
-              payfastFormRef.current?.appendChild(input);
-            }
-          });
-          
-          console.log('Submitting to PayFast:', payfastFormRef.current.action);
-          console.log('Signature Frontend:', paymentData.formData?.signature);
-          
-          // Submit immediately
-          payfastFormRef.current.submit();
-        }
+        console.log('Processing PayFast payment...', paymentData.formData);
+        
+        // Build URL with parameters
+        const params = new URLSearchParams();
+        Object.keys(paymentData.formData).forEach(fieldName => {
+          const fieldValue = paymentData.formData![fieldName];
+          if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
+            params.append(fieldName, String(fieldValue));
+          }
+        });
+        
+        const payfastUrl = `${paymentData.url}?${params.toString()}`;
+        
+        console.log('Redirecting to PayFast:', paymentData.url);
+        console.log('Signature Frontend:', paymentData.formData?.signature);
+        
+        // Redirect to PayFast
+        window.location.href = payfastUrl;
       } else {
         throw new Error('Payment data not received from backend');
       }
@@ -354,12 +340,6 @@ const CheckoutPage: React.FC = () => {
           </button>
         </div>
       </section>
-      
-      {/* Hidden form for PayFast submission */}
-      <form 
-        ref={payfastFormRef}
-        style={{ display: 'none' }}
-      ></form>
     </div>
   );
 };
