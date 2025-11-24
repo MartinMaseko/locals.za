@@ -14,14 +14,8 @@ router.post('/process/:orderId', authenticateToken, async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.user.uid;
-
-    // Check if request is from localhost frontend
-    const referer = req.get('referer') || req.get('origin') || '';
-    const isLocalhost = referer.includes('localhost') || referer.includes('127.0.0.1');
-
+    
     console.log(`Payment process requested for order ${orderId} by user ${userId}`);
-    console.log(`Request origin: ${referer}`);
-    console.log(`Using ${isLocalhost ? 'SANDBOX' : 'PRODUCTION'} PayFast mode`);
     
     // Get the order from Firestore
     const orderDoc = await admin.firestore().collection('orders').doc(orderId).get();
@@ -38,8 +32,8 @@ router.post('/process/:orderId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to process this order' });
     }
     
-    // Generate payment URL and form data with localhost detection
-    const payment = payfastService.createPaymentRequest(orderData, orderId, userId, isLocalhost);
+    // Generate payment URL and form data
+    const payment = payfastService.createPaymentRequest(orderData, orderId, userId);
     
     // Update order with payment initiation timestamp
     await admin.firestore().collection('orders').doc(orderId).update({

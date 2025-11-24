@@ -69,31 +69,11 @@ class PayfastService {
   /**
    * Creates the complete payment request object to be sent to the frontend.
    */
-  createPaymentRequest(orderData, orderId, userId, forceTestMode = false) {
+  createPaymentRequest(orderData, orderId, userId) {
     try {
       if (!this.config.merchantId || !this.config.merchantKey) {
         throw new Error('PayFast merchant_id or merchant_key is not configured.');
       }
-
-      // Use test mode if forced (localhost request) or if configured
-      const useTestMode = forceTestMode;
-      
-      // Set PayFast URL and credentials based on test mode
-      const paymentUrl = useTestMode
-        ? 'https://sandbox.payfast.co.za/eng/process'
-        : 'https://www.payfast.co.za/eng/process';
-      
-      // Use sandbox credentials when in test mode
-      const merchantId = useTestMode ? '10042467' : this.config.merchantId;
-      const merchantKey = useTestMode ? '3gbvsq7t0yu3x' : this.config.merchantKey;
-      
-      // Set appropriate return/cancel URLs based on mode
-      const returnUrl = useTestMode 
-        ? 'http://localhost:5173/order-confirmation'
-        : this.config.returnUrl;
-      const cancelUrl = useTestMode 
-        ? 'http://localhost:5173/payment-cancelled'
-        : this.config.cancelUrl;
 
       const fullName = String(orderData.deliveryAddress?.name || 'Customer').trim();
       const nameParts = fullName.split(/\s+/);
@@ -108,10 +88,10 @@ class PayfastService {
 
       // Step 1: Build data FOR SIGNATURE (WITH merchant_key, matching PayFast order)
       const dataForSignature = {
-        merchant_id: merchantId,
-        merchant_key: merchantKey,
-        return_url: `${returnUrl}/${orderId}`,
-        cancel_url: `${cancelUrl}/${orderId}`,
+        merchant_id: this.config.merchantId,
+        merchant_key: this.config.merchantKey,
+        return_url: `${this.config.returnUrl}/${orderId}`,
+        cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
         name_first: firstName,
         name_last: lastName,
@@ -126,10 +106,10 @@ class PayfastService {
 
       // Step 3: Build final form data (SAME ORDER as dataForSignature, add signature at end)
       const formData = {
-        merchant_id: merchantId,
-        merchant_key: merchantKey,
-        return_url: `${returnUrl}/${orderId}`,
-        cancel_url: `${cancelUrl}/${orderId}`,
+        merchant_id: this.config.merchantId,
+        merchant_key: this.config.merchantKey,
+        return_url: `${this.config.returnUrl}/${orderId}`,
+        cancel_url: `${this.config.cancelUrl}/${orderId}`,
         notify_url: this.config.notifyUrl,
         name_first: firstName,
         name_last: lastName,
@@ -141,15 +121,14 @@ class PayfastService {
       };
 
       console.log('=== PayFast Payment Request Summary ===');
-      console.log('Mode:', useTestMode ? 'SANDBOX' : 'PRODUCTION');
-      console.log('URL:', paymentUrl);
-      console.log('Merchant ID:', merchantId);
-      console.log('Return URL:', `${returnUrl}/${orderId}`);
+      console.log('Data for signature (WITH merchant_key):', dataForSignature);
+      console.log('Form data to PayFast (WITH merchant_key + signature):', formData);
+      console.log('Passphrase:NOT USED');
       console.log('========================================');
 
       return {
         formData: formData,
-        url: paymentUrl,
+        url: this.paymentUrl,
         paymentId: orderId
       };
 
@@ -263,9 +242,9 @@ class PayfastService {
   /**
    * Validate payment with PayFast server
    */
-  async validateWithPayfast(data, isTestMode = false) {
+  async validateWithPayfast(data) {
     try {
-      const validateUrl = isTestMode
+      const validateUrl = this.config.testMode
         ? 'https://sandbox.payfast.co.za/eng/query/validate'
         : 'https://www.payfast.co.za/eng/query/validate';
 
