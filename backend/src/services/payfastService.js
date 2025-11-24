@@ -76,7 +76,7 @@ class PayfastService {
       }
 
       // Use test mode if forced (localhost request) or if configured
-      const useTestMode = forceTestMode || this.config.testMode;
+      const useTestMode = forceTestMode;
       
       // Set PayFast URL and credentials based on test mode
       const paymentUrl = useTestMode
@@ -84,8 +84,8 @@ class PayfastService {
         : 'https://www.payfast.co.za/eng/process';
       
       // Use sandbox credentials when in test mode
-      const merchantId = useTestMode ? '10000100' : this.config.merchantId;
-      const merchantKey = useTestMode ? '46f0cd694581a' : this.config.merchantKey;
+      const merchantId = useTestMode ? '10042467' : this.config.merchantId;
+      const merchantKey = useTestMode ? '3gbvsq7t0yu3x' : this.config.merchantKey;
       
       // Set appropriate return/cancel URLs based on mode
       const returnUrl = useTestMode 
@@ -263,9 +263,9 @@ class PayfastService {
   /**
    * Validate payment with PayFast server
    */
-  async validateWithPayfast(data) {
+  async validateWithPayfast(data, isTestMode = false) {
     try {
-      const validateUrl = this.config.testMode
+      const validateUrl = isTestMode
         ? 'https://sandbox.payfast.co.za/eng/query/validate'
         : 'https://www.payfast.co.za/eng/query/validate';
 
