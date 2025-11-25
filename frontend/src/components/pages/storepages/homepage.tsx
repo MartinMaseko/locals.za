@@ -262,7 +262,6 @@ const HomePage = () => {
 
         <div className="homepage-welcome">
           <img src={AppBanner} alt="App banner" className="homepage-appbanner" />
-          <h2 className='user-welcome-text'>Welcome{ name ? `, ${name}` : '' }!</h2>
           
           {/* Updated category suggestions to use handleCategorySelect */}
           <div className='categories-suggestions'>
