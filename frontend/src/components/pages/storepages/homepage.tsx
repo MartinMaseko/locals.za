@@ -9,13 +9,10 @@ import LogoAnime from '../../assets/logos/locals-svg.gif';
 import AppBanner from '../../assets/images/appbanner.webp';
 import Beverages from '../../assets/images/Beverages.webp';
 import Maize from '../../assets/images/maize.webp';
-import rice from '../../assets/images/rice.webp';
-import CannedFood from '../../assets/images/canned.webp';
+import FoodPackaging from '../../assets/images/FoodPackaging.webp';
 import Sugar from '../../assets/images/sugar.webp';
-import Oil from '../../assets/images/oil.webp';
 import RelaxersPermKits from '../../assets/images/Relaxers.webp';
-import shampoosCleansers from '../../assets/images/Shampoo.webp';
-import ConditionersTreatments from '../../assets/images/ConditionerTreatments.webp';
+import Shampoos from '../../assets/images/Shampoo.webp';
 import { useLocation } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -281,21 +278,6 @@ const HomePage = () => {
               <span className="category-label">Maize Meal</span>
             </div>
 
-            {/* Continue updating all other category items the same way */}
-            <div className="category-item" onClick={() => handleCategorySelect('Rice')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={rice} alt="Rice" />
-              </div>
-              <span className="category-label">Rice</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Canned Foods')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={CannedFood} alt="Canned Foods" />
-              </div>
-              <span className="category-label">Canned Foods</span>
-            </div>
-
             <div className="category-item" onClick={() => handleCategorySelect('Sugar')}>
               <div className="suggestion-icon">
                 <img className="category-image" src={Sugar} alt="Sugar" />
@@ -303,25 +285,18 @@ const HomePage = () => {
               <span className="category-label">Sugar</span>
             </div>
 
-            <div className="category-item" onClick={() => handleCategorySelect('Cooking Oils & Fats')}>
+            <div className="category-item" onClick={() => handleCategorySelect('Food Packaging')}>
               <div className="suggestion-icon">
-                <img className="category-image" src={Oil} alt="Cooking Oils & Fats" />
+                <img className="category-image" src={FoodPackaging} alt="Food Packaging" />
               </div>
-              <span className="category-label">Cooking Oils & Fats</span>
+              <span className="category-label">Packaging</span>
             </div>
 
             <div className="category-item" onClick={() => handleCategorySelect('Shampoos & Cleansers')}>
               <div className="suggestion-icon">
-                <img className="category-image" src={shampoosCleansers} alt="Shampoos & Cleansers" />
+                <img className="category-image" src={Shampoos} alt="Shampoos & Cleansers" />
               </div>
               <span className="category-label">Shampoos</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Conditioners & Treatments')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={ConditionersTreatments} alt="Conditioners & Treatments" />
-              </div>
-              <span className="category-label">Conditioners</span>
             </div>
 
             <div className="category-item" onClick={() => handleCategorySelect('Relaxers & Perm Kits')}>
