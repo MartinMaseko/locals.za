@@ -25,7 +25,7 @@ class PayfastService {
       returnUrl: String(firebaseConfig.return_url || process.env.PAYFAST_RETURN_URL || '').trim(),
       cancelUrl: String(firebaseConfig.cancel_url || process.env.PAYFAST_CANCEL_URL || '').trim(),
       notifyUrl: String(firebaseConfig.notify_url || process.env.PAYFAST_NOTIFY_URL || '').trim(),
-      testMode: String(firebaseConfig.test_mode || process.env.PAYFAST_TEST_MODE) === 'true'
+      testMode: 'false'
     };
 
     this.paymentUrl = this.config.testMode
