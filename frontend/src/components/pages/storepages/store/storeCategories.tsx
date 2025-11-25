@@ -13,7 +13,6 @@ import Beverages from '../../../assets/images/Beverages.webp';
 import HairColoring from '../../../assets/images/HairColour.webp';
 import HairFoodOils from '../../../assets/images/HairFood.webp';
 import HairStylingProducts from '../../../assets/images/HairStyling.webp';
-import HouseholdCleaningGoods from '../../../assets/images/HouseholdCleaning.webp';
 import PersonalCare from '../../../assets/images/PersonalCare.webp';
 import RelaxersPermKits from '../../../assets/images/Relaxers.webp';
 import shampoosCleansers from '../../../assets/images/Shampoo.webp';
@@ -42,7 +41,6 @@ const productCategories = [
   'Rice',
   'Maize Meal',
   'Snacks & Confectionery',
-  'Household Cleaning & Goods',
   'Laundry Supplies',
   'Personal Care',
   'Food Packaging',
@@ -68,7 +66,6 @@ const categoryImages: {[key: string]: string} = {
   'Rice': RiceImage,
   'Maize Meal': MaizeMealImage,
   'Snacks & Confectionery': SnacksConfectionery,
-  'Household Cleaning & Goods': HouseholdCleaningGoods,
   'Laundry Supplies': LaundrySuppliesImage,
   'Personal Care': PersonalCare,
   'Shampoos & Cleansers': shampoosCleansers,
@@ -93,7 +90,6 @@ const categoryDisplayNames: {[key: string]: string} = {
   'Rice': 'Rice',
   'Maize Meal': 'Maize Meal',
   'Snacks & Confectionery': 'Snacks',
-  'Household Cleaning & Goods': 'Household',
   'Laundry Supplies': 'Laundry',
   'Personal Care': 'Personal Care',
   'Shampoos & Cleansers': 'Shampoos',
