@@ -28,9 +28,7 @@ class PayfastService {
       testMode: 'false'
     };
 
-    this.paymentUrl = this.config.testMode
-      ? 'https://sandbox.payfast.co.za/eng/process'
-      : 'https://www.payfast.co.za/eng/process';
+    this.paymentUrl = 'https://www.payfast.co.za/eng/process';
   }
 
   /**
