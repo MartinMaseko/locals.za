@@ -67,7 +67,7 @@ class PayfastService {
   }
 
   /**
-   * Creates the complete payment request object to be sent to the frontend.
+   * Creates Payment request object to be sent to the frontend.
    */
   createPaymentRequest(orderData, orderId, userId) {
     try {
