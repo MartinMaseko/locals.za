@@ -109,8 +109,7 @@ router.get('/status/:orderId', authenticateToken, async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.user.uid;
-    
-    // Get the order
+
     const orderDoc = await admin.firestore().collection('orders').doc(orderId).get();
     
     if (!orderDoc.exists) {
