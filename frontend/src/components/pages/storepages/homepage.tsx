@@ -6,14 +6,23 @@ import { app } from '../../../Auth/firebaseClient';
 import './storefront.css';
 import ProductCard from './productview/productsCard';
 import LogoAnime from '../../assets/logos/locals-svg.gif';
+
+/* Beverage logos */
+import Cappy from '../../assets/images/cappylogo.png';
+import CocaCola from '../../assets/images/cokelogo.png';
+import Fruto from '../../assets/images/frutologo.png';
+import kingsley from '../../assets/images/kingsleylogo.png';
+import Mofaya from '../../assets/images/mofaya.png';
+import monster from '../../assets/images/monster.png';
+import Pepsi from '../../assets/images/pepsi.png';
+import powerade from '../../assets/images/poweradelogo.png';
+import Redbull from '../../assets/images/redbulllogo.png';
+import Refreshh from '../../assets/images/refreshhlogo.png';
+import Score from '../../assets/images/scorelogo.png';
+import Twizza from '../../assets/images/twizzalogo.png';
+
 import AppBanner from '../../assets/images/appbanner.webp';
-import Beverages from '../../assets/images/Beverages.webp';
-import Maize from '../../assets/images/maize.webp';
-import FoodPackaging from '../../assets/images/FoodPackaging.webp';
-import Sugar from '../../assets/images/sugar.webp';
-import RelaxersPermKits from '../../assets/images/Relaxers.webp';
-import Shampoos from '../../assets/images/Shampoo.webp';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -155,6 +164,21 @@ const HomePage = () => {
     }, 100);
   };
 
+  // Create a function to handle brand selection and scrolling
+  const handleBrandSelect = (brandName: string) => {
+    setSearch('');
+    setSelectedCategory('Beverages');
+    setSearch(brandName);
+    
+    // Scroll to products section with a small delay to allow filtering to complete
+    setTimeout(() => {
+      productsSectionRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 100);
+  };
+
   // Add this function to handle product requests
   const handleProductRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,56 +282,77 @@ const HomePage = () => {
         </div>
 
         <div className="homepage-welcome">
-          <img src={AppBanner} alt="App banner" className="homepage-appbanner" />
-          
-          {/* Updated category suggestions to use handleCategorySelect */}
-          <div className='categories-suggestions'>
-            {/* Category Card for Beverages */}
-            <div className="category-item" onClick={() => handleCategorySelect('Beverages')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={Beverages} alt="Beverages" />
-              </div>
-              <span className="category-label">Beverages</span>
-            </div>
+          <img src={AppBanner} alt="Locals ZA App Banner" className="homepage-appbanner" />
+          <p className='headertext'>Beverage Brands</p>
 
-            {/* Category Card for Maize Meal */}
-            <div className="category-item" onClick={() => handleCategorySelect('Maize Meal')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={Maize} alt="Maize Meal" />
+          {/* Beverage brand logos section */}
+          <div className='brands-section'>
+              <div className="brand-item" onClick={() => handleBrandSelect('Coca Cola')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={CocaCola} alt="Coca-Cola" />
+                </div>
               </div>
-              <span className="category-label">Maize Meal</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Sugar')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={Sugar} alt="Sugar" />
+              <div className="brand-item" onClick={() => handleBrandSelect('Pepsi')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Pepsi} alt="Pepsi" />
+                </div>
               </div>
-              <span className="category-label">Sugar</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Food Packaging')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={FoodPackaging} alt="Food Packaging" />
+              <div className="brand-item" onClick={() => handleBrandSelect('Kingsley')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={kingsley} alt="Kingsley" />
+                </div>
               </div>
-              <span className="category-label">Packaging</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Shampoos & Cleansers')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={Shampoos} alt="Shampoos & Cleansers" />
+              <div className="brand-item" onClick={() => handleBrandSelect('Refreshh')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Refreshh} alt="Refreshh" />
+                </div>
               </div>
-              <span className="category-label">Shampoos</span>
-            </div>
-
-            <div className="category-item" onClick={() => handleCategorySelect('Relaxers & Perm Kits')}>
-              <div className="suggestion-icon">
-                <img className="category-image" src={RelaxersPermKits} alt="Relaxers & Perm Kits" />
+              <div className="brand-item" onClick={() => handleBrandSelect('Twizza')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Twizza} alt="Twizza" />
+                </div>
               </div>
-              <span className="category-label">Relaxers</span>
-            </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Cappy')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Cappy} alt="Cappy" />
+                </div>
+              </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Fruto')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Fruto} alt="Fruto" />
+                </div>
+              </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Powerade')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={powerade} alt="Powerade" />
+                </div>
+              </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Red Bull')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Redbull} alt="Red Bull" />
+                </div>
+              </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Mofaya')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Mofaya} alt="Mofaya" />
+                </div>
+              </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Monster')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={monster} alt="Monster" />
+                </div>
+              </div>
+              <div className="brand-item" onClick={() => handleBrandSelect('Score')}>
+                <div className="brand-icon">
+                  <img className="brand-logo" src={Score} alt="Score" />
+                </div>
+              </div>
           </div>
         </div>
-
+        <div className='ExploreLinkContainer'>
+          <img  className='appnav-icons' src="https://img.icons8.com/material-rounded/40/ffb803/shop.png" alt="shop"/>
+          <Link className='ExploreText' to="/shop">Browse Categories</Link>
+        </div>
         {/* Add ref to the products section */}
         <div className='products-section' ref={productsSectionRef}>
           {/* Rest of your products section remains unchanged */}
