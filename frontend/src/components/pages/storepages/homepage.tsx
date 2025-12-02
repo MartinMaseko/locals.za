@@ -287,7 +287,7 @@ const HomePage = () => {
 
           {/* Beverage brand logos section */}
           <div className='brands-section'>
-              <div className="brand-item" onClick={() => handleBrandSelect('Coca Cola')}>
+              <div className="brand-item" onClick={() => handleBrandSelect('Coca')}>
                 <div className="brand-icon">
                   <img className="brand-logo" src={CocaCola} alt="Coca-Cola" />
                 </div>
