@@ -143,6 +143,9 @@ const HomePage = () => {
     return acc;
   }, {});
 
+  // Sort categories alphabetically (A-Z)
+  const sortedCategories = Object.keys(groupedProducts).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
   // listen for appnav toggle event
   useEffect(() => {
     const handleToggle = () => setShowCategories(prev => !prev);
@@ -362,7 +365,7 @@ const HomePage = () => {
             <p>No products found.</p>
           ) : (
             <>
-              {Object.keys(groupedProducts).map(category => (
+              {sortedCategories.map(category => (
                 <section key={category} className="products-category-group">
                   <h4 className="products-category-title">{category}</h4>
 
