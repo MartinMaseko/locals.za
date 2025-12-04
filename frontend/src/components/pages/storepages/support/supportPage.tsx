@@ -112,7 +112,7 @@ const SupportPage: React.FC = () => {
             
             {expandedSection === 'service-area' && (
               <div className="faq-answer">
-                <p>We currently service Katlehong, Vosloorus & Thokoza. Please ensure your delivery address falls within this area when placing an order.</p>
+                <p>We currently service (Kathorus) Katlehong, Vosloorus, Thokoza and surrounding areas. Please ensure your delivery address falls within this area when placing an order.</p>
               </div>
             )}
           </div>
@@ -179,7 +179,8 @@ const SupportPage: React.FC = () => {
             {expandedSection === 'delivery-fee' && (
               <div className="faq-answer">
                 <p>We offer a flat-rate, affordable delivery fee of just R80 per delivery.</p>
-                <p><strong>Free Delivery for Orders above R3500</strong></p>
+                <p>The R80 is a standard fee that helps us cover the costs of logistics and the first mile service of sourcing the best price and wholesaler to source from.</p>
+                
               </div>
             )}
           </div>
@@ -236,7 +237,7 @@ const SupportPage: React.FC = () => {
                   <li><strong>Wednesday or Thursday</strong> – Delivery on Friday</li>
                   <li><strong>Friday or Saturday</strong> – Delivery on Monday</li>
                 </ul>
-                <p className="important-note">Important: You must successfully complete your Instant EFT payment by 20:00 the day before a delivery day (e.g., Tuesday night for a Wednesday delivery) to ensure your stock is included in that day's route.</p>
+                <p className="important-note">Important: You must successfully complete your Instant EFT payment by 12:00pm the day before a delivery day (e.g., Tuesday before 12pm for a Wednesday delivery) to ensure your stock is included in that day's route.</p>
               </div>
             )}
           </div>
