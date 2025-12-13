@@ -251,6 +251,13 @@ const CheckoutPage: React.FC = () => {
             <div className='billing-summary'>
               <div>Subtotal: R {subtotal.toFixed(2)}</div>
               <div>Service fee: R {Number(serviceFee).toFixed(2)}</div>
+              <div className='money-back-summary'>
+                <button className='money-back-button'>
+                  <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
+                  Savings
+                </button>
+                <h4 className='money-back-amount'>R103.90</h4>
+              </div>
               <div className='total-bill'><strong>Total: R {total.toFixed(2)}</strong></div>
             </div>
           </>
