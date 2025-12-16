@@ -30,6 +30,8 @@ import DriverRevenue from './components/pages/drivers/driverRevenue';
 import FloatingSupport from './components/common/FloatingSupport';
 import PaymentCancelledPage from './components/pages/storepages/cart/PaymentCancelledPage';
 import SharedCartPage from './components/pages/storepages/cart/SharedCartPage';
+import BuyerLayout from './components/pages/buyers/BuyerLayout';
+import BuyerPriceUpdates from './components/pages/buyers/BuyerPriceUpdates';
 
 function App() {
   return (
@@ -57,6 +59,17 @@ function App() {
                 <Route path="/driver" element={
                   <ProtectedRoute redirectTo="/driver-login">
                     <DriverLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<DriversDash />} />
+                  <Route path="deliveries/:orderId" element={<DriverDeliveries />} />
+                  <Route path="revenue" element={<DriverRevenue />} />
+                </Route>
+                
+                {/* Buyer Routes */}
+                <Route path="/buyer" element={
+                  <ProtectedRoute redirectTo="/login">
+                    <BuyerLayout />
                   </ProtectedRoute>
                 }>
                   <Route path="dashboard" element={<DriversDash />} />
