@@ -46,7 +46,7 @@ interface AggregatedItem {
 }
 
 const BuyerOrders = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [_orders, setOrders] = useState<Order[]>([]);
   const [dayItems, setDayItems] = useState<DayItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
