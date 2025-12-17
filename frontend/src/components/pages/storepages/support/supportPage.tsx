@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 import './supportStyle.css';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -414,6 +415,16 @@ const SupportPage: React.FC = () => {
               <h3>Email Support</h3>
               <p>admin@locals-za.co.za</p>
               <p className="contact-hours">Response within 24 hours</p>
+            </div>
+            <div className="contact-method">
+              <h3>Drivers Login</h3>
+              <Link to="/driver-login" className="team-login-link">
+                <img width="45" height="45" src="https://img.icons8.com/liquid-glass/45/driver.png" alt="driver"/>
+              </Link>
+              <h3>Buyers Login</h3>
+              <Link to="/buyer-login" className="team-login-link">
+                <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/men-age-group-5.png" alt="men-age-group-5"/>
+              </Link>
             </div>
             
             <div className="contact-method">
