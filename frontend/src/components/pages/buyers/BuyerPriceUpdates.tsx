@@ -90,7 +90,12 @@ const BuyerPriceUpdates = () => {
     setNewPrices(prev => ({ ...prev, [productId]: newPrice }));
   };
 
-  const handleUpdatePrice = async (productId: string) => {
+  const handleUpdatePrice = async (productId: string | undefined) => {
+    if (!productId) {
+      setError('Product ID is missing');
+      return;
+    }
+
     try {
       setError('');
       setSuccess('');
@@ -236,8 +241,11 @@ const BuyerPriceUpdates = () => {
           <div className="price-updates-grid">
             {filteredProducts.map((product) => {
               const productId = product.id || product.product_id;
+              if (!productId) return null; // Guard against undefined productId
+
               const currentPrice = getPrice(product.price);
-              const inputValue = newPrices[productId] ? parseFloat(newPrices[productId]) : null;
+              const priceValue = newPrices[productId] || '';
+              const inputValue = priceValue ? parseFloat(priceValue) : null;
               const previewPrice = inputValue ? calculatePriceWithMarkup(inputValue) : null;
               
               return (
@@ -265,7 +273,7 @@ const BuyerPriceUpdates = () => {
                       step="0.01"
                       min="0.01"
                       placeholder="New price (base)"
-                      value={newPrices[productId] || ''}
+                      value={priceValue}
                       onChange={(e) => handlePriceChange(productId, e.target.value)}
                       className="price-input"
                     />
@@ -284,7 +292,7 @@ const BuyerPriceUpdates = () => {
                     )}
                     <button
                       onClick={() => handleUpdatePrice(productId)}
-                      disabled={updatingProductId === productId || !newPrices[productId]}
+                      disabled={updatingProductId === productId || !priceValue}
                       className="update-btn"
                     >
                       {updatingProductId === productId ? 'Updating...' : 'Update'}
