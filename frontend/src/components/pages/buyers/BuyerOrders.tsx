@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
 import axios from 'axios';
-import ProductCard from '../storepages/productview/productsCard';
 import { format, parseISO } from 'date-fns';
 import './buyerStyles.css';
 
@@ -16,153 +15,154 @@ interface OrderItem {
     name?: string;
     price?: number;
     image_url?: string;
-    brand?: string;
   };
 }
 
 interface Order {
   id: string;
+  userId: string;
   items: OrderItem[];
-  createdAt: string;
+  createdAt: any;
   status: string;
+  total?: number;
+  subtotal?: number;
+  serviceFee?: number;
+  deliveryAddress?: any;
+  driver_id?: string;
 }
 
-interface ProductSummary {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string;
-  brand?: string;
-  totalQuantity: number;
-}
-
-interface DateGroup {
+interface DayItems {
   date: string;
-  products: ProductSummary[];
-  totalOrders: number;
+  items: AggregatedItem[];
+  dayTotal: number;
+}
+
+interface AggregatedItem {
+  productId: string;
+  name: string;
+  totalQty: number;
+  price: number;
+  itemTotal: number;
 }
 
 const BuyerOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [dayItems, setDayItems] = useState<DayItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [dateGroups, setDateGroups] = useState<DateGroup[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [dateFilter, setDateFilter] = useState('7'); // Last 7 days
+  const [orderSearchQuery, setOrderSearchQuery] = useState<string>('');
   const auth = getAuth(app);
 
   useEffect(() => {
     fetchOrders();
-  }, [dateFilter]);
+  }, []);
 
-  useEffect(() => {
-    if (orders.length > 0) {
-      processOrdersByDate();
-    }
-  }, [orders, searchQuery]);
+  const getToken = async () => {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Authentication required');
+    return await user.getIdToken(true);
+  };
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const token = await auth.currentUser?.getIdToken();
-      
-      if (!token) {
-        throw new Error('Authentication required');
-      }
+      setError('');
 
-      const response = await axios.get(`${API_URL}/api/orders/all`, {
+      const token = await getToken();
+
+      // Fetch all orders
+      const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (Array.isArray(response.data)) {
-        // Filter orders based on date filter
-        const filteredOrders = filterOrdersByDate(response.data);
-        setOrders(filteredOrders);
+      if (Array.isArray(data)) {
+        // Sort by date descending
+        const sortedOrders = data.sort((a, b) => {
+          const dateA = formatDateForSort(a.createdAt);
+          const dateB = formatDateForSort(b.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        });
+        setOrders(sortedOrders);
+        aggregateItemsByDay(sortedOrders);
       } else {
         setOrders([]);
+        setDayItems([]);
       }
-    } catch (error) {
-      setError('Failed to load orders');
-      console.error('Error fetching orders:', error);
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
+      console.error('Error fetching orders:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterOrdersByDate = (allOrders: Order[]) => {
-    if (dateFilter === 'all') return allOrders;
-
-    const daysBack = parseInt(dateFilter);
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysBack);
-
-    return allOrders.filter(order => {
-      const orderDate = new Date(order.createdAt);
-      return orderDate >= cutoffDate;
-    });
+  const formatDateForSort = (dateValue: any): Date => {
+    try {
+      if (typeof dateValue === 'object' && dateValue?.toDate) {
+        return dateValue.toDate();
+      }
+      if (typeof dateValue === 'object' && dateValue?.seconds) {
+        return new Date(dateValue.seconds * 1000);
+      }
+      if (typeof dateValue === 'string') return new Date(dateValue);
+      if (dateValue instanceof Date) return dateValue;
+      return new Date();
+    } catch {
+      return new Date();
+    }
   };
 
-  const processOrdersByDate = () => {
-    const productsByDate: { [date: string]: { [productId: string]: ProductSummary } } = {};
+  const aggregateItemsByDay = (ordersList: Order[]) => {
+    const grouped: { [key: string]: AggregatedItem[] } = {};
+    const dayTotals: { [key: string]: number } = {};
 
-    orders.forEach(order => {
+    ordersList.forEach(order => {
       try {
-        const orderDate = format(parseISO(order.createdAt), 'yyyy-MM-dd');
+        const date = format(formatDateForSort(order.createdAt), 'yyyy-MM-dd');
         
-        if (!productsByDate[orderDate]) {
-          productsByDate[orderDate] = {};
+        if (!grouped[date]) {
+          grouped[date] = [];
         }
 
+        // Aggregate items for this day
         order.items.forEach(item => {
-          const productId = item.productId || item.product?.id || 'unknown';
-          
-          if (!productsByDate[orderDate][productId]) {
-            productsByDate[orderDate][productId] = {
-              id: productId,
-              name: item.product?.name || 'Unknown Product',
-              price: item.product?.price || 0,
-              image_url: item.product?.image_url || '',
-              brand: item.product?.brand || '',
-              totalQuantity: 0
-            };
+          const existingItem = grouped[date].find(i => i.productId === item.productId);
+          const itemPrice = Number(item.product?.price || 0);
+          const itemLineTotal = itemPrice * item.qty;
+
+          if (existingItem) {
+            // Item already exists for this day, add to qty
+            existingItem.totalQty += item.qty;
+            existingItem.itemTotal += itemLineTotal;
+          } else {
+            // New item for this day
+            grouped[date].push({
+              productId: item.productId,
+              name: item.product?.name || `Product ${item.productId}`,
+              totalQty: item.qty,
+              price: itemPrice,
+              itemTotal: itemLineTotal
+            });
           }
-          
-          productsByDate[orderDate][productId].totalQuantity += item.qty;
+
+          // Update day total
+          dayTotals[date] = (dayTotals[date] || 0) + itemLineTotal;
         });
       } catch (e) {
-        console.error('Error processing order:', order, e);
+        console.error('Error processing order:', e);
       }
     });
 
-    // Convert to array and sort by date (most recent first)
-    const groups: DateGroup[] = Object.entries(productsByDate)
-      .map(([date, products]) => {
-        const productArray = Object.values(products);
-        
-        // Filter products based on search query
-        const filteredProducts = searchQuery
-          ? productArray.filter(product => 
-              product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              product.brand?.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          : productArray;
-
-        return {
-          date,
-          products: filteredProducts.sort((a, b) => b.totalQuantity - a.totalQuantity),
-          totalOrders: orders.filter(o => {
-            try {
-              return format(parseISO(o.createdAt), 'yyyy-MM-dd') === date;
-            } catch {
-              return false;
-            }
-          }).length
-        };
-      })
-      .filter(group => group.products.length > 0)
+    // Build result array
+    const result: DayItems[] = Object.entries(grouped)
+      .map(([date, items]) => ({
+        date,
+        items: items.sort((a, b) => a.name.localeCompare(b.name)),
+        dayTotal: dayTotals[date] || 0
+      }))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    setDateGroups(groups);
+    setDayItems(result);
   };
 
   const formatDateHeader = (dateString: string) => {
@@ -173,10 +173,19 @@ const BuyerOrders = () => {
     }
   };
 
-  const handleProductClick = (product: ProductSummary) => {
-    // Navigate to product details or handle product selection
-    console.log('Product clicked:', product);
-  };
+  // Filter by search query
+  const filteredDayItems = dayItems.filter(day =>
+    !orderSearchQuery || 
+    day.items.some(item => 
+      item.name.toLowerCase().includes(orderSearchQuery.toLowerCase())
+    )
+  ).map(day => ({
+    ...day,
+    items: day.items.filter(item =>
+      !orderSearchQuery ||
+      item.name.toLowerCase().includes(orderSearchQuery.toLowerCase())
+    )
+  }));
 
   if (loading) {
     return (
@@ -191,71 +200,79 @@ const BuyerOrders = () => {
 
   return (
     <div className="buyer-dashboard">
-      <div className="buyer-stats-cards">
-        <div className="buyer-section">
-          <h2>Orders by Date</h2>
-          
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
+      <div className="buyer-section">
+        <div className="orders-header">
+          <h2>Daily Orders Summary</h2>
+          <div className="order-search">
+            <input 
+              type="text" 
+              placeholder="Search by product name" 
+              value={orderSearchQuery} 
+              onChange={e => setOrderSearchQuery(e.target.value)}
+              className="order-search-input" 
             />
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="14">Last 14 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="all">All time</option>
-            </select>
+            {orderSearchQuery && (
+              <button 
+                className="clear-search"
+                onClick={() => setOrderSearchQuery('')}
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
+        </div>
 
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+            <button onClick={fetchOrders} className="retry-button">
+              Retry
+            </button>
+          </div>
+        )}
 
-          {dateGroups.length === 0 ? (
-            <div className="no-orders-message">
-              <p>No orders found for the selected period.</p>
-            </div>
-          ) : (
-            <div className="orders-by-date-container">
-              {dateGroups.map((group) => (
-                <div key={group.date} className="date-group">
-                  <div className="date-header">
-                    {formatDateHeader(group.date)} ({group.totalOrders} {group.totalOrders === 1 ? 'order' : 'orders'})
-                  </div>
-                  <div className="products-for-date">
-                    {group.products.map((product) => (
-                      <div key={product.id} className="product-order-item">
-                        <ProductCard
-                          product={{
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            image_url: product.image_url,
-                          }}
-                          onClick={() => handleProductClick(product)}
-                        />
-                        <div className="product-quantity">
-                          <span>Total Ordered:</span>
-                          <span className="quantity-badge">{product.totalQuantity}</span>
-                        </div>
-                      </div>
-                    ))}
+        {!error && filteredDayItems.length === 0 ? (
+          <div className="no-orders-message">
+            <p>{orderSearchQuery ? `No products match "${orderSearchQuery}"` : 'No orders found.'}</p>
+          </div>
+        ) : (
+          <div className="orders-by-date-container">
+            {filteredDayItems.map((day) => (
+              <div key={day.date} className="date-group">
+                <div className="date-header">
+                  {formatDateHeader(day.date)}
+                </div>
+
+                <div className="order-items-container">
+                  <table className="order-items-table">
+                    <thead>
+                      <tr>
+                        <th className="product-col">Product</th>
+                        <th className="qty-col">Qty</th>
+                        <th className="price-col">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {day.items.map((item) => (
+                        <tr key={item.productId}>
+                          <td className="product-col">{item.name}</td>
+                          <td className="qty-col">{item.totalQty}</td>
+                          <td className="price-col">R{item.price.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <div className="day-total-row">
+                    <strong>Daily Total:</strong>
+                    <strong>R{day.dayTotal.toFixed(2)}</strong>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { app } from '../../../Auth/firebaseClient.ts';
-import BuyerNav from './buyerNav';
-import './BuyerLayout.css';
+import { app } from '../../../Auth/firebaseClient';
+import BuyerNav from './BuyerNav';
+import './buyerLayout.css';
 
 const BuyerLayout: React.FC = () => {
   const [isBuyerAuthenticated, setIsBuyerAuthenticated] = useState<boolean | null>(null);
@@ -16,18 +16,16 @@ const BuyerLayout: React.FC = () => {
       if (user) {
         try {
           await user.getIdToken();
-          const isBuyer = true;
-          setIsBuyerAuthenticated(isBuyer);
-          if (!isBuyer) {
-            navigate('/login');
-          }
+          // If user is authenticated, they passed BuyerLogin, so allow access
+          setIsBuyerAuthenticated(true);
         } catch (error) {
           console.error('Error verifying buyer status:', error);
           setIsBuyerAuthenticated(false);
+          navigate('/buyer-login');
         }
       } else {
         setIsBuyerAuthenticated(false);
-        navigate('/login');
+        navigate('/buyer-login');
       }
       setLoading(false);
     });
@@ -49,7 +47,7 @@ const BuyerLayout: React.FC = () => {
       <div className="buyer-auth-required">
         <h2>Buyer Access Required</h2>
         <p>Please log in with a buyer account to access this area.</p>
-        <button onClick={() => navigate('/login')}>
+        <button onClick={() => navigate('/buyer-login')}>
           Go to Login
         </button>
       </div>

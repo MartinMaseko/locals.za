@@ -6,160 +6,184 @@ import './buyerStyles.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Profit markup percentage
+const PROFIT_MARKUP = 0.025; // 2.5%
+
 interface Product {
   id: string;
+  product_id?: string;
   name: string;
-  price: number;
+  price: number | string;
   image_url?: string;
   brand?: string;
   category?: string;
-  description?: string;
-}
-
-interface PriceUpdate {
-  productId: string;
-  newCostPrice: number;
-  finalPrice: number;
 }
 
 const BuyerPriceUpdates = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [priceUpdates, setPriceUpdates] = useState<{ [key: string]: PriceUpdate }>({});
-  const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
-  const [categories, setCategories] = useState<string[]>([]);
-  
+  const [updatingProductId, setUpdatingProductId] = useState<string | null>(null);
+  const [newPrices, setNewPrices] = useState<{ [key: string]: string }>({});
   const auth = getAuth(app);
-  const MARKUP_PERCENTAGE = 2.5; // 2.5% markup
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    filterProducts();
-  }, [products, searchQuery, categoryFilter]);
+  const getToken = async () => {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Authentication required');
+    return await user.getIdToken(true);
+  };
+
+  // Helper function to safely convert price to number
+  const getPrice = (price: number | string | undefined): number => {
+    if (price === undefined || price === null) return 0;
+    const parsed = parseFloat(String(price));
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  // Calculate price with 2.5% markup
+  const calculatePriceWithMarkup = (basePrice: number): number => {
+    const markupAmount = basePrice * PROFIT_MARKUP;
+    return basePrice + markupAmount;
+  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const token = await auth.currentUser?.getIdToken();
-      
-      if (!token) {
-        throw new Error('Authentication required');
-      }
+      setError('');
 
-      const response = await axios.get(`${API_URL}/api/products`, {
+      const token = await getToken();
+      const { data } = await axios.get(`${API_URL}/api/products`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (Array.isArray(response.data)) {
-        const sortedProducts = response.data.sort((a, b) => 
-          a.name?.localeCompare(b.name) || 0
-        );
-        setProducts(sortedProducts);
+      if (Array.isArray(data)) {
+        // Normalize prices to numbers
+        const normalizedProducts = data.map(p => ({
+          ...p,
+          price: getPrice(p.price)
+        })).sort((a, b) => a.name.localeCompare(b.name));
         
-        // Extract unique categories
-        const uniqueCategories = [...new Set(
-          response.data
-            .map((p: Product) => p.category)
-            .filter(Boolean)
-        )];
-        setCategories(uniqueCategories);
+        setProducts(normalizedProducts);
       } else {
         setProducts([]);
       }
-    } catch (error) {
-      setError('Failed to load products');
-      console.error('Error fetching products:', error);
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err?.message || 'Failed to load products');
+      console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterProducts = () => {
-    let filtered = products;
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.brand?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(product => 
-        product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(product => product.category === categoryFilter);
-    }
-
-    setFilteredProducts(filtered);
+  const handlePriceChange = (productId: string, newPrice: string) => {
+    setNewPrices(prev => ({ ...prev, [productId]: newPrice }));
   };
 
-  const handlePriceChange = (productId: string, newCostPrice: string) => {
-    const costPrice = parseFloat(newCostPrice) || 0;
-    const finalPrice = costPrice * (1 + MARKUP_PERCENTAGE / 100);
-    
-    setPriceUpdates(prev => ({
-      ...prev,
-      [productId]: {
-        productId,
-        newCostPrice: costPrice,
-        finalPrice: Math.round(finalPrice * 100) / 100 // Round to 2 decimal places
-      }
-    }));
-  };
-
-  const updateProductPrice = async (productId: string) => {
-    const update = priceUpdates[productId];
-    if (!update || update.newCostPrice <= 0) {
-      setError('Please enter a valid cost price');
-      return;
-    }
-
+  const handleUpdatePrice = async (productId: string) => {
     try {
-      setUpdating(prev => ({ ...prev, [productId]: true }));
       setError('');
-      
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        throw new Error('Authentication required');
+      setSuccess('');
+      setUpdatingProductId(productId);
+
+      // Find the product to get current values
+      const productToUpdate = products.find(p => p.id === productId || p.product_id === productId);
+      if (!productToUpdate) {
+        setError('Product not found');
+        setUpdatingProductId(null);
+        return;
       }
 
+      // Parse and validate new price
+      let inputPrice = parseFloat(newPrices[productId]);
+      if (isNaN(inputPrice) || inputPrice <= 0) {
+        setError('Please enter a valid price greater than 0');
+        setUpdatingProductId(null);
+        return;
+      }
+
+      // Add 2.5% profit markup
+      const newPrice = calculatePriceWithMarkup(inputPrice);
+
+      const token = await getToken();
+      const docId = productToUpdate.id || productToUpdate.product_id;
+
+      if (!docId) {
+        setError('Missing product ID');
+        setUpdatingProductId(null);
+        return;
+      }
+
+      // Create clean payload with all required fields (same as admin dashboard)
+      const payload = {
+        name: productToUpdate.name?.trim() || '',
+        price: newPrice, // ← Price with 2.5% markup applied
+        brand: productToUpdate.brand?.trim() || '',
+        category: productToUpdate.category?.trim() || '',
+        description: '', // Include description to match admin structure
+        image_url: productToUpdate.image_url || ''
+      };
+
+      console.log('Input price:', inputPrice);
+      console.log('Price with 2.5% markup:', newPrice);
+      console.log('Sending payload:', payload);
+      console.log('To endpoint:', `${API_URL}/api/products/${docId}`);
+
+      // Send request with proper headers (same as admin dashboard)
       await axios.put(
-        `${API_URL}/api/products/${productId}`,
-        { price: update.finalPrice },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${API_URL}/api/products/${docId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
-      // Update local state
-      setProducts(prev => prev.map(product => 
-        product.id === productId 
-          ? { ...product, price: update.finalPrice }
-          : product
-      ));
+      // Update local state with the new price (including markup)
+      setProducts(prev =>
+        prev.map(p => 
+          (p.id === productId || p.product_id === productId) 
+            ? { ...p, price: newPrice } 
+            : p
+        )
+      );
 
-      // Clear the price update for this product
-      setPriceUpdates(prev => {
-        const newUpdates = { ...prev };
-        delete newUpdates[productId];
-        return newUpdates;
+      setNewPrices(prev => {
+        const updated = { ...prev };
+        delete updated[productId];
+        return updated;
       });
 
-      setSuccess(`Price updated successfully for ${products.find(p => p.id === productId)?.name}`);
-      setTimeout(() => setSuccess(''), 3000);
-
-    } catch (error) {
-      setError('Failed to update price');
-      console.error('Error updating price:', error);
+      setSuccess(`Price updated successfully! (R${inputPrice.toFixed(2)} + 2.5% = R${newPrice.toFixed(2)})`);
+      setTimeout(() => setSuccess(''), 4000);
+    } catch (err: any) {
+      console.error('Error updating price:', err);
+      console.error('Error response:', err?.response?.data);
+      
+      let errorMessage = 'Failed to update price';
+      if (typeof err?.response?.data === 'string') {
+        errorMessage = err.response.data;
+      } else if (err?.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
-      setUpdating(prev => ({ ...prev, [productId]: false }));
+      setUpdatingProductId(null);
     }
   };
 
@@ -176,114 +200,101 @@ const BuyerPriceUpdates = () => {
 
   return (
     <div className="buyer-dashboard">
-      <div className="buyer-stats-cards">
-        <div className="buyer-section">
-          <h2>Price Updates</h2>
-          
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="filter-select"
+      <div className="buyer-section">
+        <h2>Update Product Prices</h2>
+        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '16px' }}>
+          💡 Note: A 2.5% profit markup will be automatically added to all prices
+        </p>
+
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search products by name or brand..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          {searchQuery && (
+            <button 
+              className="clear-search"
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear search"
             >
-              <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
+              ✕
+            </button>
           )}
-
-          {success && (
-            <div className="success-message">
-              {success}
-            </div>
-          )}
-
-          <div className="price-updates-container">
-            {filteredProducts.length === 0 ? (
-              <div className="no-orders-message">
-                <p>No products found.</p>
-              </div>
-            ) : (
-              <div className="price-updates-grid">
-                {filteredProducts.map((product) => {
-                  const update = priceUpdates[product.id];
-                  const isUpdating = updating[product.id];
-                  
-                  return (
-                    <div key={product.id} className="price-update-item">
-                      <div className="product-price-info">
-                        {product.image_url && (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="product-price-image"
-                          />
-                        )}
-                        <div className="product-price-details">
-                          <div className="product-price-name">{product.name}</div>
-                          <div className="current-price">
-                            Current Price: R{product.price?.toFixed(2) || '0.00'}
-                          </div>
-                          {product.brand && (
-                            <div className="current-price">
-                              Brand: {product.brand}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="price-input-container">
-                        <div className="price-input-group">
-                          <label htmlFor={`price-${product.id}`}>
-                            New Cost Price (R)
-                          </label>
-                          <input
-                            id={`price-${product.id}`}
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="Enter cost price"
-                            value={update?.newCostPrice || ''}
-                            onChange={(e) => handlePriceChange(product.id, e.target.value)}
-                            className="price-input"
-                          />
-                        </div>
-                        
-                        {update && update.newCostPrice > 0 && (
-                          <div className="price-preview">
-                            Final Price (with {MARKUP_PERCENTAGE}% markup): R{update.finalPrice.toFixed(2)}
-                          </div>
-                        )}
-                        
-                        <button
-                          onClick={() => updateProductPrice(product.id)}
-                          disabled={!update || update.newCostPrice <= 0 || isUpdating}
-                          className="update-price-btn"
-                        >
-                          {isUpdating ? 'Updating...' : 'Update Price'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </div>
+
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+
+        {filteredProducts.length === 0 ? (
+          <div className="no-orders-message">
+            <p>{searchQuery ? `No products match "${searchQuery}"` : 'No products found.'}</p>
+          </div>
+        ) : (
+          <div className="price-updates-grid">
+            {filteredProducts.map((product) => {
+              const productId = product.id || product.product_id;
+              const currentPrice = getPrice(product.price);
+              const inputValue = newPrices[productId] ? parseFloat(newPrices[productId]) : null;
+              const previewPrice = inputValue ? calculatePriceWithMarkup(inputValue) : null;
+              
+              return (
+                <div key={productId} className="price-update-card">
+                  {product.image_url && (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="product-image"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <div className="product-info">
+                    <h4>{product.name}</h4>
+                    {product.brand && <p className="product-brand">{product.brand}</p>}
+                    {product.category && <p className="product-category">{product.category}</p>}
+                    <p className="current-price">Current: R{currentPrice.toFixed(2)}</p>
+                  </div>
+
+                  <div className="price-input-group">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      placeholder="New price (base)"
+                      value={newPrices[productId] || ''}
+                      onChange={(e) => handlePriceChange(productId, e.target.value)}
+                      className="price-input"
+                    />
+                    {previewPrice && (
+                      <div style={{
+                        padding: '8px',
+                        backgroundColor: '#e8f5e9',
+                        borderRadius: '4px',
+                        fontSize: '0.9rem',
+                        color: '#2e7d32',
+                        textAlign: 'center'
+                      }}>
+                        <strong>With 2.5% markup:</strong><br />
+                        R{previewPrice.toFixed(2)}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => handleUpdatePrice(productId)}
+                      disabled={updatingProductId === productId || !newPrices[productId]}
+                      className="update-btn"
+                    >
+                      {updatingProductId === productId ? 'Updating...' : 'Update'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
