@@ -182,6 +182,45 @@
   padding: 0.5rem;
 }
 
+.money-back-summary {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffb803;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 0rem 0.5rem;
+}
+
+.money-back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFB803;
+  color: #191919;
+  border: none;
+  gap: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  padding: 0.5rem 0rem;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.75rem;
+  flex: 1;
+}
+
+.money-back-amount {
+  background: #191919;
+  padding: 0.85rem 0rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  flex: 1;
+  margin: 0;
+}
+
 .total-bill,
 .cost-row.total {
   margin-top: 0.5rem;

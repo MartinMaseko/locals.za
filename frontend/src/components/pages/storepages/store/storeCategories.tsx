@@ -18,7 +18,6 @@ import RelaxersPermKits from '../../../assets/images/Relaxers.webp';
 import shampoosCleansers from '../../../assets/images/Shampoo.webp';
 import SnacksConfectionery from '../../../assets/images/Snacks.webp';
 import ConditionersTreatments from '../../../assets/images/ConditionerTreatments.webp';
-import SpicesSeasoning from '../../../assets/images/spices.webp';
 import CannedFoods from '../../../assets/images/canned.webp';
 import SugarImage from '../../../assets/images/sugar.webp';
 import FlourImage from '../../../assets/images/flour.webp';
@@ -33,7 +32,6 @@ import Sauces from '../../../assets/images/sauces.webp';
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
-  'Spices & Seasoning',
   'Canned Foods',
   'Sugar',
   'Flour',
@@ -58,7 +56,6 @@ const productCategories = [
 // Map for category images
 const categoryImages: {[key: string]: string} = {
   'Beverages': Beverages,
-  'Spices & Seasoning': SpicesSeasoning,
   'Canned Foods': CannedFoods,
   'Sugar': SugarImage,
   'Flour': FlourImage,
@@ -82,7 +79,6 @@ const categoryImages: {[key: string]: string} = {
 const categoryDisplayNames: {[key: string]: string} = {
   'Beverages': 'Beverages',
   'Groceries & Pantry': 'Groceries',
-  'Spices & Seasoning': 'Spices',
   'Canned Foods': 'Canned Foods',
   'Sugar': 'Sugar',
   'Flour': 'Flour',
