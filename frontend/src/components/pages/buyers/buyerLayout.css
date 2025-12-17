@@ -1,0 +1,84 @@
+/* Buyer Layout - Based on Driver Layout */
+.buyer-layout {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.buyer-layout-content {
+  padding: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.buyer-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #212529;
+  color: #f8f9fa;
+}
+
+.buyer-loading-spinner {
+  border: 4px solid #333;
+  border-top: 4px solid #ffb803;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.buyer-auth-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  background-color: #f8f9fa;
+  padding: 0 20px;
+}
+
+.buyer-auth-required h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.buyer-auth-required p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.buyer-auth-required button {
+  background-color: #FFB803;
+  color: #333;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.buyer-auth-required button:hover {
+  background-color: #e9a800;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .buyer-layout-content {
+    padding: 15px;
+  }
+}
+
+.buyer-logo {
+  width: 50px;
+  margin-bottom: 20px;
+}

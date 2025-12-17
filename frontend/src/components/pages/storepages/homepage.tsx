@@ -29,7 +29,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const productCategories = [
   // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages', // Van Vehicle
-  'Spices & Seasoning', //light Vehicle
   'Canned Foods', // Van Vehicle
   'Sugar', // Van Vehicle
   'Flour', // Van Vehicle
