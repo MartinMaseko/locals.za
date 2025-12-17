@@ -7,7 +7,7 @@ import './buyerStyles.css';
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Profit markup percentage
-const PROFIT_MARKUP = 0.025; // 2.5%
+const PROFIT_MARKUP = 0.025; // 2.5%(2% payfast/ 0.5% localsZA)
 
 interface Product {
   id: string;
