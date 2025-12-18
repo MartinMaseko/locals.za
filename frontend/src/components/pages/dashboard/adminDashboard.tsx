@@ -1,230 +1,142 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
 import Logo from '../../assets/logos/LZA ICON.png';
 import './AdminStyle.css';
-import { format } from 'date-fns';
 
-const API_URL = import.meta.env.VITE_API_URL;
+import { useOrders } from './hooks/useOrders';
+import { useProducts } from './hooks/useProducts';
+import { useDrivers } from './hooks/useDrivers';
+import { useTokenManagement } from './hooks/useTokenManagement';
+import {
+  useFetchCustomerDetails,
+  useFetchDriversList,
+  useFetchDriverOrders,
+  useFetchPaymentHistory,
+  useCashoutRequests
+} from './hooks/useFetch';
+import { adminApi } from './services/adminApi';
+import { dashboardStatsService } from './services/dashboardStatsService';
+import { ordersService } from './services/ordersService';
+import { cashoutService } from './services/cashoutService';
+import {
+  handleDriverRegistration,
+  handleProductImageUpload,
+  handleProductUpdate
+} from './services/formHandlers';
+import {
+  formatDate,
+  generateProductId,
+  generateDriverId,
+  vehicleTypes,
+  productCategories
+} from './utils/helpers';
+import type { AdminProfile, Order, OrderItem } from './types/index';
 
-function generateProductId() {
-  return 'PROD-' + Math.floor(1000000000 + Math.random() * 9000000000);
-}
-function generateDriverId() {
-  return 'DRIVER-' + Math.floor(1000000000 + Math.random() * 9000000000);
-}
-
-const vehicleTypes = ['van', 'sedan', 'hatch'];
-
-const productCategories = [
-  // Fast-Moving Consumer Goods (FMCG) Categories
-  'Beverages',
-  'Spices & Seasoning',
-  'Canned Foods',
-  'Sugar',
-  'Flour',
-  'Cooking Oils & Fats',
-  'Rice',
-  'Maize Meal',
-  'Snacks & Confectionery',
-  'Household Cleaning & Goods',
-  'Laundry Supplies',
-  'Personal Care',
-  'Food Packaging',
-  'Sauces',
-
-  // Hair Care & Cosmetics Categories
-  'Shampoos & Cleansers',
-  'Conditioners & Treatments',
-  'Relaxers & Perm Kits',
-  'Hair Styling Products',
-  'Hair Food & Oils',
-  'Hair Coloring'
-];
-
-// FormatDate function to handle more data formats:
-function formatDate(dateValue: any): string {
-  if (!dateValue) return 'N/A';
-  
-  try {
-    // Handle Firestore timestamp objects
-    if (typeof dateValue === 'object' && dateValue?.toDate) {
-      return format(dateValue.toDate(), 'yyyy-MM-dd HH:mm');
-    }
-    
-    if (typeof dateValue === 'object' && dateValue?.seconds) {
-      return format(new Date(dateValue.seconds * 1000), 'yyyy-MM-dd HH:mm');
-    }
-    
-    // Handle string dates
-    if (typeof dateValue === 'string') return format(new Date(dateValue), 'yyyy-MM-dd HH:mm');
-    
-    // Handle Date objects
-    if (dateValue instanceof Date) return format(dateValue, 'yyyy-MM-dd HH:mm');
-    
-    return String(dateValue);
-  } catch (error) {
-    console.log('Date formatting error:', error, 'Value:', dateValue);
-    return 'Invalid Date';
-  }
-}
-
-interface AdminProfile {
-  full_name?: string;
-  email: string;
-  user_type: string;
-}
-
-interface Order {
-  id: string;
-  userId: string;
-  salon_id: string | null;
-  items: OrderItem[];
-  subtotal: number;
-  serviceFee: number;
-  total: number;
-  deliveryAddress: any;
-  status: OrderStatus;
-  createdAt: any; 
-  updatedAt: any; 
-  driver_id?: string | null;
-  missingItems?: MissingItem[];
-  refundAmount?: number;
-  adjustedTotal?: number;
-  refundStatus?: 'pending' | 'processed' | 'credited';
-  driverNote?: string;
-  rating?: number;
-  ratingComment?: string;
-  ratedAt?: any;
-}
-
-interface MissingItem {
-  productId: string;
-  productName?: string;
-  originalQty?: number;
-  availableQty?: number;
-  missingQuantity?: number;
-  reason?: string;
-}
-
-interface OrderItem {
-  productId: string;
-  product: any;
-  qty: number;
-}
-
-
-interface UserCountResponse {
-  count: number;
-}
-
-type OrderStatus = 'pending' | 'processing' | 'in transit' | 'delivered' | 'cancelled' | 'completed';
-
-// Active sections 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
+  // Custom hooks for token and data management
+  const { getToken } = useTokenManagement();
+  const { customerDetails, fetchCustomerDetails } = useFetchCustomerDetails();
+  const { driversList, fetchDriversList } = useFetchDriversList();
+  const { driverOrders, fetchDriverOrders } = useFetchDriverOrders();
+  const { driverPaymentHistory, paymentHistoryLoading, fetchPaymentHistory } = useFetchPaymentHistory();
+  const { 
+    cashoutList, 
+    setCashoutList, 
+    cashoutLoading, 
+    cashoutError, 
+    fetchCashoutRequests 
+  } = useCashoutRequests();
+
+  // Global admin state
   const [admin, setAdmin] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<'dashboard'|'drivers'|'products'|'admin'|'orders'|'ProductManagement'|'ManageDrivers'>('dashboard');
 
-  // driver form
-  const [driverForm, setDriverForm] = useState({
-    driver_id: generateDriverId(), email: '', password: '', full_name: '', phone_number: '',
-    vehicle_type: '', vehicle_model: '', bank_details: '', license_number: '', license_image: null as File | null
-  });
-  const [driverError, setDriverError] = useState('');
-  const [driverSuccess, setDriverSuccess] = useState('');
+  // Use custom hooks for data management
+  const ordersState = useOrders();
+  const productsState = useProducts();
+  const driversState = useDrivers();
 
-  // product add form
-  const [productForm, setProductForm] = useState({
-    product_id: generateProductId(), name: '', description: '', price: '', brand: '', category: '', image: null as File | null
-  });
-  const [productError, setProductError] = useState('');
-  const [productSuccess, setProductSuccess] = useState('');
-
-  // products management
-  const [productsList, setProductsList] = useState<any[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
-  const [productsError, setProductsError] = useState('');
-  const [editingProduct, setEditingProduct] = useState<any | null>(null);
-  const [editProductForm, setEditProductForm] = useState({
-    name: '', description: '', price: '', brand: '', category: '', imageFile: null as File | null, image_url: ''
-  });
+  // Modal & UI states
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<any | null>(null);
+  const [selectedCashout, setSelectedCashout] = useState<any | null>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [loadingCustomer] = useState<Record<string, boolean>>({});
+  const [showDriverDropdown, setShowDriverDropdown] = useState(false);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
   const [productImageUploading, setProductImageUploading] = useState(false);
 
-  // orders
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  const [orderLoading, setOrderLoading] = useState(false);
-  const [orderError, setOrderError] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('');
+  // Driver form state
+  const [driverForm, setDriverForm] = useState({
+    driver_id: generateDriverId(), 
+    email: '', 
+    password: '', 
+    full_name: '', 
+    phone_number: '',
+    vehicle_type: '', 
+    vehicle_model: '', 
+    bank_details: '', 
+    license_number: '', 
+    license_image: null as File | null
+  });
+
+  // Product form state
+  const [productForm, setProductForm] = useState({
+    product_id: generateProductId(), 
+    name: '', 
+    description: '', 
+    price: '', 
+    brand: '', 
+    category: '', 
+    image: null as File | null
+  });
+
+  // Edit product form state
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [editProductForm, setEditProductForm] = useState({
+    name: '', 
+    description: '', 
+    price: '', 
+    brand: '', 
+    category: '', 
+    imageFile: null as File | null, 
+    image_url: ''
+  });
+
+  // Admin promotion state
+  const [promoteUid, setPromoteUid] = useState('');
+  const [promoteMsg, setPromoteMsg] = useState('');
+
+  // Search & filter states
   const [orderSearchQuery, setOrderSearchQuery] = useState<string>('');
-  const [userCount, setUserCount] = useState<number>(0);
-
-  // customers cache
-  const [customerDetails, setCustomerDetails] = useState<Record<string, any>>({});
-  const [loadingCustomer, setLoadingCustomer] = useState<Record<string, boolean>>({});
-
-  // drivers list and dropdown
-  const [drivers, setDrivers] = useState<Array<{id: string; name: string}>>([]);
-  const [loadingDrivers, setLoadingDrivers] = useState(false);
-  const [showDriverDropdown, setShowDriverDropdown] = useState(false);
-
-  // product search
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('');
   const [productSearchQuery, setProductSearchQuery] = useState<string>('');
-  const [filteredProductsList, setFilteredProductsList] = useState<any[]>([]);
 
-  // dashboard stats
+  // Dashboard stats
   const [statsPeriod, setStatsPeriod] = useState<'30'|'60'|'90'|'all'>('30');
   const [dashboardStats, setDashboardStats] = useState({
     serviceRevenue: 0,
     orderRevenue: 0,
     topProducts: [] as {name: string, count: number, revenue: number}[]
   });
-
-  // drivers management
-  const [driversList, setDriversList] = useState<any[]>([]);
-  const [_driversLoading, setDriversLoading] = useState(false);
-  const [_driversError, setDriversError] = useState('');
-  const [selectedDriver, setSelectedDriver] = useState<any | null>(null);
-  const [driverOrders, setDriverOrders] = useState<Order[]>([]);
-  const [_driverOrdersLoading, setDriverOrdersLoading] = useState(false);
-
-  // cashouts management
-  const [cashoutList, setCashoutList] = useState<any[]>([]);
-  const [cashoutLoading, setCashoutLoading] = useState(false);
-  const [cashoutError, setCashoutError] = useState('');
-  const [selectedCashout, setSelectedCashout] = useState<any | null>(null);
+  const [userCount] = useState<number>(0);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
 
-  // helpers
-  const getToken = async () => {
-    const auth = getAuth(app);
-    const user = auth.currentUser;
-    if (!user) throw new Error('Authentication required');
-    return await user.getIdToken(true);
-  };
 
-  // Accordion expanded order state for ManageDrivers section
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-
-  // auth check
   useEffect(() => {
     const auth = getAuth(app);
     setLoading(true);
     const unsub = auth.onAuthStateChanged(async (user) => {
       if (!user) { navigate('/adminlogin'); return; }
       try {
-        const token = await user.getIdToken();
-        const { data } = await axios.get<AdminProfile>(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
-        if (data?.user_type !== 'admin') { navigate('/adminlogin'); return; }
-        setAdmin(data);
+        const profile = await adminApi.getAdminProfile();
+        if ((profile as any)?.user_type !== 'admin') { navigate('/adminlogin'); return; }
+        setAdmin(profile as AdminProfile);
       } catch (err) {
         navigate('/adminlogin');
       } finally { setLoading(false); }
@@ -232,150 +144,47 @@ const AdminDashboard: React.FC = () => {
     return () => unsub();
   }, [navigate]);
 
-  // fetch orders
-  const fetchOrders = useCallback(async () => {
-    if (!admin) return;
-    setOrderLoading(true); setOrderError('');
-    try {
-      const token = await getToken();
-      const url = orderStatusFilter ? `${API_URL}/api/orders/all?status=${encodeURIComponent(orderStatusFilter)}` : `${API_URL}/api/orders/all`;
-      const { data } = await axios.get<Order[]>(url, { headers: { Authorization: `Bearer ${token}` } });
-      setOrders(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setOrderError(err?.response?.data?.error || err?.message || 'Failed to load orders');
-    } finally { setOrderLoading(false); }
-  }, [admin, orderStatusFilter]);
-
+  // Fetch orders when section changes
   useEffect(() => {
-    if (activeSection === 'orders' && admin) fetchOrders();
-  }, [activeSection, admin, fetchOrders]);
-
-  // Fetch user count function
-  const fetchUserCount = useCallback(async () => {
-    try {
-      const token = await getToken();
-      const { data } = await axios.get<UserCountResponse>(`${API_URL}/api/admin/stats/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUserCount(data.count);
-    } catch (err) {
-      console.error('Error fetching user count:', err);
-      setUserCount(0);
+    if (activeSection === 'orders' && admin) {
+      ordersState.fetchOrders(orderStatusFilter);
     }
-  }, []);
+  }, [activeSection, admin, orderStatusFilter]);
 
+  // Fetch products when section changes
   useEffect(() => {
-    if (activeSection === 'dashboard' && admin) {
-      fetchUserCount();
+    if (activeSection === 'ProductManagement' && admin) {
+      productsState.fetchProducts();
     }
-  }, [activeSection, admin, fetchUserCount]);
+  }, [activeSection, admin]);
 
-  // search / filter orders
+  // Fetch drivers list when section changes
   useEffect(() => {
-    const q = (orderSearchQuery || '').trim().toLowerCase();
-    let list = orders.slice();
-    if (q) list = list.filter(o => o.id?.toLowerCase().includes(q));
-    setFilteredOrders(list);
-  }, [orders, orderSearchQuery]);
+    if (activeSection === 'ManageDrivers' && admin) {
+      driversState.fetchAllDrivers();
+    }
+  }, [activeSection, admin]);
 
-  // fetch single customer details
-  const fetchCustomerDetails = useCallback(async (userId: string) => {
-    if (!userId || customerDetails[userId] || loadingCustomer[userId]) return;
-    setLoadingCustomer(prev => ({ ...prev, [userId]: true }));
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
-      const userData = data as { full_name?: string; email?: string; phone_number?: string };
-      setCustomerDetails(prev => ({
-        ...prev,
-        [userId]: {
-          name: userData.full_name || userData.email || 'Unknown',
-          email: userData.email,
-          phone: userData.phone_number
-        }
-      }));
-    } catch (err) {
-      setCustomerDetails(prev => ({ ...prev, [userId]: { name: 'Unknown Customer' } }));
-    } finally { setLoadingCustomer(prev => ({ ...prev, [userId]: false })); }
-  }, [customerDetails, loadingCustomer]);
+  // Fetch drivers for dropdown
+  useEffect(() => {
+    if (activeSection === 'orders' && admin) {
+      driversState.fetchDrivers();
+    }
+  }, [activeSection, admin]);
 
+  // Search & filter handlers
+  useEffect(() => {
+    ordersState.filterByQuery(orderSearchQuery);
+  }, [orderSearchQuery]);
+
+  useEffect(() => {
+    productsState.filterByQuery(productSearchQuery);
+  }, [productSearchQuery]);
+
+  // Customer details fetcher
   useEffect(() => {
     if (selectedOrder?.userId) fetchCustomerDetails(selectedOrder.userId);
   }, [selectedOrder, fetchCustomerDetails]);
-
-  // fetch drivers
-  const fetchDrivers = useCallback(async () => {
-    setLoadingDrivers(true);
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/drivers`, { headers: { Authorization: `Bearer ${token}` } });
-      if (Array.isArray(data)) {
-        setDrivers(data.map((d: any) => ({ id: d.driver_id || d.id, name: d.full_name || d.email || d.id })));
-      } else setDrivers([]);
-    } catch (err) {
-      console.error('fetchDrivers error', err);
-    } finally { setLoadingDrivers(false); }
-  }, []);
-
-  useEffect(() => {
-    if (activeSection === 'orders') fetchDrivers();
-  }, [activeSection, fetchDrivers]);
-
-  // assign/unassign driver
-  const assignDriverToOrder = async (orderId: string, driverId: string | null) => {
-    setOrderError('');
-    try {
-      const token = await getToken();
-      await axios.put(`${API_URL}/api/orders/${orderId}/assign-driver`, { driver_id: driverId }, { headers: { Authorization: `Bearer ${token}` } });
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, driver_id: driverId } : o));
-      if (selectedOrder?.id === orderId) setSelectedOrder(prev => prev ? { ...prev, driver_id: driverId } : null);
-    } catch (err: any) {
-      setOrderError(err?.response?.data?.error || err?.message || 'Failed to update assignment');
-    }
-  };
-
-  // update order status
-  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
-    setOrderError('');
-    try {
-      const token = await getToken();
-      await axios.put(`${API_URL}/api/orders/${orderId}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-      if (selectedOrder?.id === orderId) setSelectedOrder(prev => prev ? { ...prev, status } : null);
-    } catch (err: any) {
-      setOrderError(err?.response?.data?.error || err?.message || 'Failed to update order status');
-    }
-  };
-
-  // close dropdown on outside click
-  useEffect(() => {
-    if (!showDriverDropdown) return;
-    const onDocClick = (ev: MouseEvent) => {
-      const dropdown = document.querySelector('.driver-dropdown');
-      const button = document.querySelector('.assign-button');
-      if (dropdown && button && !dropdown.contains(ev.target as Node) && !button.contains(ev.target as Node)) {
-        setShowDriverDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
-  }, [showDriverDropdown]);
-
-  // products fetch/update
-  const fetchProducts = useCallback(async () => {
-    setProductsLoading(true); setProductsError('');
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/products`, { headers: { Authorization: `Bearer ${token}` } });
-      setProductsList(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setProductsError(err?.response?.data?.error || err?.message || 'Failed to load products');
-    } finally { setProductsLoading(false); }
-  }, []);
-
-  useEffect(() => {
-    if (activeSection === 'ProductManagement') fetchProducts();
-  }, [activeSection, fetchProducts]);
 
   const openEditProduct = (prod: any) => {
     setEditingProduct(prod);
@@ -400,78 +209,18 @@ const AdminDashboard: React.FC = () => {
   const handleUpdateProduct = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!editingProduct) return;
-    setProductError(''); setProductSuccess('');
     try {
+      setProductImageUploading(true);
       const token = await getToken();
-      let imageUrl = editProductForm.image_url || '';
-
-      // upload image if new file selected
-      if (editProductForm.imageFile) {
-        setProductImageUploading(true);
-        try {
-          const storage = getStorage(app);
-          const imageRef = ref(storage, `products/${(editingProduct.id || editingProduct.product_id)}_${Date.now()}_${editProductForm.imageFile.name}`);
-          await uploadBytes(imageRef, editProductForm.imageFile);
-          imageUrl = await getDownloadURL(imageRef);
-        } catch (uploadErr) {
-          console.error('Image upload failed', uploadErr);
-          throw new Error('Image upload failed');
-        } finally {
-          setProductImageUploading(false);
-        }
-      }
-
-      // ensure id used is the Firestore doc id if present, fallback to product_id
-      const docId = editingProduct.id || editingProduct.product_id;
-      if (!docId) throw new Error('Missing product id');
-
-      // normalize price to number
-      const parsedPrice = Number(editProductForm.price);
-      if (isNaN(parsedPrice)) {
-        throw new Error('Price must be a valid number');
-      }
-
-      // Create a clean payload with proper types
-      const payload = {
-        name: editProductForm.name.trim(),
-        description: editProductForm.description.trim(),
-        price: parsedPrice,
-        brand: editProductForm.brand.trim(),
-        category: editProductForm.category.trim(),
-        image_url: imageUrl
-      };
-
-      console.log('Sending payload:', payload);
-
-      // Send the request
-      await axios.put(`${API_URL}/api/products/${docId}`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Update local state first
-      setProductsList(prev => prev.map(p => 
-        (p.id === docId || p.product_id === docId) ? { ...p, ...payload } : p
-      ));
-
-      setProductSuccess('Product updated successfully');
+      const payload = await handleProductUpdate(editingProduct, editProductForm, token);
+      await productsState.updateProduct(editingProduct.id || editingProduct.product_id, payload);
       closeEditProduct();
+      productsState.setSuccess('Product updated successfully!');
     } catch (err: any) {
       console.error('handleUpdateProduct error', err);
-      const errorResponse = err.response?.data;
-      let errorMessage = 'Failed to update product';
-      
-      if (typeof errorResponse === 'string') {
-        errorMessage = errorResponse;
-      } else if (errorResponse?.error) {
-        errorMessage = errorResponse.error;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setProductError(errorMessage);
+      const errorMessage = err.message || 'Failed to update product';
+      productsState.setError(errorMessage);
+    } finally {
       setProductImageUploading(false);
     }
   };
@@ -486,30 +235,30 @@ const AdminDashboard: React.FC = () => {
   };
   const handleRegisterDriver = async (e: React.FormEvent) => {
     e.preventDefault();
-    setDriverError(''); setDriverSuccess('');
     try {
-      const auth = getAuth(app);
-      const userCredential = await createUserWithEmailAndPassword(auth, driverForm.email, driverForm.password);
-      const driverUid = userCredential.user.uid;
-      const token = await auth.currentUser?.getIdToken(true);
-      if (!token) throw new Error('Authentication token required');
-      let licenseImageUrl = '';
-      if (driverForm.license_image) {
-        const storage = getStorage(app);
-        const imageRef = ref(storage, `driver-licenses/${driverUid}/${Date.now()}_${driverForm.license_image.name}`);
-        await uploadBytes(imageRef, driverForm.license_image);
-        licenseImageUrl = await getDownloadURL(imageRef);
-      }
-      await axios.post(`${API_URL}/api/drivers/register`, {
-        driver_id: driverForm.driver_id, firebase_uid: driverUid,
-        full_name: driverForm.full_name, phone_number: driverForm.phone_number,
-        user_type: 'driver', vehicle_type: driverForm.vehicle_type, vehicle_model: driverForm.vehicle_model,
-        bank_details: driverForm.bank_details, license_number: driverForm.license_number, license_image_url: licenseImageUrl
-      }, { headers: { Authorization: `Bearer ${token}` }});
-      setDriverSuccess('Driver registered successfully!');
-      setDriverForm({ driver_id: generateDriverId(), email: '', password: '', full_name: '', phone_number: '', vehicle_type: '', vehicle_model: '', bank_details: '', license_number: '', license_image: null });
+      const token = await getToken();
+      await handleDriverRegistration(
+        driverForm,
+        token,
+        () => {
+          driversState.setSuccess('Driver registered successfully!');
+          setDriverForm({ 
+            driver_id: generateDriverId(), 
+            email: '', 
+            password: '', 
+            full_name: '', 
+            phone_number: '', 
+            vehicle_type: '', 
+            vehicle_model: '', 
+            bank_details: '', 
+            license_number: '', 
+            license_image: null 
+          });
+        },
+        (error: string) => driversState.setError(error)
+      );
     } catch (err: any) {
-      setDriverError(err?.response?.data?.error || err?.message || 'Driver registration failed');
+      driversState.setError(err?.message || 'Driver registration failed');
     }
   };
 
@@ -523,59 +272,53 @@ const AdminDashboard: React.FC = () => {
   };
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProductError(''); setProductSuccess('');
+    productsState.setError('');
+    productsState.setSuccess('');
     try {
       const token = await getToken();
       let productImageUrl = '';
       
       if (productForm.image) {
         try {
-          console.log('Starting image upload');
-          const auth = getAuth(app);
-          console.log('Current user:', auth.currentUser?.uid);
-          
-          const storage = getStorage(app);
-          const imageRef = ref(storage, `products/${productForm.product_id}_${Date.now()}`);
-          console.log('Image reference created:', imageRef.fullPath);
-          
-          await uploadBytes(imageRef, productForm.image);
-          console.log('Upload successful');
-          productImageUrl = await getDownloadURL(imageRef);
+          productImageUrl = await handleProductImageUpload(productForm.image, productForm.product_id);
         } catch (uploadErr: any) {
-          console.error('Image upload failed:', uploadErr);
-          console.error('Error code:', uploadErr.code);
-          console.error('Error message:', uploadErr.message);
-          
-          // Continue without image if upload fails
-          setProductError(`Image upload failed: ${uploadErr.message}. Product will be created without an image.`);
+          productsState.setError(`Image upload failed: ${uploadErr.message}. Product will be created without an image.`);
         }
       }
 
-    await axios.post(`${API_URL}/api/products`, {
-      product_id: productForm.product_id,
-      name: productForm.name,
-      description: productForm.description,
-      price: productForm.price,
-      brand: productForm.brand,
-      category: productForm.category,
-      image_url: productImageUrl
-    }, { headers: { Authorization: `Bearer ${token}` }});
-    
-    setProductSuccess('Product added successfully!');
-    setProductForm({ product_id: generateProductId(), name: '', description: '', price: '', brand: '', category: '', image: null });
-  } catch (err: any) {
-    console.error('Product creation error:', err);
-    setProductError(err?.response?.data?.error || err?.message || 'Product creation failed');
-  }
-};
-  // promote user
-  const [promoteUid, setPromoteUid] = useState('');
-  const [promoteMsg, setPromoteMsg] = useState('');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          product_id: productForm.product_id,
+          name: productForm.name,
+          description: productForm.description,
+          price: productForm.price,
+          brand: productForm.brand,
+          category: productForm.category,
+          image_url: productImageUrl
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create product');
+      }
+      
+      productsState.setSuccess('Product added successfully!');
+      setProductForm({ product_id: generateProductId(), name: '', description: '', price: '', brand: '', category: '', image: null });
+    } catch (err: any) {
+      console.error('Product creation error:', err);
+      productsState.setError(err?.message || 'Product creation failed');
+    }
+  };
   const handlePromoteAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setPromoteMsg('');
     try {
-      await axios.post(`${API_URL}/api/auth/promote-admin`, { uid: promoteUid });
+      await adminApi.promoteToAdmin(promoteUid);
       setPromoteMsg('User promoted to admin!');
       setPromoteUid('');
     } catch (err: any) {
@@ -599,300 +342,66 @@ const AdminDashboard: React.FC = () => {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  // UseEffect to filter products based on search query
+  // UseEffect to filter products based on search query - now using hook
   useEffect(() => {
-    const query = (productSearchQuery || '').trim().toLowerCase();
-    if (!query) {
-      setFilteredProductsList(productsList);
-    } else {
-      const filtered = productsList.filter(p => 
-        (p.name && p.name.toLowerCase().includes(query)) ||
-        (p.brand && p.brand.toLowerCase().includes(query)) ||
-        ((p.id || p.product_id) && (p.id || p.product_id).toString().toLowerCase().includes(query))
-      );
-      setFilteredProductsList(filtered);
-    }
-  }, [productsList, productSearchQuery]);
+    productsState.filterByQuery(productSearchQuery);
+  }, [productSearchQuery]);
 
   // FetchDashboardStats for adminDashboard.tsx
-  const fetchDashboardStats = useCallback(async () => {
+  const fetchDashboardStats = async () => {
     if (!admin) return;
     
     try {
       const token = await getToken();
       
-      // Get stats from the backend endpoint
-      try {
-        type StatsResponse = {
-          serviceRevenue?: number;
-          orderRevenue?: number;
-          topProducts?: { name: string; count: number; revenue: number }[];
-        };
-        const { data } = await axios.get<StatsResponse>(`${API_URL}/api/admin/stats?period=${statsPeriod}`, {
-          headers: { Authorization: `Bearer ${token}` }
+      // Try to fetch from backend
+      const stats = await dashboardStatsService.fetchStats(token, statsPeriod);
+      
+      if (stats) {
+        setDashboardStats({
+          serviceRevenue: Number(stats.serviceRevenue || 0),
+          orderRevenue: Number(stats.orderRevenue || 0),
+          topProducts: Array.isArray(stats.topProducts) ? stats.topProducts : []
         });
-        
-        if (data) {
-          setDashboardStats({
-            serviceRevenue: Number(data.serviceRevenue || 0),
-            orderRevenue: Number(data.orderRevenue || 0),
-            topProducts: Array.isArray(data.topProducts) ? data.topProducts : []
-          });
-          return;
-        }
-      } catch (apiError) {
-        console.warn('Stats API not available, calculating locally', apiError);
+        return;
       }
       
       // Fallback: Calculate stats locally
       console.log('Calculating stats locally');
-      const allOrders = await fetchAllOrders();
-      
-      const daysToLookBack = statsPeriod === 'all' ? 36500 : parseInt(statsPeriod);
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - daysToLookBack);
-      
-      // Filter by date
-      const filteredOrders = allOrders.filter(order => {
-        if (!order.createdAt) return false;
-        const orderDate = order.createdAt instanceof Date 
-          ? order.createdAt 
-          : typeof order.createdAt === 'string'
-            ? new Date(order.createdAt)
-            : order.createdAt?.seconds 
-              ? new Date(order.createdAt.seconds * 1000)
-              : null;
-        return orderDate && orderDate >= cutoffDate;
-      });
-      
-      // Calculate service revenue
-      const serviceRevenue = filteredOrders.reduce((sum, order) => 
-        sum + (Number(order.serviceFee) || 0), 0);
-      
-      // Calculate order revenue (excluding service fee)
-      const orderRevenue = filteredOrders.reduce((sum, order) => 
-        sum + (Number(order.subtotal) || 0), 0);
-      
-      // Calculate top products
-      const productSales: Record<string, {name: string, count: number, revenue: number}> = {};
-      
-      filteredOrders.forEach(order => {
-        if (!order.items) return;
-        
-        order.items.forEach(item => {
-          const productId = item.productId;
-          if (!productId) return;
-          
-          const productName = item.product?.name || `Product ${productId}`;
-          const qty = Number(item.qty) || 0;
-          const itemPrice = Number(item.product?.price || 0);
-          
-          if (!productSales[productId]) {
-            productSales[productId] = {
-              name: productName,
-              count: 0,
-              revenue: 0
-            };
-          }
-          
-          productSales[productId].count += qty;
-          productSales[productId].revenue += itemPrice * qty;
-        });
-      });
-      
-      // Sort by count (quantity sold)
-      const topProducts = Object.values(productSales)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 3);
-      
-      setDashboardStats({
-        serviceRevenue,
-        orderRevenue,
-        topProducts
-      });
+      const allOrders = await ordersService.fetchAllOrders(token);
+      const calculatedStats = dashboardStatsService.calculateStatsLocally(allOrders, statsPeriod);
+      setDashboardStats(calculatedStats);
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
-      // Set default values on error
       setDashboardStats({
         serviceRevenue: 0,
         orderRevenue: 0,
         topProducts: []
       });
     }
-  }, [admin, statsPeriod]);
-
-  // Add a helper function to fetch all orders
-  const fetchAllOrders = async (): Promise<Order[]> => {
-    try {
-      const token = await getToken();
-      const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/all`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      return Array.isArray(data) ? data : [];
-    } catch (err) {
-      console.error('Error fetching all orders:', err);
-      return [];
-    }
   };
 
   useEffect(() => {
     if (activeSection === 'dashboard' && admin) fetchDashboardStats();
-  }, [activeSection, admin, fetchDashboardStats, statsPeriod]);
-
-  // fetch all drivers
-  const fetchDriversList = useCallback(async () => {
-    setDriversLoading(true);
-    setDriversError('');
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/drivers/all`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (Array.isArray(data)) {
-        setDriversList(data);
-      } else {
-        setDriversList([]);
-      }
-    } catch (err: any) {
-      console.error('Error fetching drivers:', err);
-      setDriversError(err?.response?.data?.error || err?.message || 'Failed to load drivers');
-    } finally {
-      setDriversLoading(false);
-    }
-  }, []);
-
-  // fetch orders for a driver
-  const fetchDriverOrders = useCallback(async (driverId: string) => {
-    if (!driverId) return;
-    
-    setDriverOrdersLoading(true);
-    try {
-      const token = await getToken();
-      
-      try {
-        const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/driver/${driverId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setDriverOrders(Array.isArray(data) ? data : []);
-      } catch (err: any) {
-        console.error('Error fetching driver orders:', err);
-        
-        // Fallback: If the dedicated endpoint fails, get all orders and filter client-side
-        if (err?.response?.status === 403 || err?.response?.status === 404) {
-          const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/all`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          if (Array.isArray(data)) {
-            const driverOrders = data.filter(order => order.driver_id === driverId);
-            setDriverOrders(driverOrders);
-          } else {
-            setDriverOrders([]);
-          }
-        } else {
-          setDriverOrders([]);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching driver orders:', err);
-      setDriverOrders([]);
-    } finally {
-      setDriverOrdersLoading(false);
-    }
-  }, []);
-
-  // fetch payment history for a driver
-  const [driverPaymentHistory, setDriverPaymentHistory] = useState<any[]>([]);
-  const [paymentHistoryLoading, setPaymentHistoryLoading] = useState(false);
-
-  const fetchDriverPaymentHistory = async (driverId: string) => {
-    if (!driverId) return;
-    
-    setPaymentHistoryLoading(true);
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/admin/drivers/${driverId}/payments`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setDriverPaymentHistory(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error fetching driver payment history:', err);
-      setDriverPaymentHistory([]);
-    } finally {
-      setPaymentHistoryLoading(false);
-    }
-  };
-
-  // fetch cashout requests
-  const fetchCashoutRequests = useCallback(async () => {
-    setCashoutLoading(true);
-    setCashoutError('');
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`${API_URL}/api/admin/cashouts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setCashoutList(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      console.error('Error fetching cashout requests:', err);
-      setCashoutError(err?.response?.data?.error || err?.message || 'Failed to load cashout requests');
-    } finally {
-      setCashoutLoading(false);
-    }
-  }, []);
-
-  // process a driver payment
-  const processDriverPayment = async (cashoutId: string) => {
-    if (!cashoutId) return;
-    
-    setProcessingPayment(true);
-    try {
-      const token = await getToken();
-      await axios.put(`${API_URL}/api/admin/cashouts/${cashoutId}/complete`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      // Update the local state
-      setCashoutList(prev => prev.map(c => 
-        c.id === cashoutId ? { ...c, status: 'completed', paidAt: new Date().toISOString() } : c
-      ));
-      
-      // Also refresh the drivers list to show updated payment status
-      if (activeSection === 'ManageDrivers') {
-        fetchDriversList();
-      }
-      
-      // Show success message or notification here if needed
-    } catch (err: any) {
-      console.error('Error processing payment:', err);
-      // Show error message
-    } finally {
-      setProcessingPayment(false);
-      setSelectedCashout(null);
-    }
-  };
+  }, [activeSection, admin, statsPeriod]);
 
   // fetch data when section is activated
   useEffect(() => {
     if (activeSection === 'ManageDrivers') {
-      fetchDriversList();
+      fetchDriversList(getToken);
       fetchCashoutRequests();
     }
-  }, [activeSection, fetchDriversList, fetchCashoutRequests]);
+  }, [activeSection, getToken, fetchCashoutRequests, fetchDriversList]);
 
   // fetch orders when a driver is selected
   useEffect(() => {
     if (selectedDriver) {
-      fetchDriverOrders(selectedDriver.driver_id || selectedDriver.id);
+      fetchDriverOrders(getToken, selectedDriver.driver_id || selectedDriver.id);
       
       // Also fetch payment history for this driver
-      fetchDriverPaymentHistory(selectedDriver.driver_id || selectedDriver.id);
+      fetchPaymentHistory(getToken, selectedDriver.driver_id || selectedDriver.id);
     }
-  }, [selectedDriver, fetchDriverOrders]);
+  }, [selectedDriver, fetchDriverOrders, fetchPaymentHistory, getToken]);
 
   // auth check
   useEffect(() => {
@@ -901,10 +410,9 @@ const AdminDashboard: React.FC = () => {
     const unsub = auth.onAuthStateChanged(async (user) => {
       if (!user) { navigate('/adminlogin'); return; }
       try {
-        const token = await user.getIdToken();
-        const { data } = await axios.get<AdminProfile>(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
-        if (data?.user_type !== 'admin') { navigate('/adminlogin'); return; }
-        setAdmin(data);
+        const profile = await adminApi.getAdminProfile();
+        if ((profile as any)?.user_type !== 'admin') { navigate('/adminlogin'); return; }
+        setAdmin(profile as AdminProfile);
       } catch (err) {
         navigate('/adminlogin');
       } finally { setLoading(false); }
@@ -943,8 +451,6 @@ const AdminDashboard: React.FC = () => {
             <div className="dashboard-overview">
               <div className='dashboard-overview-header'>
                 <div className='dashboard-overview-title'>Dashboard Overview</div>
-                <div className="welcome-message">User: {admin?.full_name || admin?.email}</div>
-                
                 {/* Time period filters */}
                 <div className="stats-period-filter">
                   <label>Period: </label>
@@ -978,9 +484,9 @@ const AdminDashboard: React.FC = () => {
               </div>
               
               <div className="dashboard-stats">
-                <div className="stat-card"><h3>Products</h3><p className="stat-number">{productsList.length}</p></div>
-                <div className="stat-card"><h3>Drivers</h3><p className="stat-number">{drivers.length}</p></div>
-                <div className="stat-card"><h3>Orders</h3><p className="stat-number">{orders.length}</p></div>
+                <div className="stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
+                <div className="stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
+                <div className="stat-card"><h3>Orders</h3><p className="stat-number">{ordersState.orders.length}</p></div>
                 
                 <div className="stat-card">
                   <h3>Service Revenue</h3>
@@ -1001,7 +507,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="stat-card">
                   <h3>Driver Payments</h3>
                   <p className="stat-number">
-                    R{(orders.filter(o => 
+                    R{(ordersState.orders.filter(o => 
                       (o.status === 'delivered' || o.status === 'completed') && o.driver_id
                     ).length * 40).toFixed(2)}
                   </p>
@@ -1040,8 +546,8 @@ const AdminDashboard: React.FC = () => {
                 <div className="form-group"><input name="license_number" type="text" placeholder="License Number" value={driverForm.license_number} onChange={handleDriverChange} required /></div>
                 <div className="form-group file-input-group"><label>License Image:</label><input name="license_image" type="file" accept="image/*" onChange={handleDriverImageChange} /></div>
                 <button type="submit" className="form-button">Register Driver</button>
-                {driverError && <div className="error-message">{driverError}</div>}
-                {driverSuccess && <div className="success-message">{driverSuccess}</div>}
+                {driversState.error && <div className="error-message">{driversState.error}</div>}
+                {driversState.success && <div className="success-message">{driversState.success}</div>}
               </form>
             </div>
           )}
@@ -1065,8 +571,8 @@ const AdminDashboard: React.FC = () => {
                 <div className="form-group"><input id="product_input" name="price" type="number" placeholder="Price" value={productForm.price} onChange={handleProductChange} required /></div>
                 <div className="form-group file-input-group"><label>Product Image:</label><input name="image" type="file" accept="image/*" onChange={handleProductImageChange} /></div>
                 <button type="submit" className="form-button">Add Product</button>
-                {productError && <div className="error-message">{productError}</div>}
-                {productSuccess && <div className="success-message">{productSuccess}</div>}
+                {productsState.error && <div className="error-message">{productsState.error}</div>}
+                {productsState.success && <div className="success-message">{productsState.success}</div>}
               </form>
             </div>
           )}
@@ -1090,20 +596,20 @@ const AdminDashboard: React.FC = () => {
                 <div className="orders-controls">
                   <div className="orders-filter">
                     <select value={orderStatusFilter} onChange={e => setOrderStatusFilter(e.target.value)}><option value="">All Orders</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="in transit">In Transit</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
-                    <button onClick={fetchOrders} className="refresh-button">Refresh</button>
+                    <button onClick={() => ordersState.fetchOrders(orderStatusFilter)} className="refresh-button">Refresh</button>
                   </div>
                 </div>
               </div>
 
-              {orderLoading ? <div className="loading-indicator">Loading orders...</div> :
-                orderError ? <div className="error-message">{orderError}</div> :
-                filteredOrders.length === 0 ? <div className="no-orders">{orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found'}</div> :
+              {ordersState.loading ? <div className="loading-indicator">Loading orders...</div> :
+                ordersState.error ? <div className="error-message">{ordersState.error}</div> :
+                ordersState.filteredOrders.length === 0 ? <div className="no-orders">{orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found'}</div> :
                 <div className="orders-grid"><div className="orders-list">
                   <table className="orders-table">
                     <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Rating</th><th>Actions</th></tr></thead>
                     <tbody>
-                      {filteredOrders.map(order => (
-                        <tr key={order.id} onClick={() => setSelectedOrder(order)} className={selectedOrder?.id === order.id ? 'selected' : ''}>
+                      {ordersState.filteredOrders.map((order: any) => (
+                        <tr key={order.id} onClick={() => setSelectedOrder(order as Order)} className={selectedOrder?.id === order.id ? 'selected' : ''}>
                           <td>{order.id?.substring(0,8)}...</td>
                           <td>{formatDate(order.createdAt)}</td>
                           <td>{order.userId?.substring(0,8)}...</td>
@@ -1131,7 +637,7 @@ const AdminDashboard: React.FC = () => {
                               <span>—</span>
                             )}
                           </td>
-                          <td><div className="action-buttons"><button onClick={(e)=>{e.stopPropagation(); setSelectedOrder(order);}} className="view-button">View</button></div></td>
+                          <td><div className="action-buttons"><button onClick={(e)=>{e.stopPropagation(); setSelectedOrder(order as Order);}} className="view-button">View</button></div></td>
                         </tr>
                       ))}
                     </tbody>
@@ -1160,10 +666,10 @@ const AdminDashboard: React.FC = () => {
                         <div className="current-status"><strong>Status:</strong><div className={`status-badge ${selectedOrder.status}`}>{selectedOrder.status}</div></div>
                         <div className="status-actions"><strong>Update Status:</strong>
                           <div className="status-buttons">
-                            <button onClick={() => { updateOrderStatus(selectedOrder.id,'processing'); }} className="status-btn processing">Processing</button>
-                            <button onClick={() => { updateOrderStatus(selectedOrder.id,'in transit'); }} className="status-btn shipped">In Transit</button>
-                            <button onClick={() => { updateOrderStatus(selectedOrder.id,'delivered'); }} className="status-btn delivered">Delivered</button>
-                            <button onClick={() => { updateOrderStatus(selectedOrder.id,'cancelled'); }} className="status-btn cancelled">Cancel</button>
+                            <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'processing'); }} className="status-btn processing">Processing</button>
+                            <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'in transit'); }} className="status-btn shipped">In Transit</button>
+                            <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'delivered'); }} className="status-btn delivered">Delivered</button>
+                            <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'cancelled'); }} className="status-btn cancelled">Cancel</button>
                           </div>
                         </div>
                       </div>
@@ -1177,7 +683,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="driver-info">
                           {selectedOrder.driver_id ? (
                             <>
-                              <div className="assigned-driver"><span className="driver-label">Assigned to driver:</span><span className="driver-name">{drivers.find(d => d.id === selectedOrder.driver_id)?.name || selectedOrder.driver_id}</span></div>
+                              <div className="assigned-driver"><span className="driver-label">Assigned to driver:</span><span className="driver-name">{driversState.drivers.find(d => d.id === selectedOrder.driver_id)?.name || selectedOrder.driver_id}</span></div>
                               <button onClick={() => setShowDriverDropdown(s => !s)} className="assign-button">Reassign Driver</button>
                             </>
                           ) : (
@@ -1189,11 +695,11 @@ const AdminDashboard: React.FC = () => {
 
                           {showDriverDropdown && (
                             <div className="driver-dropdown">
-                              {loadingDrivers ? <div className="dropdown-loading">Loading drivers...</div> :
-                                drivers.length === 0 ? <div className="dropdown-empty">No drivers available</div> :
+                              {driversState.loading ? <div className="dropdown-loading">Loading drivers...</div> :
+                                driversState.drivers.length === 0 ? <div className="dropdown-empty">No drivers available</div> :
                                   <div className="dropdown-list">
-                                    {selectedOrder.driver_id && <div className="dropdown-item unassign" onClick={() => { assignDriverToOrder(selectedOrder.id, null); setShowDriverDropdown(false); }}><span className="unassign-icon">❌</span> Remove Driver</div>}
-                                    {drivers.map(d => <div key={d.id} className={`dropdown-item ${selectedOrder.driver_id === d.id ? 'selected' : ''}`} onClick={() => { assignDriverToOrder(selectedOrder.id, d.id); setShowDriverDropdown(false); }}>{d.name}</div>)}
+                                    {selectedOrder.driver_id && <div className="dropdown-item unassign" onClick={() => { ordersState.assignDriver(selectedOrder.id, null); setShowDriverDropdown(false); }}><span className="unassign-icon">❌</span> Remove Driver</div>}
+                                    {driversState.drivers.map(d => <div key={d.id} className={`dropdown-item ${selectedOrder.driver_id === d.id ? 'selected' : ''}`} onClick={() => { ordersState.assignDriver(selectedOrder.id, d.id); setShowDriverDropdown(false); }}>{d.name}</div>)}
                                   </div>}
                             </div>
                           )}
@@ -1379,16 +885,16 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-              {productsLoading ? <div className="loading-indicator">Loading products...</div> :
-                productsError ? <div className="error-message">{productsError}</div> :
-                productsList.length === 0 ? <div className="no-products">No products found</div> :
-                filteredProductsList.length === 0 ? <div className="no-products">No products matching "{productSearchQuery}"</div> :
+              {productsState.loading ? <div className="loading-indicator">Loading products...</div> :
+                productsState.error ? <div className="error-message">{productsState.error}</div> :
+                productsState.products.length === 0 ? <div className="no-products">No products found</div> :
+                productsState.filteredProducts.length === 0 ? <div className="no-products">No products matching "{productSearchQuery}"</div> :
                 <div className="products-grid">
                   <div className="products-list">
                     <table className="orders-table products-table">
                       <thead><tr><th>Product ID</th><th>Image</th><th>Name</th><th>Category</th><th>Brand</th><th>Price</th><th>Actions</th></tr></thead>
                       <tbody>
-                        {filteredProductsList.map(p => (
+                        {productsState.filteredProducts.map(p => (
                           <tr key={p.id || p.product_id}>
                             <td>{(p.id || p.product_id)?.toString().substring(0,10)}...</td>
                             <td>{p.image_url ? <img src={p.image_url} alt={p.name} className="product-thumb"/> : <div className="no-thumb">—</div>}</td>
@@ -1440,8 +946,8 @@ const AdminDashboard: React.FC = () => {
                         <button type="submit" className="form-button" disabled={productImageUploading}>{productImageUploading ? 'Uploading…' : 'Save changes'}</button>
                         <button type="button" className="form-button secondary" onClick={closeEditProduct}>Cancel</button>
                       </div>
-                      {productError && <div className="error-message">{productError}</div>}
-                      {productSuccess && <div className="success-message">{productSuccess}</div>}
+                      {productsState.error && <div className="error-message">{productsState.error}</div>}
+                      {productsState.success && <div className="success-message">{productsState.success}</div>}
                     </form>
                   </div>
                 </div>
@@ -1525,7 +1031,22 @@ const AdminDashboard: React.FC = () => {
                                 {cashout.status === 'pending' ? (
                                   <button 
                                     className="pay-button"
-                                    onClick={() => processDriverPayment(cashout.id)}
+                                    onClick={async () => {
+                                      setProcessingPayment(true);
+                                      try {
+                                        const token = await getToken();
+                                        await cashoutService.processPayment(token, cashout.id);
+                                        setCashoutList(prev => prev.map(c => 
+                                          c.id === cashout.id ? { ...c, status: 'completed', paidAt: new Date().toISOString() } : c
+                                        ));
+                                        fetchDriversList(getToken);
+                                        setSelectedCashout(null);
+                                      } catch (err: any) {
+                                        console.error('Error processing payment:', err);
+                                      } finally {
+                                        setProcessingPayment(false);
+                                      }
+                                    }}
                                     disabled={processingPayment}
                                   >
                                     {processingPayment ? 'Processing...' : 'Mark as Paid'}
@@ -1562,13 +1083,13 @@ const AdminDashboard: React.FC = () => {
                       {driversList.map(driver => {
                         // Get this driver's orders 
                         const driverId = driver.driver_id || driver.id;
-                        const driverOrderCount = orders.filter(o => o.driver_id === driverId).length;
+                        const driverOrderCount = ordersState.orders.filter(o => o.driver_id === driverId).length;
                         // Only count orders with status 'delivered' or 'completed' for revenue
-                        const driverDeliveredCount = orders.filter(o => 
+                        const driverDeliveredCount = ordersState.orders.filter(o => 
                           o.driver_id === driverId && 
                           (o.status === 'delivered' || o.status === 'completed')
                         ).length;
-                        const driverAcceptedCount = orders.filter(o => 
+                        const driverAcceptedCount = ordersState.orders.filter(o => 
                           o.driver_id === driverId && 
                           (o.status === 'processing' || o.status === 'in transit' || o.status === 'delivered' || o.status === 'completed')
                         ).length;
@@ -1754,7 +1275,7 @@ const AdminDashboard: React.FC = () => {
                                         </tr>
                                       </thead>
                                       <tbody>
-                                        {order.items && order.items.map((item, idx) => (
+                                        {order.items && order.items.map((item: OrderItem, idx: number) => (
                                           <tr key={idx}>
                                             <td>
                                               <div className="item-details">
