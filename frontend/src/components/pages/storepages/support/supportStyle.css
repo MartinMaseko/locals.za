@@ -299,6 +299,21 @@
   margin: 1rem 0;
 }
 
+.team-login-link {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  color: #FFFFFF;
+  text-decoration: none;
+  cursor: pointer;
+  font-style: italic;
+  font-size: 0.75rem;
+  justify-content: center;
+}
+
+.team-login-link:focus {
+  color: #FFB803;
+}
+
 /* Pulsating animation */
 .pulsate {
   animation: pulsate 1.5s ease-out;
