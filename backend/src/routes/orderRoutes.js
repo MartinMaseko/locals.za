@@ -115,7 +115,7 @@ router.get('/all', authenticateToken, async (req, res) => {
     }
     
     // Get query parameters for filtering/pagination
-    const { status, limit = 100, offset = 0 } = req.query;
+    const { status, limit, offset = 0 } = req.query;
     
     let orders = [];
     
@@ -130,8 +130,10 @@ router.get('/all', authenticateToken, async (req, res) => {
       // Order by creation date (newest first)
       query = query.orderBy('createdAt', 'desc');
       
-      // Apply pagination
-      query = query.limit(parseInt(limit)).offset(parseInt(offset));
+      // Apply pagination only if limit is explicitly provided
+      if (limit) {
+        query = query.limit(parseInt(limit)).offset(parseInt(offset));
+      }
       
       const snapshot = await query.get();
       orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -147,14 +149,19 @@ router.get('/all', authenticateToken, async (req, res) => {
         const snapshot = await admin.firestore()
           .collection('orders')
           .orderBy('createdAt', 'desc')
-          .limit(1000) // Set a reasonable limit
           .get();
         
         // Filter in memory
-        orders = snapshot.docs
+        let filteredOrders = snapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(order => !status || order.status === status)
-          .slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+          .filter(order => !status || order.status === status);
+        
+        // Apply pagination only if limit is provided
+        if (limit) {
+          filteredOrders = filteredOrders.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+        }
+        
+        orders = filteredOrders;
       } else {
         // If it's not an index error, rethrow
         throw indexError;

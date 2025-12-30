@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../../contexts/CartContext';
 import { Analytics } from '../../../../utils/analytics';
+import { useDiscounts } from '../../dashboard/hooks/useDiscounts';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
 import InstantEftLogo from '../../../assets/images/instantEFT.webp';
+import LogoIcon from '../../../assets/logos/LZA ICON.png';
 import './cartstyle.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -54,6 +56,7 @@ const computeServiceFee = (cartItems: { product: any; qty: number }[]) => {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
+  const { customerDiscount, fetchCustomerDiscount } = useDiscounts();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [addressLine, setAddressLine] = useState('');
@@ -66,13 +69,28 @@ const CheckoutPage: React.FC = () => {
   const [addressError, setAddressError] = useState('');
   const [cityError, setCityError] = useState('');
   const [postalError, setPostalError] = useState('');
+  const [applyDiscount, setApplyDiscount] = useState(false);
 
   const subtotal = cart.reduce((s, it) => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
     return s + (isNaN(price) ? 0 : price * it.qty);
   }, 0);
   const { fee: serviceFee, type: deliveryType } = computeServiceFee(cart);
-  const total = subtotal + serviceFee;
+  
+  // Calculate discount amount to apply
+  const discountAmount = applyDiscount ? Math.min(customerDiscount.availableDiscount, subtotal) : 0;
+  const total = subtotal + serviceFee - discountAmount;
+
+  // Fetch customer discount on mount
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      fetchCustomerDiscount(user.uid);  // Pass user ID explicitly
+    } else {
+      console.log('[CheckoutPage] No user logged in');
+    }
+  }, [fetchCustomerDiscount]);
 
   // Track cart abandonment when leaving checkout
   useEffect(() => {
@@ -157,6 +175,7 @@ const CheckoutPage: React.FC = () => {
         subtotal,
         serviceFee,
         deliveryType,
+        discountApplied: discountAmount,
         total,
         deliveryAddress: { 
           name: validated.cleanName, 
@@ -251,13 +270,38 @@ const CheckoutPage: React.FC = () => {
             <div className='billing-summary'>
               <div>Subtotal: R {subtotal.toFixed(2)}</div>
               <div>Service fee: R {Number(serviceFee).toFixed(2)}</div>
+              
               <div className='money-back-summary'>
-                <button className='money-back-button'>
-                  <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
-                  Savings
-                </button>
-                <h4 className='money-back-amount'>R103.90</h4>
+                <div className='money-back-header'>
+                  <img src={LogoIcon} alt="Locals ZA Icon" className="money-back-icon" />
+                  <h3>Cash Back</h3>
+                </div>
+                <div className='money-back-header'>
+                  <button 
+                    className='money-back-button'
+                    onClick={() => setApplyDiscount(!applyDiscount)}
+                    type="button"
+                    disabled={customerDiscount.availableDiscount === 0}
+                  >
+                    <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
+                    {applyDiscount ? 'Remove' : 'Cash Back'}
+                  </button>
+                  <h4 className='money-back-amount'>R {customerDiscount.availableDiscount.toFixed(2)}</h4>
+                </div>
+                {applyDiscount && discountAmount > 0 && (
+                  <div className='discount-applied-info'>
+                    <p>✓ Applying R {discountAmount.toFixed(2)} to this order</p>
+                    <small>Earned from LocalsZA bulk procurement services</small>
+                  </div>
+                )}
               </div>
+
+              {discountAmount > 0 && (
+                <div className='discount-deduction'>
+                  Discount applied: -R {discountAmount.toFixed(2)}
+                </div>
+              )}
+              
               <div className='total-bill'><strong>Total: R {total.toFixed(2)}</strong></div>
             </div>
           </>

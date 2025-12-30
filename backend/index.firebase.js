@@ -18,6 +18,7 @@ const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const reportRoutes = require('./src/routes/reportRoutes');
 const ticketRoutes = require('./src/routes/ticketRoutes');
 const productRequestRoutes = require('./src/routes/productRequestRoutes');
+const discountRoutes = require('./src/routes/discountRoutes');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/product-requests', productRequestRoutes);
+app.use('/api/discounts', discountRoutes);
 
 // Health check
 app.get('/', (req, res) => {

@@ -99,6 +99,13 @@ app.use('/api/product-requests', productRequestRoutes);
 const paymentRoutes = require('./src/routes/paymentRoutes');
 app.use('/api/payment', paymentRoutes);
 
+// Import the discount routes for handling discounts.
+// This will handle operations like creating, updating, and retrieving discount information.
+const discountRoutes = require('./src/routes/discountRoutes');
+
+// Mount the discount router at the /api/discounts base path.
+app.use('/api/discounts', discountRoutes);
+
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 
