@@ -70,6 +70,7 @@ const CheckoutPage: React.FC = () => {
   const [cityError, setCityError] = useState('');
   const [postalError, setPostalError] = useState('');
   const [applyDiscount, setApplyDiscount] = useState(false);
+  const [discountLoading, setDiscountLoading] = useState(true);
 
   const subtotal = cart.reduce((s, it) => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
@@ -83,14 +84,44 @@ const CheckoutPage: React.FC = () => {
 
   // Fetch customer discount on mount
   useEffect(() => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (user) {
-      fetchCustomerDiscount(user.uid);  // Pass user ID explicitly
-    } else {
-      console.log('[CheckoutPage] No user logged in');
-    }
+    const loadDiscount = async () => {
+      const auth = getAuth();
+      
+      // Wait for auth to be ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const user = auth.currentUser;
+      
+      if (user) {
+        console.log('[CheckoutPage] Fetching discount for user:', user.uid);
+        setDiscountLoading(true);
+        try {
+          const result = await fetchCustomerDiscount(user.uid);
+          console.log('[CheckoutPage] Discount fetch completed, result:', result);
+          console.log('[CheckoutPage] Available discount:', result?.availableDiscount || 0);
+        } catch (error) {
+          console.error('[CheckoutPage] Error fetching discount:', error);
+        } finally {
+          setDiscountLoading(false);
+        }
+      } else {
+        console.log('[CheckoutPage] No user logged in');
+        setDiscountLoading(false);
+      }
+    };
+    
+    loadDiscount();
   }, [fetchCustomerDiscount]);
+
+  // Debug: Log discount changes
+  useEffect(() => {
+    console.log('[CheckoutPage] Customer discount state updated:', {
+      availableDiscount: customerDiscount.availableDiscount,
+      totalEarned: customerDiscount.totalEarned,
+      totalUsed: customerDiscount.totalUsed,
+      fullObject: customerDiscount
+    });
+  }, [customerDiscount]);
 
   // Track cart abandonment when leaving checkout
   useEffect(() => {
@@ -276,32 +307,51 @@ const CheckoutPage: React.FC = () => {
                   <img src={LogoIcon} alt="Locals ZA Icon" className="money-back-icon" />
                   <h3>Cash Back</h3>
                 </div>
-                <div className='money-back-header'>
-                  <button 
-                    className='money-back-button'
-                    onClick={() => setApplyDiscount(!applyDiscount)}
-                    type="button"
-                    disabled={customerDiscount.availableDiscount === 0}
-                  >
-                    <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
-                    {applyDiscount ? 'Remove' : 'Cash Back'}
-                  </button>
-                  <h4 className='money-back-amount'>R {customerDiscount.availableDiscount.toFixed(2)}</h4>
-                </div>
-                {applyDiscount && discountAmount > 0 && (
-                  <div className='discount-applied-info'>
-                    <p>✓ Applying R {discountAmount.toFixed(2)} to this order</p>
-                    <small>Earned from LocalsZA bulk procurement services</small>
+                {discountLoading ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                    <p>Loading your savings...</p>
                   </div>
+                ) : (
+                  <>
+                    <div className='money-back-header'>
+                      <button 
+                        className='money-back-button'
+                        onClick={() => {
+                          console.log('[CheckoutPage] Toggle discount, current available:', customerDiscount.availableDiscount);
+                          setApplyDiscount(!applyDiscount);
+                        }}
+                        type="button"
+                        disabled={!customerDiscount || customerDiscount.availableDiscount === 0}
+                      >
+                        <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
+                        {applyDiscount ? 'Remove' : 'Cash Back'}
+                      </button>
+                      <h4 className='money-back-amount'>
+                        R {(customerDiscount?.availableDiscount || 0).toFixed(2)}
+                      </h4>
+                    </div>
+                    {customerDiscount && customerDiscount.availableDiscount === 0 && (
+                      <div style={{ textAlign: 'center', padding: '10px', color: '#999', fontSize: '0.85rem' }}>
+                        <small>No savings available yet. Make purchases to earn cash back!</small>
+                      </div>
+                    )}
+                    {applyDiscount && discountAmount > 0 && (
+                      <div className='discount-applied-info'>
+                        <p>✓ Applying R {discountAmount.toFixed(2)} to this order</p>
+                        <small>Earned from LocalsZA bulk procurement services</small>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
+
 
               {discountAmount > 0 && (
                 <div className='discount-deduction'>
                   Discount applied: -R {discountAmount.toFixed(2)}
                 </div>
               )}
-              
+            
               <div className='total-bill'><strong>Total: R {total.toFixed(2)}</strong></div>
             </div>
           </>
