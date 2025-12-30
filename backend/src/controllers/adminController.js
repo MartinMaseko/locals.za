@@ -192,10 +192,9 @@ exports.getDriverPaymentHistory = async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
     
-    // Get all cashouts for this driver
+    // Get all cashouts for this driver (without orderBy to avoid index requirement)
     const snapshot = await admin.firestore().collection('cashouts')
       .where('driverId', '==', driverId)
-      .orderBy('createdAt', 'desc')
       .get();
     
     const payments = snapshot.docs.map(doc => ({
@@ -205,8 +204,16 @@ exports.getDriverPaymentHistory = async (req, res) => {
       createdAt: doc.data().createdAt || null,
       paidAt: doc.data().paidAt || null,
       amount: doc.data().amount || 0,
-      status: doc.data().status || 'pending'
+      status: doc.data().status || 'pending',
+      orderCount: doc.data().orderCount || 0
     }));
+    
+    // Sort by createdAt in JavaScript
+    payments.sort((a, b) => {
+      const aTime = a.createdAt?.seconds || 0;
+      const bTime = b.createdAt?.seconds || 0;
+      return bTime - aTime; // descending order
+    });
     
     res.json(payments);
   } catch (error) {
@@ -215,7 +222,7 @@ exports.getDriverPaymentHistory = async (req, res) => {
   }
 };
 
-// Get user count
+// Get user count and user list
 exports.getUserCount = async (req, res) => {
   try {
     // Check if user is admin
@@ -231,11 +238,19 @@ exports.getUserCount = async (req, res) => {
     
     // Get all users from the users collection
     const snapshot = await admin.firestore().collection('users').get();
-    const count = snapshot.size;
+    const users = snapshot.docs.map(doc => ({
+      user_id: doc.id,
+      email: doc.data().email,
+      full_name: doc.data().full_name,
+      phone_number: doc.data().phone_number,
+      user_type: doc.data().user_type,
+      created_at: doc.data().created_at
+    }));
     
     res.json({
-      count: count,
-      message: 'User count retrieved successfully'
+      count: users.length,
+      users: users,
+      message: 'User data retrieved successfully'
     });
   } catch (error) {
     console.error('Error getting user count:', error);
