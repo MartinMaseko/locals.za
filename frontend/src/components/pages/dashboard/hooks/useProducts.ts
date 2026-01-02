@@ -9,6 +9,9 @@ export const useProducts = () => {
   const [success, setSuccess] = useState('');
 
   const fetchProducts = useCallback(async () => {
+    // Skip if products are already loaded (from DashboardSection)
+    if (products.length > 0) return;
+    
     setLoading(true);
     setError('');
     try {
@@ -20,21 +23,23 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [products.length]);
 
   const createProduct = useCallback(async (product: any) => {
     setError('');
     setSuccess('');
     try {
-      await adminApi.createProduct(product);
+      const newProduct = await adminApi.createProduct(product);
+      // Optimistically update local state instead of refetching all products
+      setProducts(prev => [...prev, newProduct]);
+      setFilteredProducts(prev => [...prev, newProduct]);
       setSuccess('Product added successfully!');
-      await fetchProducts();
       return true;
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to create product');
       return false;
     }
-  }, [fetchProducts]);
+  }, []);
 
   const updateProduct = useCallback(async (productId: string, updates: any) => {
     setError('');
@@ -64,6 +69,11 @@ export const useProducts = () => {
     }
   }, []);
 
+  const deleteProduct = useCallback(async (productId: string) => {
+    setProducts(prev => prev.filter(p => p.id !== productId && p.product_id !== productId));
+    setFilteredProducts(prev => prev.filter(p => p.id !== productId && p.product_id !== productId));
+  }, []);
+
   const filterByQuery = useCallback((query: string) => {
     const q = (query || '').trim().toLowerCase();
     if (!q) {
@@ -88,6 +98,7 @@ export const useProducts = () => {
     fetchProducts,
     createProduct,
     updateProduct,
+    deleteProduct,
     filterByQuery
   };
 };

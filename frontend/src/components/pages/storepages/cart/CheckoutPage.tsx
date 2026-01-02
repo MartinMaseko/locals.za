@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../../contexts/CartContext';
 import { Analytics } from '../../../../utils/analytics';
+import { useDiscounts } from '../../dashboard/hooks/useDiscounts';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
 import InstantEftLogo from '../../../assets/images/instantEFT.webp';
+import LogoIcon from '../../../assets/logos/LZA ICON.png';
 import './cartstyle.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -54,6 +56,7 @@ const computeServiceFee = (cartItems: { product: any; qty: number }[]) => {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
+  const { fetchCustomerDiscount } = useDiscounts();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [addressLine, setAddressLine] = useState('');
@@ -66,13 +69,71 @@ const CheckoutPage: React.FC = () => {
   const [addressError, setAddressError] = useState('');
   const [cityError, setCityError] = useState('');
   const [postalError, setPostalError] = useState('');
+  const [applyDiscount, setApplyDiscount] = useState(false);
+  const [discountLoading, setDiscountLoading] = useState(true);
+  const [userDiscount, setUserDiscount] = useState({ availableDiscount: 0, totalEarned: 0, totalUsed: 0 });
+  const [authChecking, setAuthChecking] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const subtotal = cart.reduce((s, it) => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
     return s + (isNaN(price) ? 0 : price * it.qty);
   }, 0);
   const { fee: serviceFee, type: deliveryType } = computeServiceFee(cart);
-  const total = subtotal + serviceFee;
+  
+  // Calculate discount amount to apply - use local userDiscount state
+  const discountAmount = applyDiscount ? Math.min(userDiscount.availableDiscount, subtotal) : 0;
+  const total = subtotal + serviceFee - discountAmount;
+
+  // Fetch customer discount on mount - using ClientSection pattern with auth state listener
+  useEffect(() => {
+    const auth = getAuth();
+    let isMounted = true;
+    
+    const loadDiscount = async (user: any) => {
+      if (!isMounted) return;
+      
+      setCurrentUser(user);
+      setDiscountLoading(true);
+      
+      try {
+        const discount = await fetchCustomerDiscount(user.uid);
+        
+        if (!isMounted) return;
+        
+        setUserDiscount(discount as { availableDiscount: number; totalEarned: number; totalUsed: number });
+      } catch (error) {
+        if (!isMounted) return;
+        setUserDiscount({ availableDiscount: 0, totalEarned: 0, totalUsed: 0 });
+      } finally {
+        if (isMounted) {
+          setDiscountLoading(false);
+        }
+      }
+    };
+    
+    // Listen to auth state changes to ensure user is loaded
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (isMounted) {
+        setAuthChecking(false);
+      }
+      
+      if (user) {
+        loadDiscount(user);
+      } else {
+        if (isMounted) {
+          setDiscountLoading(false);
+          setCurrentUser(null);
+          navigate('/login', { state: { from: '/checkout' } });
+        }
+      }
+    });
+    
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [fetchCustomerDiscount, navigate]);
 
   // Track cart abandonment when leaving checkout
   useEffect(() => {
@@ -157,6 +218,7 @@ const CheckoutPage: React.FC = () => {
         subtotal,
         serviceFee,
         deliveryType,
+        discountApplied: discountAmount,
         total,
         deliveryAddress: { 
           name: validated.cleanName, 
@@ -235,9 +297,20 @@ const CheckoutPage: React.FC = () => {
     <div className="checkout-page">
       <h1>Checkout</h1>
 
-      <section className="checkout-items">
-        <h2>Order details</h2>
-        {cart.length === 0 ? <p>Your cart is empty.</p> : (
+      {/* Show loading state while checking auth */}
+      {authChecking ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Verifying authentication...</p>
+        </div>
+      ) : !currentUser ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Redirecting to login...</p>
+        </div>
+      ) : (
+        <>
+          <section className="checkout-items">
+            <h2>Order details</h2>
+            {cart.length === 0 ? <p>Your cart is empty.</p> : (
           <>
             <ul className='checkout-list'>
               {cart.map(it => (
@@ -251,13 +324,54 @@ const CheckoutPage: React.FC = () => {
             <div className='billing-summary'>
               <div>Subtotal: R {subtotal.toFixed(2)}</div>
               <div>Service fee: R {Number(serviceFee).toFixed(2)}</div>
+              
               <div className='money-back-summary'>
-                <button className='money-back-button'>
-                  <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
-                  Savings
-                </button>
-                <h4 className='money-back-amount'>R103.90</h4>
+                <div className='money-back-header'>
+                  <img src={LogoIcon} alt="Locals ZA Icon" className="money-back-icon" />
+                  <h3>Cash Back</h3>
+                </div>
+                {discountLoading ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                    <p>Loading your savings...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className='money-back-header'>
+                      <button 
+                        className='money-back-button'
+                        onClick={() => setApplyDiscount(!applyDiscount)}
+                        type="button"
+                        disabled={userDiscount.availableDiscount === 0}
+                      >
+                        <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
+                        {applyDiscount ? 'Remove' : 'Cash Back'}
+                      </button>
+                      <h4 className='money-back-amount'>
+                        R {userDiscount.availableDiscount.toFixed(2)}
+                      </h4>
+                    </div>
+                    {userDiscount.availableDiscount === 0 && (
+                      <div style={{ textAlign: 'center', padding: '10px', color: '#999', fontSize: '0.85rem' }}>
+                        <small>No savings available yet. Make purchases to earn cash back!</small>
+                      </div>
+                    )}
+                    {applyDiscount && discountAmount > 0 && (
+                      <div className='discount-applied-info'>
+                        <p>✓ Applying R {discountAmount.toFixed(2)} to this order</p>
+                        <small>Earned from LocalsZA bulk procurement services</small>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+
+
+              {discountAmount > 0 && (
+                <div className='discount-deduction'>
+                  Discount applied: -R {discountAmount.toFixed(2)}
+                </div>
+              )}
+            
               <div className='total-bill'><strong>Total: R {total.toFixed(2)}</strong></div>
             </div>
           </>
@@ -347,6 +461,8 @@ const CheckoutPage: React.FC = () => {
           </button>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 };
