@@ -14,9 +14,9 @@ type CartContextType = {
   clearCart: () => void;
 };
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   // Normalize legacy cart shapes from localStorage into { product, qty } items
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {

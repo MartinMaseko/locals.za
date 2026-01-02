@@ -48,7 +48,7 @@ const SECTIONS: SectionConfig[] = [
   { id: 'ManageDrivers', label: 'Manage Drivers', component: ManageDriversSection },
   { id: 'products', label: 'Add Product', component: AddProductSection },
   { id: 'ProductManagement', label: 'Manage Products', component: ProductManagementSection },
-  { id: 'admin', label: 'Promote to Admin', component: PromoteAdminSection },
+  { id: 'admin', label: 'Promote User', component: PromoteAdminSection },
   { id: 'orders', label: 'Manage Orders', component: ManageOrdersSection },
   { id: 'clients', label: 'Clients', component: ClientSection },
   { id: 'procurement', label: 'Procurement', component: ProcurementSection },

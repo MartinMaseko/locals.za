@@ -1,4 +1,5 @@
 const admin = require('../../firebase');
+const bcrypt = require('bcrypt');
 
 // Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {
@@ -88,9 +89,65 @@ exports.getDashboardStats = async (req, res) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
     
+    // Calculate driver revenue
+    let driverRevenue = 0;
+    for (const order of filteredOrders) {
+      if (order.driver_id && order.status === 'delivered') {
+        // R40 for van, R30 for light vehicle (default to R30 if not specified)
+        const deliveryFee = order.vehicleType === 'van' ? 40 : 30;
+        driverRevenue += deliveryFee;
+      }
+    }
+
+    // Calculate sales rep revenue (R10 per order from their customers)
+    const salesRepsSnapshot = await admin.firestore().collection('salesReps').get();
+    let salesRepRevenue = 0;
+    
+    for (const repDoc of salesRepsSnapshot.docs) {
+      const customersSnapshot = await admin.firestore()
+        .collection('salesReps').doc(repDoc.id)
+        .collection('customers')
+        .get();
+      
+      const customerEmails = customersSnapshot.docs.map(doc => doc.data().email);
+      
+      if (customerEmails.length > 0) {
+        // Count orders from these customers
+        for (let i = 0; i < customerEmails.length; i += 10) {
+          const batch = customerEmails.slice(i, i + 10);
+          const ordersSnapshot = await admin.firestore().collection('orders')
+            .where('email', 'in', batch)
+            .get();
+          
+          // Filter by date
+          const repOrders = ordersSnapshot.docs.filter(doc => {
+            const orderData = doc.data();
+            if (!orderData.createdAt) return false;
+            
+            let orderDate;
+            if (orderData.createdAt instanceof Date) {
+              orderDate = orderData.createdAt;
+            } else if (orderData.createdAt.seconds) {
+              orderDate = new Date(orderData.createdAt.seconds * 1000);
+            } else if (typeof orderData.createdAt === 'string') {
+              orderDate = new Date(orderData.createdAt);
+            } else {
+              return false;
+            }
+            
+            return orderDate && orderDate >= cutoffDate;
+          });
+          
+          salesRepRevenue += repOrders.length * 10; // R10 per order
+        }
+      }
+    }
+    
     res.json({
       serviceRevenue,
       orderRevenue,
+      driverRevenue,
+      salesRepRevenue,
       topProducts
     });
   } catch (error) {
@@ -254,6 +311,162 @@ exports.getUserCount = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting user count:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Promote user to sales representative
+exports.promoteToSalesRep = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Username, email, and password are required' });
+    }
+
+    // Check if username already exists
+    const usernameSnapshot = await admin.firestore().collection('salesReps')
+      .where('username', '==', username.trim())
+      .get();
+
+    if (!usernameSnapshot.empty) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+
+    // Check if email already exists
+    const emailSnapshot = await admin.firestore().collection('salesReps')
+      .where('email', '==', email.trim().toLowerCase())
+      .get();
+
+    if (!emailSnapshot.empty) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    // Hash the password using bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create sales rep profile
+    const salesRepData = {
+      username: username.trim(),
+      email: email.trim().toLowerCase(),
+      password: hashedPassword,
+      role: 'salesRep',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isActive: true
+    };
+
+    const docRef = await admin.firestore().collection('salesReps').add(salesRepData);
+
+    res.json({ 
+      success: true,
+      salesRepId: docRef.id,
+      message: 'Sales representative created successfully'
+    });
+  } catch (error) {
+    console.error('Error creating sales rep:', error);
+    res.status(500).json({ error: 'Failed to create sales representative' });
+  }
+};
+
+// Get all sales representatives
+exports.getSalesReps = async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Get all sales reps
+    const snapshot = await admin.firestore().collection('salesReps').get();
+    const salesReps = snapshot.docs.map(doc => ({
+      id: doc.id,
+      username: doc.data().username,
+      email: doc.data().email,
+      createdAt: doc.data().createdAt || null,
+      isActive: doc.data().isActive !== undefined ? doc.data().isActive : true
+    }));
+
+    // Sort by creation date (newest first)
+    salesReps.sort((a, b) => {
+      const aTime = a.createdAt?.seconds || 0;
+      const bTime = b.createdAt?.seconds || 0;
+      return bTime - aTime;
+    });
+
+    res.json(salesReps);
+  } catch (error) {
+    console.error('Error fetching sales reps:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get sales rep details with customers and revenue
+exports.getSalesRepDetails = async (req, res) => {
+  try {
+    const { salesRepId } = req.params;
+    const { uid } = req.user;
+    
+    // Verify admin
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Get sales rep info
+    const salesRepDoc = await admin.firestore().collection('salesReps').doc(salesRepId).get();
+    
+    if (!salesRepDoc.exists) {
+      return res.status(404).json({ error: 'Sales rep not found' });
+    }
+
+    const salesRepData = salesRepDoc.data();
+
+    // Get customers
+    const customersSnapshot = await admin.firestore()
+      .collection('salesReps').doc(salesRepId)
+      .collection('customers')
+      .get();
+
+    const customerEmails = customersSnapshot.docs.map(doc => doc.data().email);
+    const customers = customersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Get orders for revenue calculation
+    let totalOrders = 0;
+    if (customerEmails.length > 0) {
+      for (let i = 0; i < customerEmails.length; i += 10) {
+        const batch = customerEmails.slice(i, i + 10);
+        const ordersSnapshot = await admin.firestore().collection('orders')
+          .where('email', 'in', batch)
+          .get();
+        totalOrders += ordersSnapshot.size;
+      }
+    }
+
+    const totalRevenue = totalOrders * 10; // R10 per order
+
+    res.json({
+      id: salesRepId,
+      ...salesRepData,
+      totalCustomers: customers.length,
+      totalOrders,
+      totalRevenue,
+      customers: customers.sort((a, b) => {
+        const aTime = a.createdAt?.seconds || 0;
+        const bTime = b.createdAt?.seconds || 0;
+        return bTime - aTime;
+      })
+    });
+  } catch (error) {
+    console.error('Error fetching sales rep details:', error);
     res.status(500).json({ error: error.message });
   }
 };

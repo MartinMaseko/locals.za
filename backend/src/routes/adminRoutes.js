@@ -18,4 +18,13 @@ router.put('/cashouts/:cashoutId/complete', authenticateToken, adminController.p
 // Get driver payment history
 router.get('/drivers/:driverId/payments', authenticateToken, adminController.getDriverPaymentHistory);
 
+// Promote user to Sales Rep
+router.post('/promote-sales-rep', authenticateToken, adminController.promoteToSalesRep);
+
+// Get all sales representatives
+router.get('/sales-reps', authenticateToken, adminController.getSalesReps);
+
+// Get sales rep details
+router.get('/sales-reps/:salesRepId', authenticateToken, adminController.getSalesRepDetails);
+
 module.exports = router;

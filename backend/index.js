@@ -106,6 +106,12 @@ const discountRoutes = require('./src/routes/discountRoutes');
 // Mount the discount router at the /api/discounts base path.
 app.use('/api/discounts', discountRoutes);
 
+// Add sales routes
+const salesRoutes = require('./src/routes/salesRoutes');
+
+// Register sales routes
+app.use('/api/sales', salesRoutes);
+
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;
 
