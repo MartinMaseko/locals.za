@@ -93,61 +93,23 @@ const ClientSection = ({ ordersState, customerDetails, fetchCustomerDetails }: C
     setProfileError('');
     setProfileLoading(true);
     
-    console.log('=== CLIENT SECTION - DEBUG VIEW PROFILE ===');
-    console.log('[ClientSection] Starting profile view for userId:', userId);
-    
     try {
       if (!customerDetails[userId]) {
-        console.log('[ClientSection] Fetching customer details for:', userId);
         await fetchCustomerDetails(userId);
-      } else {
-        console.log('[ClientSection] Customer details already cached');
       }
       
-      // Fetch customer discount
-      console.log('[ClientSection] Calling fetchCustomerDiscount for userId:', userId);
       const discount = await fetchCustomerDiscount(userId);
-      console.log('[ClientSection] Discount fetch result:', discount);
-      console.log('[ClientSection] Discount breakdown:', {
-        availableDiscount: discount?.availableDiscount || 0,
-        totalEarned: discount?.totalEarned || 0,
-        totalUsed: discount?.totalUsed || 0,
-        fullObject: discount
-      });
-      
       setSelectedUserDiscount(discount as { availableDiscount: number; totalEarned: number; totalUsed: number });
-      console.log('[ClientSection] Discount state updated');
       
-      // Use allOrders (complete unfiltered list) instead of orders
       const allOrders = (ordersState as any).allOrders || ordersState.orders;
-      
-      console.log('[ClientSection] Looking for userId:', userId);
-      console.log('[ClientSection] Total orders (unfiltered):', allOrders.length);
-      
-      // Get all unique userIds
-      const uniqueUserIds = [...new Set(allOrders.map((o: Order) => o.userId))];
-      console.log('[ClientSection] Unique userIds:', uniqueUserIds.length);
-      console.log('[ClientSection] Does userId exist?', uniqueUserIds.includes(userId));
-      
-      // Match orders
       const matchedOrders = allOrders.filter((o: Order) => o.userId === userId);
-      
-      console.log(`[ClientSection] Matched ${matchedOrders.length} orders for user`);
-      console.log('=== END CLIENT SECTION DEBUG ===');
       
       setSelectedOrders(matchedOrders);
     } catch (err: any) {
-      console.error('❌ [ClientSection] Error loading user orders:', err);
-      console.error('❌ [ClientSection] Error details:', {
-        message: err?.message,
-        response: err?.response?.data,
-        stack: err?.stack
-      });
       setProfileError(err?.message || 'Failed to load user orders');
       setSelectedOrders([]);
     } finally {
       setProfileLoading(false);
-      console.log('[ClientSection] Profile loading completed');
     }
   };
 

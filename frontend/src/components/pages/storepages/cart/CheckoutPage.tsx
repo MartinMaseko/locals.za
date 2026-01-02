@@ -56,7 +56,7 @@ const computeServiceFee = (cartItems: { product: any; qty: number }[]) => {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
-  const { customerDiscount, fetchCustomerDiscount } = useDiscounts();
+  const { fetchCustomerDiscount } = useDiscounts();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [addressLine, setAddressLine] = useState('');
@@ -71,6 +71,9 @@ const CheckoutPage: React.FC = () => {
   const [postalError, setPostalError] = useState('');
   const [applyDiscount, setApplyDiscount] = useState(false);
   const [discountLoading, setDiscountLoading] = useState(true);
+  const [userDiscount, setUserDiscount] = useState({ availableDiscount: 0, totalEarned: 0, totalUsed: 0 });
+  const [authChecking, setAuthChecking] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const subtotal = cart.reduce((s, it) => {
     const price = typeof it.product.price === 'number' ? it.product.price : parseFloat(String(it.product.price || 0));
@@ -78,50 +81,59 @@ const CheckoutPage: React.FC = () => {
   }, 0);
   const { fee: serviceFee, type: deliveryType } = computeServiceFee(cart);
   
-  // Calculate discount amount to apply
-  const discountAmount = applyDiscount ? Math.min(customerDiscount.availableDiscount, subtotal) : 0;
+  // Calculate discount amount to apply - use local userDiscount state
+  const discountAmount = applyDiscount ? Math.min(userDiscount.availableDiscount, subtotal) : 0;
   const total = subtotal + serviceFee - discountAmount;
 
-  // Fetch customer discount on mount
+  // Fetch customer discount on mount - using ClientSection pattern with auth state listener
   useEffect(() => {
-    const loadDiscount = async () => {
-      const auth = getAuth();
+    const auth = getAuth();
+    let isMounted = true;
+    
+    const loadDiscount = async (user: any) => {
+      if (!isMounted) return;
       
-      // Wait for auth to be ready
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setCurrentUser(user);
+      setDiscountLoading(true);
       
-      const user = auth.currentUser;
-      
-      if (user) {
-        console.log('[CheckoutPage] Fetching discount for user:', user.uid);
-        setDiscountLoading(true);
-        try {
-          const result = await fetchCustomerDiscount(user.uid);
-          console.log('[CheckoutPage] Discount fetch completed, result:', result);
-          console.log('[CheckoutPage] Available discount:', result?.availableDiscount || 0);
-        } catch (error) {
-          console.error('[CheckoutPage] Error fetching discount:', error);
-        } finally {
+      try {
+        const discount = await fetchCustomerDiscount(user.uid);
+        
+        if (!isMounted) return;
+        
+        setUserDiscount(discount as { availableDiscount: number; totalEarned: number; totalUsed: number });
+      } catch (error) {
+        if (!isMounted) return;
+        setUserDiscount({ availableDiscount: 0, totalEarned: 0, totalUsed: 0 });
+      } finally {
+        if (isMounted) {
           setDiscountLoading(false);
         }
-      } else {
-        console.log('[CheckoutPage] No user logged in');
-        setDiscountLoading(false);
       }
     };
     
-    loadDiscount();
-  }, [fetchCustomerDiscount]);
-
-  // Debug: Log discount changes
-  useEffect(() => {
-    console.log('[CheckoutPage] Customer discount state updated:', {
-      availableDiscount: customerDiscount.availableDiscount,
-      totalEarned: customerDiscount.totalEarned,
-      totalUsed: customerDiscount.totalUsed,
-      fullObject: customerDiscount
+    // Listen to auth state changes to ensure user is loaded
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (isMounted) {
+        setAuthChecking(false);
+      }
+      
+      if (user) {
+        loadDiscount(user);
+      } else {
+        if (isMounted) {
+          setDiscountLoading(false);
+          setCurrentUser(null);
+          navigate('/login', { state: { from: '/checkout' } });
+        }
+      }
     });
-  }, [customerDiscount]);
+    
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [fetchCustomerDiscount, navigate]);
 
   // Track cart abandonment when leaving checkout
   useEffect(() => {
@@ -285,9 +297,20 @@ const CheckoutPage: React.FC = () => {
     <div className="checkout-page">
       <h1>Checkout</h1>
 
-      <section className="checkout-items">
-        <h2>Order details</h2>
-        {cart.length === 0 ? <p>Your cart is empty.</p> : (
+      {/* Show loading state while checking auth */}
+      {authChecking ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Verifying authentication...</p>
+        </div>
+      ) : !currentUser ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Redirecting to login...</p>
+        </div>
+      ) : (
+        <>
+          <section className="checkout-items">
+            <h2>Order details</h2>
+            {cart.length === 0 ? <p>Your cart is empty.</p> : (
           <>
             <ul className='checkout-list'>
               {cart.map(it => (
@@ -316,21 +339,18 @@ const CheckoutPage: React.FC = () => {
                     <div className='money-back-header'>
                       <button 
                         className='money-back-button'
-                        onClick={() => {
-                          console.log('[CheckoutPage] Toggle discount, current available:', customerDiscount.availableDiscount);
-                          setApplyDiscount(!applyDiscount);
-                        }}
+                        onClick={() => setApplyDiscount(!applyDiscount)}
                         type="button"
-                        disabled={!customerDiscount || customerDiscount.availableDiscount === 0}
+                        disabled={userDiscount.availableDiscount === 0}
                       >
                         <img src="https://img.icons8.com/color/35/wallet--v1.png" alt="Wallet Icon" />
                         {applyDiscount ? 'Remove' : 'Cash Back'}
                       </button>
                       <h4 className='money-back-amount'>
-                        R {(customerDiscount?.availableDiscount || 0).toFixed(2)}
+                        R {userDiscount.availableDiscount.toFixed(2)}
                       </h4>
                     </div>
-                    {customerDiscount && customerDiscount.availableDiscount === 0 && (
+                    {userDiscount.availableDiscount === 0 && (
                       <div style={{ textAlign: 'center', padding: '10px', color: '#999', fontSize: '0.85rem' }}>
                         <small>No savings available yet. Make purchases to earn cash back!</small>
                       </div>
@@ -441,6 +461,8 @@ const CheckoutPage: React.FC = () => {
           </button>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 };

@@ -34,6 +34,14 @@ import BuyerLayout from './components/pages/buyers/BuyerLayout';
 import BuyerPriceUpdates from './components/pages/buyers/BuyerPriceUpdates';
 import BuyerLogin from './components/pages/buyers/BuyerLogin';
 import BuyerOrders from './components/pages/buyers/BuyerOrders';
+import SalesLayout from './components/pages/sales/SalesLayout';
+import SalesLogin from './components/pages/sales/SalesLogin';
+import AddCustomer from './components/pages/sales/AddCustomer';
+import ViewCustomers from './components/pages/sales/ViewCustomers';
+import SalesRevenue from './components/pages/sales/SalesRevenue';
+import SalesShop from './components/pages/sales/SalesShop';
+import SalesCart from './components/pages/sales/SalesCart';
+import HustlePage from './components/pages/sales/HustlePage';
 
 function App() {
   return (
@@ -75,10 +83,25 @@ function App() {
                     <BuyerLayout />
                   </ProtectedRoute>
                 }>
-
                   <Route path="orders" element={<BuyerOrders />} />
                   <Route path="price-updates" element={<BuyerPriceUpdates />} />
                   <Route index element={<Navigate to="orders" replace />} />
+                </Route>
+
+                {/* Sales Rep Routes */}
+                <Route path="/sales/login" element={<SalesLogin />} />
+                <Route path="/sales" element={
+                  <ProtectedRoute redirectTo="/sales/login">
+                    <SalesLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="add-customer" element={<AddCustomer />} />
+                  <Route path="customers" element={<ViewCustomers />} />
+                  <Route path="shop" element={<SalesShop />} />
+                  <Route path="cart" element={<SalesCart />} />
+                  <Route path="revenue" element={<SalesRevenue />} />
+                  <Route path="hustle" element={<HustlePage />} />
+                  <Route index element={<Navigate to="add-customer" replace />} />
                 </Route>
                 
                 <Route path="/driversdashboard" element={<Navigate to="/driver/dashboard" replace />} />

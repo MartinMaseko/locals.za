@@ -168,7 +168,6 @@ const DashboardSection = ({
           <div className="stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
           <div className="stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
           <div className="stat-card"><h3>Orders</h3><p className="stat-number">{(ordersState.allOrders || ordersState.orders).length}</p></div>
-          
           <div className="stat-card">
             <h3>Service Revenue</h3>
             <p className="stat-number">R{dashboardStats.serviceRevenue.toFixed(2)}</p>
