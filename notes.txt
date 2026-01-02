@@ -1,0 +1,332 @@
+import { useState, useEffect } from 'react';
+import { useFetchCustomerDetails } from '../hooks/useFetch';
+import { formatDate } from '../utils/helpers';
+import type { Order } from '../types/index';
+
+interface ManageOrdersSectionProps {
+  ordersState: any;
+  driversState: any;
+}
+
+const ManageOrdersSection = ({ 
+  ordersState, 
+  driversState 
+}: ManageOrdersSectionProps) => {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderSearchQuery, setOrderSearchQuery] = useState<string>('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('');
+  const [showDriverDropdown, setShowDriverDropdown] = useState(false);
+  const { customerDetails, fetchCustomerDetails } = useFetchCustomerDetails();
+
+  useEffect(() => {
+    if (selectedOrder?.userId) {
+      fetchCustomerDetails(selectedOrder.userId);
+    }
+  }, [selectedOrder, fetchCustomerDetails]);
+
+  useEffect(() => {
+    ordersState.fetchOrders(orderStatusFilter);
+  }, [orderStatusFilter]);
+
+  useEffect(() => {
+    ordersState.filterByQuery(orderSearchQuery);
+  }, [orderSearchQuery]);
+
+  return (
+    <div className="orders-section">
+      <div className="orders-header">
+        <h2>Manage Orders</h2>
+        <div className="order-search">
+          <input 
+            type="text" 
+            placeholder="Search by Order ID" 
+            value={orderSearchQuery} 
+            onChange={e => setOrderSearchQuery(e.target.value)} 
+            className="order-search-input" 
+          />
+        </div>
+        <div className="orders-controls">
+          <div className="orders-filter">
+            <select 
+              value={orderStatusFilter} 
+              onChange={e => setOrderStatusFilter(e.target.value)}
+            >
+              <option value="">All Orders</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="in transit">In Transit</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button onClick={() => ordersState.fetchOrders(orderStatusFilter)} className="refresh-button">Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      {ordersState.loading ? <div className="loading-indicator">Loading orders...</div> :
+        ordersState.error ? <div className="error-message">{ordersState.error}</div> :
+        ordersState.filteredOrders.length === 0 ? <div className="no-orders">{orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found'}</div> :
+        <div className="orders-grid"><div className="orders-list">
+          <table className="orders-table">
+            <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Rating</th><th>Actions</th></tr></thead>
+            <tbody>
+              {ordersState.filteredOrders.map((order: any) => (
+                <tr key={order.id} onClick={() => setSelectedOrder(order as Order)} className={selectedOrder?.id === order.id ? 'selected' : ''}>
+                  <td>{order.id?.substring(0,8)}...</td>
+                  <td>{formatDate(order.createdAt)}</td>
+                  <td>{order.userId?.substring(0,8)}...</td>
+                  <td>R{Number(order.total || 0).toFixed(2)}</td>
+                  <td><div className={`status-badge ${order.status}`}>{order.status}</div></td>
+                  <td>
+                    {order.status === 'completed' ? (
+                      order.rating ? (
+                        <div className="table-rating">
+                          <div className="table-stars">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span 
+                                key={star} 
+                                className={`table-star ${star <= (order.rating || 0) ? 'filled' : ''}`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="no-table-rating">Not rated</span>
+                      )
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </td>
+                  <td><div className="action-buttons"><button onClick={(e)=>{e.stopPropagation(); setSelectedOrder(order as Order);}} className="view-button">View</button></div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div></div>
+      }
+
+      {selectedOrder && (
+        <div className="order-details-overlay" onClick={() => { setSelectedOrder(null); setShowDriverDropdown(false); }}>
+          <div className="order-details-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => { setSelectedOrder(null); setShowDriverDropdown(false); }} aria-label="Close">&times;</button>
+            <h3>Order Details</h3>
+            <div className="order-info">
+              <div className="order-header">
+                <div><strong>Order ID:</strong> {selectedOrder.id}</div>
+                <div><strong>Date:</strong> {formatDate(selectedOrder.createdAt)}</div>
+              </div>
+
+              <div className="customer-info">
+                {customerDetails[selectedOrder.userId] ? (
+                  <div className="customer-name"><strong>Customer Name:</strong> {customerDetails[selectedOrder.userId].name}</div> 
+                ) : null}
+                <div><strong>Customer ID:</strong> {selectedOrder.userId}</div>
+              </div>
+
+              <div className="status-section">
+                <div className="current-status">
+                  <strong>Status:</strong>
+                  <div className={`status-badge ${selectedOrder.status}`}>{selectedOrder.status}</div>
+                </div>
+                <div className="status-actions">
+                  <strong>Update Status:</strong>
+                  <div className="status-buttons">
+                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'processing'); }} className="status-btn processing">Processing</button>
+                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'in transit'); }} className="status-btn shipped">In Transit</button>
+                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'delivered'); }} className="status-btn delivered">Delivered</button>
+                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'cancelled'); }} className="status-btn cancelled">Cancel</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="delivery-info">
+                <strong>Delivery Address:</strong>
+                <div className="address">
+                  {selectedOrder.deliveryAddress?.street}, {selectedOrder.deliveryAddress?.city}, {selectedOrder.deliveryAddress?.postalCode}
+                </div>
+              </div>
+
+              <div className="driver-section">
+                <strong>Driver Assignment:</strong>
+                <div className="driver-info">
+                  {selectedOrder.driver_id ? (
+                    <>
+                      <div className="assigned-driver">
+                        <span className="driver-label">Assigned to driver:</span>
+                        <span className="driver-name">
+                          {driversState.drivers.find((d: any) => d.id === selectedOrder.driver_id)?.name || selectedOrder.driver_id}
+                        </span>
+                      </div>
+                      <button onClick={() => setShowDriverDropdown(s => !s)} className="assign-button">Reassign Driver</button>
+                    </>
+                  ) : (
+                    <>
+                      <div>No driver assigned</div>
+                      <button onClick={() => setShowDriverDropdown(s => !s)} className="assign-button">Assign Driver</button>
+                    </>
+                  )}
+
+                  {showDriverDropdown && (
+                    <div className="driver-dropdown">
+                      {driversState.loading ? (
+                        <div className="dropdown-loading">Loading drivers...</div>
+                      ) : driversState.drivers.length === 0 ? (
+                        <div className="dropdown-empty">No drivers available</div>
+                      ) : (
+                        <div className="dropdown-list">
+                          {selectedOrder.driver_id && (
+                            <div 
+                              className="dropdown-item unassign" 
+                              onClick={() => { 
+                                ordersState.assignDriver(selectedOrder.id, null); 
+                                setShowDriverDropdown(false); 
+                              }}
+                            >
+                              <span className="unassign-icon">❌</span> Remove Driver
+                            </div>
+                          )}
+                          {driversState.drivers.map((d: any) => (
+                            <div 
+                              key={d.id} 
+                              className={`dropdown-item ${selectedOrder.driver_id === d.id ? 'selected' : ''}`} 
+                              onClick={() => { 
+                                ordersState.assignDriver(selectedOrder.id, d.id); 
+                                setShowDriverDropdown(false); 
+                              }}
+                            >
+                              {d.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="items-section">
+                <strong>Order Items:</strong>
+                <table className="items-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Qty</th>
+                      <th>Price</th>
+                      <th>Status</th> 
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.items.map((it, idx) => {
+                      const missingItem = selectedOrder.missingItems?.find(
+                        (mi: any) => mi.productId === it.productId
+                      );
+                      const isFullyAvailable = !missingItem;
+                      const isPartiallyAvailable = missingItem && typeof missingItem.missingQuantity === 'number' && missingItem.missingQuantity < it.qty;
+                      
+                      return (
+                        <tr key={idx} className={isFullyAvailable ? '' : 'missing-item-row'}>
+                          <td>{it.product?.name || `Product ${it.productId}`}</td>
+                          <td>
+                            {it.qty}
+                            {isPartiallyAvailable && typeof missingItem?.missingQuantity === 'number' && (
+                              <span className="available-qty-note">
+                                ({it.qty - missingItem.missingQuantity} available)
+                              </span>
+                            )}
+                          </td>
+                          <td>{it.product?.price ? `R${(it.product.price * it.qty).toFixed(2)}` : 'N/A'}</td>
+                          <td className="item-status-cell">
+                            {isFullyAvailable ? (
+                              <span className="item-status available">Available</span>
+                            ) : isPartiallyAvailable ? (
+                              <span className="item-status partial">
+                                Partially Available
+                                <div className="item-status-tooltip">
+                                  {missingItem.missingQuantity} out of {it.qty} missing
+                                  <br/>
+                                  Reason: {missingItem.reason}
+                                </div>
+                              </span>
+                            ) : (
+                              <span className="item-status missing">
+                                Not Available
+                                <div className="item-status-tooltip">
+                                  Reason: {missingItem.reason}
+                                </div>
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={2}>Subtotal</td>
+                      <td colSpan={2}>R{Number(selectedOrder.subtotal).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>Service Fee</td>
+                      <td colSpan={2}>R{Number(selectedOrder.serviceFee).toFixed(2)}</td>
+                    </tr>
+                    {(selectedOrder.refundAmount || 0) > 0 && (
+                      <tr className="refund-row">
+                        <td colSpan={2}>Refund for Missing Items</td>
+                        <td colSpan={2} className="refund-amount">-R{Number(selectedOrder.refundAmount).toFixed(2)}</td>
+                      </tr>
+                    )}
+                    <tr className="total-row">
+                      <td colSpan={2}>Total</td>
+                      <td colSpan={2}>
+                        R{Number(selectedOrder.adjustedTotal || selectedOrder.total).toFixed(2)} 
+                        {selectedOrder.adjustedTotal && selectedOrder.adjustedTotal !== selectedOrder.total && (
+                          <span className="original-price">
+                            <br/> was R{Number(selectedOrder.total).toFixed(2)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+                
+                {selectedOrder.missingItems && selectedOrder.missingItems.length > 0 && (
+                  <div className="missing-items-summary">
+                    <h4>Missing Items Summary</h4>
+                    <div className="missing-items-info">
+                      <p><span className="info-label">Items Affected:</span> <span className="info-value">{selectedOrder.missingItems.length}</span></p>
+                      <p><span className="info-label">Refund Amount:</span> <span className="info-value">R{Number(selectedOrder.refundAmount || 0).toFixed(2)}</span></p>
+                      <p><span className="info-label">Refund Status:</span> <span className={`info-value refund-status-${selectedOrder.refundStatus || 'pending'}`}>{(selectedOrder.refundStatus || 'pending').toUpperCase()}</span></p>
+                      {selectedOrder.driverNote && (<p><span className="info-label">Driver Note:</span> <span className="info-value driver-note">{selectedOrder.driverNote}</span></p>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {selectedOrder?.status === 'completed' && (
+                <div className="rating-section">
+                  <strong>Customer Rating:</strong>
+                  {selectedOrder.rating ? (
+                    <div className="order-rating">
+                      <div className="rating-stars">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={`admin-star ${star <= (selectedOrder.rating || 0) ? 'filled' : ''}`}>★</span>
+                        ))}
+                        <span className="rating-value">{selectedOrder.rating}/5</span>
+                      </div>
+                      {selectedOrder.ratingComment && (<div className="rating-comment">"{selectedOrder.ratingComment}"</div>)}
+                    </div>
+                  ) : (
+                    <div className="no-rating">Customer has not rated this order yet</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ManageOrdersSection;

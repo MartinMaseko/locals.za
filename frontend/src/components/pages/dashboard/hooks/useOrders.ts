@@ -25,6 +25,7 @@ interface Order {
 }
 
 export const useOrders = () => {
+  const [allOrders, setAllOrders] = useState<Order[]>([]); // ← NEW: Store all orders
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,8 +36,11 @@ export const useOrders = () => {
     setError('');
     try {
       const data = await adminApi.getOrders(status);
-      setOrders(data);
-      setFilteredOrders(data);
+      setAllOrders(data); // Always store complete list in allOrders
+      
+      const filtered = status ? data.filter(o => o.status === status) : data;
+      setOrders(data); // Keep full list here too
+      setFilteredOrders(filtered);
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
     } finally {
@@ -82,6 +86,7 @@ export const useOrders = () => {
   }, [orders]);
 
   return {
+    allOrders, // ← NEW: Expose complete unfiltered list
     orders,
     filteredOrders,
     loading,

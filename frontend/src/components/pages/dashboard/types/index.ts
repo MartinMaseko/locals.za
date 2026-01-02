@@ -82,6 +82,8 @@ export interface DashboardStats {
 export type StatsResponse = {
   serviceRevenue?: number;
   orderRevenue?: number;
+  driverRevenue?: number;
+  salesRepRevenue?: number;
   topProducts?: Array<{ name: string; count: number; revenue: number }>;
 };
 

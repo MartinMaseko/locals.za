@@ -60,6 +60,29 @@ export const adminApi = {
     return data;
   },
 
+  promoteToSalesRep: async (username: string, email: string, password: string) => {
+    const token = await getToken();
+    return axios.post(`${API_URL}/api/admin/promote-sales-rep`, { username, email, password }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  },
+
+  getSalesReps: async () => {
+    const token = await getToken();
+    const { data } = await axios.get(`${API_URL}/api/admin/sales-reps`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return Array.isArray(data) ? data : [];
+  },
+
+  getSalesRepDetails: async (salesRepId: string) => {
+    const token = await getToken();
+    const { data } = await axios.get(`${API_URL}/api/admin/sales-reps/${salesRepId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return data;
+  },
+
   // Orders
   getOrders: async (status?: string) => {
     const token = await getToken();
