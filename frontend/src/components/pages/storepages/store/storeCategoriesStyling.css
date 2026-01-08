@@ -1,6 +1,11 @@
 .store-categories-container {
-  margin: 0 auto;
+  margin: 0;
   padding: 1rem;
+  max-width: 100vw;
+  min-height: calc(100vh - 64px);
+  box-sizing: border-box;
+  align-items: stretch;
+  max-width: 100vw;
 }
 
 .categories-header {
