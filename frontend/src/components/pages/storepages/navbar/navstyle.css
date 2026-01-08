@@ -120,6 +120,7 @@
 @media (min-width: 992px) {
   .navbar {
     padding: 1rem 0;
+    height: 60px;
   }
 
   .navbar-fullscreen-dropdown {

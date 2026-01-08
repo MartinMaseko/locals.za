@@ -114,8 +114,7 @@
 .homepage-searchbar {
   position: relative;
   width: 100%;
-  min-width: 100vw;
-  max-width: 1200px;          
+  min-width: 100vw;         
   padding: 1rem 1rem;
   background: #454E50;
   box-sizing: border-box;
@@ -326,6 +325,10 @@
     gap: 0.5rem;
   }
 
+  .homepage-searchbar {
+    padding: 0.5rem 1rem;
+  }
+
   .homepage-search-input{
     max-width: 600px;
   }
@@ -335,9 +338,6 @@
   }
 
   .homepage-appbanner {
-    width: 100%;
-    object-fit: cover;
-    height: auto;
-    max-height: 500px;
+    display: none;
   }
 }
