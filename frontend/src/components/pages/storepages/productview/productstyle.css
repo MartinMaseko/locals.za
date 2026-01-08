@@ -249,9 +249,18 @@
   } 
 
   .product-card {
-    width: 250px;
-    min-height: 350px;
+    width: 200px;
+    min-height: 270px;
+    max-height: 270px;
     flex-direction: column;
+  }
+
+  .product-card-name {
+    font-size: 0.6rem;
+  }
+
+  .product-card-price {
+    font-size: 1rem;
   }
 
   .product-detail-page {
