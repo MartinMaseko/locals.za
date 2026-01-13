@@ -284,4 +284,11 @@
     gap: 1rem;
     /* grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); */
   }
+
+  .related-products-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
 }

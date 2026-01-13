@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { dashboardStatsService } from '../services/dashboardStatsService';
+import { filterOrdersForCalculations } from '../utils/orderStatusUtils';
 
 interface DashboardSectionProps {
   admin: any;
@@ -114,7 +115,12 @@ const DashboardSection = ({
       }
       
       console.log('Calculating stats locally');
-      const calculatedStats = dashboardStatsService.calculateStatsLocally(ordersState.allOrders || ordersState.orders, statsPeriod);
+      // Use filtered orders for local calculations
+      const allOrders = ordersState.allOrders || ordersState.orders;
+      const validOrders = Array.isArray(allOrders) ? allOrders.filter((order: any) => 
+        order && order.status && !['cancelled', 'refunded', 'failed'].includes(order.status.toLowerCase())
+      ) : [];
+      const calculatedStats = dashboardStatsService.calculateStatsLocally(validOrders, statsPeriod);
       setDashboardStats(calculatedStats);
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
@@ -167,7 +173,11 @@ const DashboardSection = ({
         <div className="dashboard-stats">
           <div className="stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
           <div className="stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
-          <div className="stat-card"><h3>Orders</h3><p className="stat-number">{(ordersState.allOrders || ordersState.orders).length}</p></div>
+          <div className="stat-card"><h3>Orders</h3>
+            <p className="stat-number">
+              {filterOrdersForCalculations(ordersState.allOrders || ordersState.orders).length}
+            </p>
+          </div>
           <div className="stat-card">
             <h3>Service Revenue</h3>
             <p className="stat-number">R{dashboardStats.serviceRevenue.toFixed(2)}</p>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useFetchCustomerDetails } from '../hooks/useFetch';
 import { formatDate } from '../utils/helpers';
+import { filterOrdersForCalculations } from '../utils/orderStatusUtils';
 import type { Order, OrderItem } from '../types/index';
 
 interface ManageOrdersSectionProps {
@@ -59,12 +60,11 @@ const ManageOrdersSection = ({
               value={orderStatusFilter} 
               onChange={e => setOrderStatusFilter(e.target.value)}
             >
-              <option value="">All Orders</option>
+              <option value="">All Valid Orders</option>
               <option value="pending">Pending</option>
               <option value="processing">Processing</option>
               <option value="in transit">In Transit</option>
               <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
             </select>
             <button onClick={() => ordersState.fetchOrders(orderStatusFilter)} className="refresh-button">Refresh</button>
           </div>
@@ -160,13 +160,22 @@ const ManageOrdersSection = ({
                   <div className={`status-badge ${selectedOrder.status}`}>{selectedOrder.status}</div>
                 </div>
                 <div className="status-actions">
-                  <strong>Update Status:</strong>
-                  <div className="status-buttons">
-                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'processing'); }} className="status-btn processing">Processing</button>
-                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'in transit'); }} className="status-btn shipped">In Transit</button>
-                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'delivered'); }} className="status-btn delivered">Delivered</button>
-                    <button onClick={() => { ordersState.updateStatus(selectedOrder.id,'cancelled'); }} className="status-btn cancelled">Cancel</button>
-                  </div>
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => ordersState.updateStatus(selectedOrder.id, e.target.value)}
+                    className="status-select"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="in transit">In Transit</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <button 
+                    className="update-status-btn"
+                    onClick={() => ordersState.updateStatus(selectedOrder.id, selectedOrder.status)}
+                  >
+                    Update Status
+                  </button>
                 </div>
               </div>
 
@@ -372,13 +381,14 @@ const ManageOrdersSection = ({
               <div className="stat-box">
                 <h4>Total Orders</h4>
                 <p className="stat-number">
-                  {(ordersState.allOrders || ordersState.orders).filter((o: any) => o.userId === selectedCustomerProfile).length}
+                  {filterOrdersForCalculations((ordersState.allOrders || ordersState.orders))
+                    .filter((o: any) => o.userId === selectedCustomerProfile).length}
                 </p>
               </div>
               <div className="stat-box">
                 <h4>Total Spent</h4>
                 <p className="stat-number">
-                  R{(ordersState.allOrders || ordersState.orders)
+                  R{filterOrdersForCalculations((ordersState.allOrders || ordersState.orders))
                     .filter((o: any) => o.userId === selectedCustomerProfile)
                     .reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
                     .toFixed(2)}
@@ -388,7 +398,8 @@ const ManageOrdersSection = ({
                 <h4>Avg Order Value</h4>
                 <p className="stat-number">
                   R{(() => {
-                    const customerOrders = (ordersState.allOrders || ordersState.orders).filter((o: any) => o.userId === selectedCustomerProfile);
+                    const customerOrders = filterOrdersForCalculations((ordersState.allOrders || ordersState.orders))
+                      .filter((o: any) => o.userId === selectedCustomerProfile);
                     const totalSpent = customerOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
                     return customerOrders.length > 0 ? (totalSpent / customerOrders.length).toFixed(2) : '0.00';
                   })()}
@@ -400,7 +411,8 @@ const ManageOrdersSection = ({
               <h4>Top Products Purchased</h4>
               <div className="top-products-list">
                 {(() => {
-                  const customerOrders = (ordersState.allOrders || ordersState.orders).filter((o: any) => o.userId === selectedCustomerProfile);
+                  const customerOrders = filterOrdersForCalculations((ordersState.allOrders || ordersState.orders))
+                    .filter((o: any) => o.userId === selectedCustomerProfile);
                   const productsMap: { [key: string]: { name: string; qty: number; spent: number } } = {};
                   
                   customerOrders.forEach((order: any) => {
@@ -441,9 +453,10 @@ const ManageOrdersSection = ({
             </div>
 
             <div className="customer-orders-section">
-              <h4>Order History ({(ordersState.allOrders || ordersState.orders).filter((o: any) => o.userId === selectedCustomerProfile).length} orders)</h4>
+              <h4>Order History ({filterOrdersForCalculations((ordersState.allOrders || ordersState.orders))
+                .filter((o: any) => o.userId === selectedCustomerProfile).length} orders)</h4>
               <div className="driver-orders-accordion">
-                {(ordersState.allOrders || ordersState.orders)
+                {filterOrdersForCalculations((ordersState.allOrders || ordersState.orders))
                   .filter((o: any) => o.userId === selectedCustomerProfile)
                   .sort((a: any, b: any) => {
                     const aDate = a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.createdAt);

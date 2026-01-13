@@ -1955,12 +1955,12 @@
   color: #ffb803;
 }
 
-.summary-value {
+.summary-values {
   font-size: 20px;
   font-weight: 700;
   margin: 3px 0;
   white-space: nowrap;
-  color: #28a745;
+  color: #FFFFFF;
 }
 
 .summary-label {
