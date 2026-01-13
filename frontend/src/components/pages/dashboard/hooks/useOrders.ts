@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { adminApi } from '../services/adminApi';
+import { filterOrdersForCalculations } from '../utils/orderStatusUtils';
 
 interface Order {
   id: string;
@@ -25,22 +26,34 @@ interface Order {
 }
 
 export const useOrders = () => {
-  const [allOrders, setAllOrders] = useState<Order[]>([]); // ← NEW: Store all orders
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchOrders = useCallback(async (status?: string) => {
+  const fetchOrders = useCallback(async (statusFilter = '') => {
     setLoading(true);
     setError('');
     try {
-      const data = await adminApi.getOrders(status);
-      setAllOrders(data); // Always store complete list in allOrders
+      const data = await adminApi.getOrders();
       
-      const filtered = status ? data.filter(o => o.status === status) : data;
-      setOrders(data); // Keep full list here too
-      setFilteredOrders(filtered);
+      // Filter out invalid statuses (pending_payment and cancelled)
+      const validOrders = filterOrdersForCalculations(data);
+      
+      setAllOrders(validOrders);
+      
+      // Apply status filter if provided
+      if (statusFilter) {
+        const filtered = validOrders.filter(order => 
+          order.status && order.status.toLowerCase() === statusFilter.toLowerCase()
+        );
+        setOrders(filtered);
+        setFilteredOrders(filtered);
+      } else {
+        setOrders(validOrders);
+        setFilteredOrders(validOrders);
+      }
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
     } finally {
@@ -85,9 +98,13 @@ export const useOrders = () => {
     }
   }, [orders]);
 
+  const validOrders = useMemo(() => {
+    return filterOrdersForCalculations(allOrders);
+  }, [allOrders]);
+  
   return {
-    allOrders, // ← NEW: Expose complete unfiltered list
-    orders,
+    orders: validOrders, // Return filtered orders
+    allOrders, // Return all orders
     filteredOrders,
     loading,
     error,

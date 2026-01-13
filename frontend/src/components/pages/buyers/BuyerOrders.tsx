@@ -4,6 +4,7 @@ import { app } from '../../../Auth/firebaseClient';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import './buyerStyles.css';
+import { filterOrdersForBuyers } from '../dashboard/utils/orderStatusUtils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,12 +77,17 @@ const BuyerOrders = () => {
       });
 
       if (Array.isArray(data)) {
+        // Use the utility function to filter for buyer-visible orders (only "processing")
+        const buyerVisibleOrders = filterOrdersForBuyers(data);
+
         // Sort by date descending
-        const sortedOrders = data.sort((a, b) => {
+        const sortedOrders = buyerVisibleOrders.sort((a, b) => {
           const dateA = formatDateForSort(a.createdAt);
           const dateB = formatDateForSort(b.createdAt);
           return dateB.getTime() - dateA.getTime();
         });
+        
+        console.log('Processing orders for buyers:', sortedOrders.length);
         setOrders(sortedOrders);
         aggregateItemsByDay(sortedOrders);
       } else {

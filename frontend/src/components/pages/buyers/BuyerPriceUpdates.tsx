@@ -7,7 +7,7 @@ import './buyerStyles.css';
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Profit markup percentage
-const PROFIT_MARKUP = 0.025; // 2.5%(2% payfast/ 0.5% localsZA)
+const PROFIT_MARKUP = 0.0325; // 3.25%(2% payfast/ 0.8% localsZA + VAT%)
 
 interface Product {
   id: string;
@@ -208,7 +208,7 @@ const BuyerPriceUpdates = () => {
       <div className="buyer-section">
         <h2>Update Product Prices</h2>
         <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '16px' }}>
-          💡 Note: A 2.5% profit markup will be automatically added to all prices
+          💡 Note: A 3.25% profit markup will be automatically added to all prices
         </p>
 
         <div className="search-container">
