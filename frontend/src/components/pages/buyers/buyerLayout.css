@@ -70,13 +70,6 @@
   background-color: #e9a800;
 }
 
-/* Responsive Layout */
-@media (max-width: 768px) {
-  .buyer-layout-content {
-    padding: 15px;
-  }
-}
-
 .buyer-logo {
   width: 50px;
   margin-bottom: 20px;

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { filterOrdersForCalculations } from '../utils/orderStatusUtils';
 import type { Order, StatsResponse } from '../types/index';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -87,6 +88,20 @@ export const dashboardStatsService = {
       serviceRevenue,
       orderRevenue,
       topProducts
+    };
+  },
+
+  /**
+   * Calculate dashboard stats
+   */
+  calculateDashboardStats: (orders: Order[]) => {
+    // Filter orders before any calculations
+    const validOrders = filterOrdersForCalculations(orders);
+    
+    return {
+      totalRevenue: validOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+      totalOrders: validOrders.length,
+      // ... other calculations using validOrders
     };
   }
 };
