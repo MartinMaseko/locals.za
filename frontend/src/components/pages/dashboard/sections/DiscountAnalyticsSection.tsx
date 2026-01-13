@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { discountService } from '../services/discountService';
 
 interface DiscountAnalytics {
@@ -24,6 +24,38 @@ const DiscountAnalyticsSection = () => {
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
 
+  // Calculate summary from topProducts data
+  const calculatedSummary = useMemo(() => {
+    if (!analytics?.topProducts || analytics.topProducts.length === 0) {
+      return {
+        totalBusinessProfit: 0,
+        totalCustomerDiscounts: 0,
+        totalDiscounts: 0,
+        totalOrders: 0
+      };
+    }
+
+    const summary = analytics.topProducts.reduce((acc, product) => {
+      acc.totalBusinessProfit += product.businessProfit;
+      acc.totalCustomerDiscounts += product.customerDiscount;
+      acc.totalDiscounts += product.totalDiscount;
+      acc.totalOrders += product.occurrences;
+      return acc;
+    }, {
+      totalBusinessProfit: 0,
+      totalCustomerDiscounts: 0,
+      totalDiscounts: 0,
+      totalOrders: 0
+    });
+
+    return summary;
+  }, [analytics?.topProducts]);
+
+  // Use calculated summary if analytics.summary doesn't have data
+  const displaySummary = (analytics?.summary && analytics.summary.totalDiscounts > 0)
+    ? analytics.summary 
+    : calculatedSummary;
+
   useEffect(() => {
     fetchAnalytics();
   }, []);
@@ -36,6 +68,7 @@ const DiscountAnalyticsSection = () => {
         dateRange.startDate || undefined,
         dateRange.endDate || undefined
       );
+      console.log('Analytics data received:', data); // Debug log
       setAnalytics(data as DiscountAnalytics);
     } catch (err: any) {
       setError(err.message || 'Failed to load analytics');
@@ -96,16 +129,16 @@ const DiscountAnalyticsSection = () => {
       <div className="analytics-summary">
         <div className="summary-card business-revenue">
           <div className="card-content">
-            <h3>Business Revenue (25%)</h3>
-            <p className="summary-value">R{analytics.summary.totalBusinessProfit.toFixed(2)}</p>
+            <h3>Business Revenue</h3>
+            <p className="summary-values">R{displaySummary.totalBusinessProfit.toFixed(2)}</p>
             <span className="summary-label">Total profit from discounts</span>
           </div>
         </div>
 
         <div className="summary-card customer-savings">
           <div className="card-content">
-            <h3>Customer Savings (75%)</h3>
-            <p className="summary-value">R{analytics.summary.totalCustomerDiscounts.toFixed(2)}</p>
+            <h3>Customer Savings</h3>
+            <p className="summary-values">R{displaySummary.totalCustomerDiscounts.toFixed(2)}</p>
             <span className="summary-label">Total savings distributed</span>
           </div>
         </div>
@@ -113,7 +146,7 @@ const DiscountAnalyticsSection = () => {
         <div className="summary-card total-discounts">
           <div className="card-content">
             <h3>Total Discounts</h3>
-            <p className="summary-value">R{analytics.summary.totalDiscounts.toFixed(2)}</p>
+            <p className="summary-values">R{displaySummary.totalDiscounts.toFixed(2)}</p>
             <span className="summary-label">Total procurement savings</span>
           </div>
         </div>
@@ -121,7 +154,7 @@ const DiscountAnalyticsSection = () => {
         <div className="summary-card discount-orders">
           <div className="card-content">
             <h3>Discounted Products</h3>
-            <p className="summary-value">{analytics.summary.totalOrders}</p>
+            <p className="summary-values">{displaySummary.totalOrders}</p>
             <span className="summary-label">Products with discounts</span>
           </div>
         </div>
@@ -129,30 +162,34 @@ const DiscountAnalyticsSection = () => {
 
       <div className="top-products-section">
         <h3>Top 10 Products by Business Revenue</h3>
-        <table className="analytics-table">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Total Discount</th>
-              <th>Business Revenue</th>
-              <th>Customer Savings</th>
-              <th>Occurrences</th>
-              <th>Avg Discount/Order</th>
-            </tr>
-          </thead>
-          <tbody>
-            {analytics.topProducts.map((product) => (
-              <tr key={product.productId}>
-                <td>{product.productName || product.productId}</td>
-                <td>R{product.totalDiscount.toFixed(2)}</td>
-                <td className="business-profit">R{product.businessProfit.toFixed(2)}</td>
-                <td className="customer-discount">R{product.customerDiscount.toFixed(2)}</td>
-                <td>{product.occurrences}</td>
-                <td>R{(product.totalDiscount / product.occurrences).toFixed(2)}</td>
+        {analytics.topProducts && analytics.topProducts.length > 0 ? (
+          <table className="analytics-table">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Total Discount</th>
+                <th>Business Revenue</th>
+                <th>Customer Savings</th>
+                <th>Occurrences</th>
+                <th>Avg Discount/Order</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {analytics.topProducts.map((product) => (
+                <tr key={product.productId}>
+                  <td>{product.productName || product.productId}</td>
+                  <td>R{product.totalDiscount.toFixed(2)}</td>
+                  <td className="business-profit">R{product.businessProfit.toFixed(2)}</td>
+                  <td className="customer-discount">R{product.customerDiscount.toFixed(2)}</td>
+                  <td>{product.occurrences}</td>
+                  <td>R{(product.totalDiscount / product.occurrences).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="no-data">No product data available</div>
+        )}
       </div>
 
       <div className="analytics-insights">
@@ -161,8 +198,8 @@ const DiscountAnalyticsSection = () => {
           <div className="insight-card">
             <h4>Profit Margin</h4>
             <p className="insight-value">
-              {analytics.summary.totalDiscounts > 0
-                ? ((analytics.summary.totalBusinessProfit / analytics.summary.totalDiscounts) * 100).toFixed(1)
+              {displaySummary.totalDiscounts > 0
+                ? ((displaySummary.totalBusinessProfit / displaySummary.totalDiscounts) * 100).toFixed(1)
                 : 0}%
             </p>
             <span className="insight-label">Business share of savings</span>
@@ -170,8 +207,8 @@ const DiscountAnalyticsSection = () => {
           <div className="insight-card">
             <h4>Customer Value</h4>
             <p className="insight-value">
-              {analytics.summary.totalDiscounts > 0
-                ? ((analytics.summary.totalCustomerDiscounts / analytics.summary.totalDiscounts) * 100).toFixed(1)
+              {displaySummary.totalDiscounts > 0
+                ? ((displaySummary.totalCustomerDiscounts / displaySummary.totalDiscounts) * 100).toFixed(1)
                 : 0}%
             </p>
             <span className="insight-label">Customer share of savings</span>
@@ -179,8 +216,8 @@ const DiscountAnalyticsSection = () => {
           <div className="insight-card">
             <h4>Avg Discount per Product</h4>
             <p className="insight-value">
-              R{analytics.summary.totalOrders > 0
-                ? (analytics.summary.totalDiscounts / analytics.summary.totalOrders).toFixed(2)
+              R{displaySummary.totalOrders > 0
+                ? (displaySummary.totalDiscounts / displaySummary.totalOrders).toFixed(2)
                 : '0.00'}
             </p>
             <span className="insight-label">Average savings per product</span>

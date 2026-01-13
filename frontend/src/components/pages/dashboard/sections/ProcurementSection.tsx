@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatDate } from '../utils/helpers';
 import { useDiscounts } from '../hooks/useDiscounts';
+// Update this import to include the new function
+import { filterOrdersForProcurement } from '../utils/orderStatusUtils';
 import type { OrderItem } from '../types/index';
 
 interface ProcurementSectionProps {
@@ -28,11 +30,17 @@ const ProcurementSection = ({ ordersState }: ProcurementSectionProps) => {
   const [savingDiscounts, setSavingDiscounts] = useState<Record<string, boolean>>({});
   const { savePaidPrice, fetchDiscountsByDate, discountsByDate } = useDiscounts();
 
+  // Filter orders for procurement - only processing orders:
+  const processingOrders = useMemo(() => {
+    return filterOrdersForProcurement(ordersState.allOrders || ordersState.orders);
+  }, [ordersState.orders, ordersState.allOrders]);
+
   // Group orders by date and aggregate products
   const groupOrdersByDate = (): DateGroup[] => {
     const dateGroups: { [key: string]: { [productId: string]: ProductAggregate } } = {};
 
-    (ordersState?.allOrders )?.forEach((order: any) => {
+    // Use processingOrders instead of validOrders
+    processingOrders?.forEach((order: any) => {
       if (!order.items || !order.createdAt) return;
 
       // Get date string (YYYY-MM-DD)
@@ -178,11 +186,11 @@ const ProcurementSection = ({ ordersState }: ProcurementSectionProps) => {
     <div className="procurement-section">
       <div className="section-header">
         <h2>Procurement</h2>
-        <p className="section-description">View products ordered grouped by date</p>
+        <p className="section-description">View products from processing orders grouped by date</p>
       </div>
 
       {dateGroups.length === 0 ? (
-        <div className="no-data">No orders found</div>
+        <div className="no-data">No processing orders found</div>
       ) : (
         <div className="procurement-accordion">
           {dateGroups.map(group => (
