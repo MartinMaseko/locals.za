@@ -1,13 +1,15 @@
-// Import the express framework
 const express = require('express');
+const cors = require('cors');
 
-// Load environment variables from a .env file into process.env
 require('dotenv').config();
 
-// Create an Express application object, the core of your server
+// Create an Express application object
 const app = express();
 
-// Middleware to parse JSON bodies from incoming requests.
+// Enable CORS
+app.use(cors({ origin: '*' }));
+
+// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Import the authentication routes from ./src/routes/authRoutes.
@@ -106,10 +108,25 @@ const discountRoutes = require('./src/routes/discountRoutes');
 // Mount the discount router at the /api/discounts base path.
 app.use('/api/discounts', discountRoutes);
 
-// Add sales routes
+// sales routes
 const salesRoutes = require('./src/routes/salesRoutes');
 
-// Register sales routes
+// sales routes
+app.use('/api/sales', salesRoutes);
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
+});
+
+// Catch all route for debugging
+app.use('*', (req, res) => {
+  console.log('404 - Route not found:', req.method, req.originalUrl);
+  res.status(404).json({ error: 'Route not found', path: req.originalUrl });
+});
+
+// Add sales routes
+const salesRoutes = require('./src/routes/salesRoutes');
 app.use('/api/sales', salesRoutes);
 
 // Start the server on the specified port or default to 3000.

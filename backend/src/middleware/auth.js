@@ -46,3 +46,44 @@ module.exports.requireAdmin = async function (req, res, next) {
     return res.sendStatus(403);
   }
 };
+
+// Sales Rep authentication using salesRepId
+module.exports.authenticateSalesRep = async function (req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const salesRepId = authHeader && authHeader.split(' ')[1];
+  
+  if (!salesRepId) {
+    return res.status(401).json({ error: 'No sales rep ID provided' });
+  }
+
+  try {
+    // Verify the salesRepId exists and is active
+    const salesRepDoc = await admin.firestore()
+      .collection('salesReps')
+      .doc(salesRepId)
+      .get();
+    
+    if (!salesRepDoc.exists) {
+      return res.status(401).json({ error: 'Invalid sales rep ID' });
+    }
+    
+    const salesRepData = salesRepDoc.data();
+    
+    if (!salesRepData.isActive) {
+      return res.status(403).json({ error: 'Sales rep account is inactive' });
+    }
+    
+    // Set user object with sales rep info
+    req.user = {
+      uid: salesRepId,
+      user_type: 'sales_rep',
+      username: salesRepData.username,
+      email: salesRepData.email
+    };
+    
+    next();
+  } catch (err) {
+    console.error('Sales rep authentication error:', err);
+    return res.status(403).json({ error: 'Authentication failed' });
+  }
+};

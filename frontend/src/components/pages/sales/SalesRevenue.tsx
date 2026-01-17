@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
-import { app } from '../../../Auth/firebaseClient';
 import axios from 'axios';
 import './salesStyles.css';
 
@@ -18,7 +16,6 @@ const SalesRevenue = () => {
   const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const auth = getAuth(app);
 
   useEffect(() => {
     fetchRevenue();
@@ -28,12 +25,12 @@ const SalesRevenue = () => {
     setLoading(true);
     setError('');
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error('Please login to continue');
+      // Get salesRepId from localStorage instead of Firebase Auth
+      const salesRepId = localStorage.getItem('salesRepId');
+      if (!salesRepId) throw new Error('Please login to continue');
 
-      const token = await user.getIdToken();
       const { data } = await axios.get<RevenueData>(`${API_URL}/api/sales/revenue`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${salesRepId}` }
       });
 
       setRevenueData(data);
