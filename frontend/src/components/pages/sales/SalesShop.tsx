@@ -10,10 +10,11 @@ interface Product {
   id: string;
   name: string;
   price: number;
-  image: string;
+  image_url: string; 
   category: string;
-  stock: number;
+  stock?: number;   
   description?: string;
+  brand?: string;   
 }
 
 const SalesShop = () => {
@@ -68,11 +69,18 @@ const SalesShop = () => {
     setLoading(true);
     try {
       const { data } = await axios.get<Product[]>(`${API_URL}/api/products`);
-      const activeProducts = data.filter((p: Product) => p.stock > 0);
-      setProducts(activeProducts);
-      setFilteredProducts(activeProducts);
+      
+      console.log('Products received:', data.length);
+      console.log('First few products:', data.slice(0, 3));
+      
+      // Use all products like homepage - don't filter by stock
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
+      // Add error state handling
+      setProducts([]);
+      setFilteredProducts([]);
     }
     setLoading(false);
   };
@@ -111,7 +119,7 @@ const SalesShop = () => {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          image: product.image_url || product.image, // Handle both field names
           qty: 1
         }
       ];
@@ -122,7 +130,10 @@ const SalesShop = () => {
 
   const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
-  const formatCurrency = (amount: number) => `R${amount.toFixed(2)}`;
+  const formatCurrency = (amount: number | string) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return `R${(numAmount || 0).toFixed(2)}`;
+  };
 
   if (loading) {
     return (
@@ -253,7 +264,7 @@ const SalesShop = () => {
                   background: '#f5f5f5'
                 }}>
                   <img
-                    src={product.image}
+                    src={product.image_url || product.image} // Handle both field names
                     alt={product.name}
                     style={{
                       width: '100%',
@@ -320,9 +331,9 @@ const SalesShop = () => {
                   <p style={{
                     margin: '0.5rem 0 0 0',
                     fontSize: '0.85rem',
-                    color: product.stock < 10 ? '#f44336' : '#666'
+                    color: (product.stock !== undefined && product.stock < 10) ? '#f44336' : '#666'
                   }}>
-                    {product.stock} in stock
+                    {product.stock !== undefined ? `${product.stock} in stock` : 'Stock info unavailable'}
                   </p>
                 </div>
               </div>
