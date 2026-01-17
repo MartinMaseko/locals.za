@@ -23,9 +23,18 @@ const SalesShop = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState<any[]>([]);
+  const [salesRepInfo, setSalesRepInfo] = useState<{ id: string; username: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Load sales rep info from localStorage
+    const salesRepId = localStorage.getItem('salesRepId');
+    const salesRepUsername = localStorage.getItem('salesRepUsername');
+    
+    if (salesRepId && salesRepUsername) {
+      setSalesRepInfo({ id: salesRepId, username: salesRepUsername });
+    }
+
     fetchProducts();
     loadCart();
   }, []);
@@ -42,7 +51,16 @@ const SalesShop = () => {
   };
 
   const saveCart = (newCart: any[]) => {
-    localStorage.setItem('salesRepCart', JSON.stringify(newCart));
+    // Add sales rep info to cart for tracking
+    const cartWithSalesRep = {
+      items: newCart,
+      salesRepId: salesRepInfo?.id,
+      salesRepUsername: salesRepInfo?.username,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('salesRepCart', JSON.stringify(cartWithSalesRep.items));
+    localStorage.setItem('salesRepCartInfo', JSON.stringify(cartWithSalesRep));
     setCart(newCart);
   };
 
@@ -132,6 +150,14 @@ const SalesShop = () => {
             <p style={{ color: '#666', margin: '0.5rem 0 0 0' }}>
               Browse products and create shared carts for your customers
             </p>
+            {salesRepInfo && (
+              <p style={{ color: '#4caf50', margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>
+                Shopping as: <strong>{salesRepInfo.username}</strong>
+              </p>
+            )}
+          </div>
+          <div className='salesRep-Cart'>
+
           </div>
           
           {cart.length > 0 && (

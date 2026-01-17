@@ -2,295 +2,261 @@ const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase');
 const bcrypt = require('bcrypt');
-const authenticateToken = require('../middleware/auth');
+const { authenticateSalesRep } = require('../middleware/auth');
 
-// Middleware to verify sales rep token
-const verifySalesRep = async (req, res, next) => {
-  try {
-    const { uid } = req.user;
-    
-    // Check if user is a sales rep in the salesReps collection
-    const salesRepDoc = await admin.firestore().collection('salesReps').doc(uid).get();
-    
-    if (!salesRepDoc.exists) {
-      return res.status(403).json({ error: 'Sales representative access required' });
-    }
-
-    const salesRepData = salesRepDoc.data();
-    
-    if (!salesRepData.isActive) {
-      return res.status(403).json({ error: 'Account is inactive' });
-    }
-
-    // Attach sales rep data to request
-    req.salesRep = {
-      id: salesRepDoc.id,
-      ...salesRepData
-    };
-
-    next();
-  } catch (error) {
-    console.error('Sales rep verification error:', error);
-    res.status(403).json({ error: 'Sales representative access required' });
-  }
-};
-
-// Login endpoint for sales reps
+// Sales Rep Login - Simple credential verification
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-
+    
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Username and password are required' 
+      });
     }
-
+    
     // Find sales rep by username
-    const snapshot = await admin.firestore().collection('salesReps')
-      .where('username', '==', username.trim())
+    const salesRepSnapshot = await admin.firestore()
+      .collection('salesReps')
+      .where('username', '==', username)
+      .where('isActive', '==', true)
       .limit(1)
       .get();
-
-    if (snapshot.empty) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    
+    if (salesRepSnapshot.empty) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid credentials' 
+      });
     }
-
-    const salesRepDoc = snapshot.docs[0];
-    const salesRep = salesRepDoc.data();
-
+    
+    const salesRepDoc = salesRepSnapshot.docs[0];
+    const salesRepData = salesRepDoc.data();
+    const salesRepId = salesRepDoc.id;
+    
     // Verify password
-    const isValidPassword = await bcrypt.compare(password, salesRep.password);
+    const isValidPassword = await bcrypt.compare(password, salesRepData.password);
+    
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid credentials' 
+      });
     }
-
-    // Check if account is active
-    if (!salesRep.isActive) {
-      return res.status(403).json({ error: 'Account is inactive' });
-    }
-
-    // Generate a custom token for the sales rep
-    const customToken = await admin.auth().createCustomToken(salesRepDoc.id, {
-      role: 'salesRep',
-      username: salesRep.username,
-      email: salesRep.email
-    });
-
+    
+    // Update last login
+    await admin.firestore()
+      .collection('salesReps')
+      .doc(salesRepId)
+      .update({
+        lastLogin: admin.firestore.FieldValue.serverTimestamp()
+      });
+    
+    // Just return success with sales rep info
     res.json({
       success: true,
-      token: customToken,
-      salesRepId: salesRepDoc.id,
-      username: salesRep.username,
-      email: salesRep.email
+      salesRepId: salesRepId,
+      username: salesRepData.username,
+      email: salesRepData.email
     });
+    
   } catch (error) {
-    console.error('Sales rep login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    console.error('Sales login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Login failed' 
+    });
   }
 });
 
-// Add customer endpoint
-router.post('/add-customer', authenticateToken, verifySalesRep, async (req, res) => {
+// Link existing customer to sales rep - USE NEW MIDDLEWARE
+router.post('/customers', authenticateSalesRep, async (req, res) => {
   try {
-    const { customerEmail, customerName, customerPhone, customerAddress } = req.body;
-    const salesRepId = req.salesRep.id;
+    const { uid } = req.user; // This now comes from authenticateSalesRep
+    const { email } = req.body;
 
-    if (!customerEmail || !customerName || !customerPhone || !customerAddress) {
-      return res.status(400).json({ error: 'All customer fields are required' });
-    }
-
-    const email = customerEmail.trim().toLowerCase();
-
-    // Check if this email is already linked to ANY sales rep
-    const allSalesRepsSnapshot = await admin.firestore().collection('salesReps').get();
+    console.log('Linking customer request:', { uid, email });
     
-    for (const repDoc of allSalesRepsSnapshot.docs) {
-      const existingCustomer = await admin.firestore()
-        .collection('salesReps').doc(repDoc.id)
-        .collection('customers')
-        .where('email', '==', email)
-        .limit(1)
-        .get();
-      
-      if (!existingCustomer.empty) {
-        const existingRepData = repDoc.data();
-        const isCurrentRep = repDoc.id === salesRepId;
-        
-        if (isCurrentRep) {
-          return res.status(400).json({ error: 'This customer is already in your account' });
-        } else {
-          return res.status(400).json({ 
-            error: `This customer is already managed by another sales representative (${existingRepData.username || 'Unknown'})` 
-          });
-        }
-      }
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
     }
 
-    // Check if user exists in users collection
-    const userSnapshot = await admin.firestore().collection('users')
-      .where('email', '==', email)
+    // Find the registered user by email
+    const usersSnapshot = await admin.firestore()
+      .collection('users')
+      .where('email', '==', email.trim())
       .limit(1)
       .get();
 
-    let userId = null;
-    if (!userSnapshot.empty) {
-      userId = userSnapshot.docs[0].id;
-      
-      // Check if user already has a sales rep assigned
-      const userData = userSnapshot.docs[0].data();
-      if (userData.salesRepId && userData.salesRepId !== salesRepId) {
-        return res.status(400).json({ 
-          error: `This user is already linked to another sales representative (${userData.salesRepUsername || 'Unknown'})` 
-        });
-      }
-      
-      // Link sales rep to user profile
-      await admin.firestore().collection('users').doc(userId).update({
-        salesRepId: salesRepId,
-        salesRepUsername: req.salesRep.username,
-        linkedAt: admin.firestore.FieldValue.serverTimestamp()
+    if (usersSnapshot.empty) {
+      return res.status(404).json({ 
+        error: "No registered user found with this email. Please ask the customer to register first." 
       });
     }
 
-    // Create customer in sales rep's subcollection
-    const customerData = {
-      email: email,
-      name: customerName.trim(),
-      phone: customerPhone.trim(),
-      address: customerAddress.trim(),
-      userId: userId,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      isActive: true,
-      totalOrders: 0,
-      totalSpent: 0,
-      lastOrderDate: null
-    };
+    const userDoc = usersSnapshot.docs[0];
+    const customerData = userDoc.data();
+    const customerId = userDoc.id;
 
-    const docRef = await admin.firestore()
-      .collection('salesReps').doc(salesRepId)
-      .collection('customers')
-      .add(customerData);
+    // Check if customer is already linked to a sales rep
+    if (customerData.salesRepId && customerData.salesRepId !== uid) {
+      return res.status(400).json({ 
+        error: "This customer is already linked to another sales representative" 
+      });
+    }
 
-    res.json({
-      success: true,
-      customerId: docRef.id,
-      message: 'Customer added successfully'
+    // Check if already linked to this sales rep
+    if (customerData.salesRepId === uid) {
+      return res.status(400).json({ 
+        error: "This customer is already linked to your profile" 
+      });
+    }
+
+    // Link the customer to this sales rep
+    await admin.firestore().collection('users').doc(customerId).update({
+      salesRepId: uid,
+      linkedAt: admin.firestore.FieldValue.serverTimestamp()
     });
+
+    console.log('Successfully linked customer to sales rep');
+
+    // Check/create customer record for tracking
+    const customerSnapshot = await admin.firestore()
+      .collection('customers')
+      .where('email', '==', email.trim())
+      .limit(1)
+      .get();
+
+    let customerRecord;
+    if (customerSnapshot.empty) {
+      const customerRef = await admin.firestore().collection('customers').add({
+        name: customerData.full_name || customerData.displayName || 'Unknown',
+        email: email.trim(),
+        phone: customerData.phone_number || '',
+        address: customerData.address || '',
+        salesRepId: uid,
+        userId: customerId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        totalOrders: 0,
+        totalSpent: 0
+      });
+      customerRecord = { id: customerRef.id };
+    } else {
+      const existingCustomer = customerSnapshot.docs[0];
+      await admin.firestore().collection('customers').doc(existingCustomer.id).update({
+        salesRepId: uid,
+        userId: customerId,
+        linkedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      customerRecord = { id: existingCustomer.id };
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Customer successfully linked to your profile",
+      customer: {
+        id: customerRecord.id,
+        userId: customerId,
+        name: customerData.full_name || customerData.displayName || 'Unknown',
+        email: email.trim(),
+        phone: customerData.phone_number || ''
+      }
+    });
+
   } catch (error) {
-    console.error('Error adding customer:', error);
-    res.status(500).json({ error: 'Failed to add customer' });
+    console.error('Error linking customer:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Get customers for logged-in sales rep with order data
-router.get('/customers', authenticateToken, verifySalesRep, async (req, res) => {
+// Get customers linked to sales rep - USE NEW MIDDLEWARE
+router.get('/customers', authenticateSalesRep, async (req, res) => {
   try {
-    const salesRepId = req.salesRep.id;
+    const { uid } = req.user;
+    
+    console.log('Fetching customers for sales rep:', uid);
 
-    // Get customers from subcollection
-    const snapshot = await admin.firestore()
-      .collection('salesReps').doc(salesRepId)
-      .collection('customers')
-      .get();
+    // Get customers linked to this sales rep
+    const customersQuery = admin.firestore()
+      .collection('users')
+      .where('salesRepId', '==', uid);
+    
+    const snapshot = await customersQuery.get();
+    const customers = [];
 
-    const customers = await Promise.all(snapshot.docs.map(async (doc) => {
-      const customerData = doc.data();
+    for (const doc of snapshot.docs) {
+      const userData = doc.data();
       
-      // Get orders for this customer by email
-      const ordersSnapshot = await admin.firestore().collection('orders')
-        .where('email', '==', customerData.email)
+      // Get order statistics for this customer
+      const ordersSnapshot = await admin.firestore()
+        .collection('orders')
+        .where('userId', '==', doc.id)
         .get();
 
-      const orders = ordersSnapshot.docs.map(orderDoc => ({
-        id: orderDoc.id,
-        ...orderDoc.data()
-      }));
+      let totalOrders = ordersSnapshot.size;
+      let totalSpent = 0;
+      let lastOrderDate = null;
 
-      // Calculate stats
-      const totalOrders = orders.length;
-      const totalSpent = orders.reduce((sum, order) => sum + (Number(order.totalAmount) || 0), 0);
-      const lastOrder = orders.sort((a, b) => {
-        const aTime = a.createdAt?.seconds || 0;
-        const bTime = b.createdAt?.seconds || 0;
-        return bTime - aTime;
-      })[0];
+      ordersSnapshot.docs.forEach(orderDoc => {
+        const orderData = orderDoc.data();
+        totalSpent += (orderData.adjustedTotal || orderData.total || 0);
+        
+        if (orderData.createdAt && (!lastOrderDate || orderData.createdAt.seconds > lastOrderDate.seconds)) {
+          lastOrderDate = orderData.createdAt;
+        }
+      });
 
-      return {
+      customers.push({
         id: doc.id,
-        ...customerData,
+        userId: doc.id,
+        name: userData.full_name || userData.displayName || 'Unknown',
+        email: userData.email,
+        phone: userData.phone_number || '',
+        address: userData.address || '',
         totalOrders,
         totalSpent,
-        lastOrderDate: lastOrder?.createdAt || null,
-        recentOrders: orders.slice(0, 5) // Last 5 orders
-      };
-    }));
+        lastOrderDate,
+        createdAt: userData.created_at || userData.createdAt,
+        salesRepId: userData.salesRepId
+      });
+    }
 
-    // Sort by creation date (newest first)
-    customers.sort((a, b) => {
-      const aTime = a.createdAt?.seconds || 0;
-      const bTime = b.createdAt?.seconds || 0;
-      return bTime - aTime;
-    });
-
+    console.log(`Found ${customers.length} customers for sales rep`);
     res.json(customers);
   } catch (error) {
     console.error('Error fetching customers:', error);
-    res.status(500).json({ error: 'Failed to fetch customers' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Get revenue for logged-in sales rep (R10 per order)
-router.get('/revenue', authenticateToken, verifySalesRep, async (req, res) => {
+// Get sales rep profile - USE NEW MIDDLEWARE
+router.get('/profile', authenticateSalesRep, async (req, res) => {
   try {
-    const salesRepId = req.salesRep.id;
-
-    // Get all customers
-    const customersSnapshot = await admin.firestore()
-      .collection('salesReps').doc(salesRepId)
-      .collection('customers')
+    const { uid, username, email } = req.user;
+    
+    const salesRepDoc = await admin.firestore()
+      .collection('salesReps')
+      .doc(uid)
       .get();
-
-    const customerEmails = customersSnapshot.docs.map(doc => doc.data().email);
-
-    if (customerEmails.length === 0) {
-      return res.json({
-        totalRevenue: 0,
-        totalOrders: 0,
-        totalCustomers: 0,
-        revenuePerOrder: 10
-      });
+    
+    if (!salesRepDoc.exists) {
+      return res.status(404).json({ error: 'Sales rep not found' });
     }
-
-    // Get all orders from these customers in batches (Firestore 'in' limit is 10)
-    let allOrders = [];
-    for (let i = 0; i < customerEmails.length; i += 10) {
-      const batch = customerEmails.slice(i, i + 10);
-      const batchSnapshot = await admin.firestore().collection('orders')
-        .where('email', 'in', batch)
-        .get();
-      const batchOrders = batchSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      allOrders = [...allOrders, ...batchOrders];
-    }
-
-    const totalOrders = allOrders.length;
-    const totalRevenue = totalOrders * 10; // R10 per order
-
+    
+    const salesRepData = salesRepDoc.data();
+    
+    // Remove password from response
+    const { password, ...profileData } = salesRepData;
+    
     res.json({
-      totalRevenue,
-      totalOrders,
-      totalCustomers: customerEmails.length,
-      revenuePerOrder: 10,
-      orders: allOrders.sort((a, b) => {
-        const aTime = a.createdAt?.seconds || 0;
-        const bTime = b.createdAt?.seconds || 0;
-        return bTime - aTime;
-      }).slice(0, 20) // Last 20 orders
+      id: uid,
+      ...profileData
     });
+    
   } catch (error) {
-    console.error('Error fetching revenue:', error);
-    res.status(500).json({ error: 'Failed to fetch revenue' });
+    console.error('Error getting sales rep profile:', error);
+    res.status(500).json({ error: 'Failed to get profile' });
   }
 });
 

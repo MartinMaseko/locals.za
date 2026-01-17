@@ -876,4 +876,140 @@ router.get('/public/:id', async (req, res) => {
   }
 });
 
+// Get orders by customer email (for sales reps)
+router.get('/customer/email/:email', authenticateToken, async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { uid } = req.user;
+    
+    // Check if user is admin or sales rep
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin' && userData?.user_type !== 'sales_rep') {
+      return res.status(403).json({ error: "Admin or Sales Rep access required" });
+    }
+    
+    // First, find the customer by email to get their userId
+    const usersSnapshot = await admin.firestore()
+      .collection('users')
+      .where('email', '==', decodeURIComponent(email))
+      .limit(1)
+      .get();
+    
+    if (usersSnapshot.empty) {
+      return res.json([]); // No customer found with this email
+    }
+    
+    const customerDoc = usersSnapshot.docs[0];
+    const customerId = customerDoc.id;
+    
+    // If user is sales rep, verify they have access to this customer
+    if (userData?.user_type === 'sales_rep') {
+      // Check if this customer belongs to the sales rep
+      const customerData = customerDoc.data();
+      if (customerData.salesRepId !== uid) {
+        return res.status(403).json({ error: "You can only view orders for your own customers" });
+      }
+    }
+    
+    // Now get orders for this customer using their userId
+    let orders = [];
+    
+    try {
+      const ordersSnapshot = await admin.firestore()
+        .collection('orders')
+        .where('userId', '==', customerId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      
+      orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (indexError) {
+      // Fallback: get orders without sorting if index is missing
+      if (indexError.code === 9 || indexError.message.includes('index')) {
+        console.warn('Missing index for orders by userId with sorting, falling back to unsorted query');
+        const ordersSnapshot = await admin.firestore()
+          .collection('orders')
+          .where('userId', '==', customerId)
+          .get();
+        
+        // Sort in memory
+        orders = ordersSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const getTime = (doc) => {
+              const ts = doc.createdAt;
+              if (!ts) return 0;
+              if (typeof ts === 'string') return new Date(ts).getTime();
+              if (ts.seconds) return ts.seconds * 1000;
+              return 0;
+            };
+            return getTime(b) - getTime(a); // Descending
+          });
+      } else {
+        throw indexError;
+      }
+    }
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching customer orders by email:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get orders by customer email (for sales reps) - FIXED VERSION
+router.get('/customer/email/:email', authenticateToken, async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { uid } = req.user;
+    
+    console.log('FIXED: Order route request:', { email, uid });
+    
+    // Check if user is admin or sales rep
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    const salesRepRef = await admin.firestore().collection('salesReps').doc(uid).get();
+    const salesRepData = salesRepRef.exists ? salesRepRef.data() : null;
+    
+    const isAdmin = userData?.user_type === 'admin';
+    const isSalesRep = userData?.user_type === 'sales_rep' || salesRepData?.isActive === true;
+    
+    console.log('FIXED: User check:', { userType: userData?.user_type, isSalesRep, isAdmin });
+    
+    if (!isAdmin && !isSalesRep) {
+      return res.status(403).json({ error: "Access denied - not sales rep or admin" });
+    }
+    
+    // Find customer by email
+    const usersSnapshot = await admin.firestore()
+      .collection('users')
+      .where('email', '==', decodeURIComponent(email))
+      .limit(1)
+      .get();
+    
+    if (usersSnapshot.empty) {
+      return res.json([]);
+    }
+    
+    const customerId = usersSnapshot.docs[0].id;
+    console.log('FIXED: Found customer:', customerId);
+    
+    // Get orders for this customer
+    const ordersSnapshot = await admin.firestore()
+      .collection('orders')
+      .where('userId', '==', customerId)
+      .get();
+    
+    const orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log('FIXED: Found orders:', orders.length);
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('FIXED: Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

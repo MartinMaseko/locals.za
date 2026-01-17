@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithCustomToken } from 'firebase/auth';
-import { auth } from '../../../Auth/firebaseClient';
 import axios from 'axios';
 import Logo from '../../assets/logos/LZABLKTRP.webp';
 import '../../../components/assets/UI/loginReg.css';
@@ -10,9 +8,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 interface SalesLoginResponse {
   success: boolean;
-  token: string;
   salesRepId: string;
   username: string;
+  email: string;
 }
 
 const SalesLogin = () => {
@@ -31,25 +29,44 @@ const SalesLogin = () => {
     setError('');
     
     try {
-      // Step 1: Authenticate with backend to get custom token
-      const { data } = await axios.post<SalesLoginResponse>(`${API_URL}/api/sales/login`, {
-        username: form.username,
-        password: form.password
-      });
+      console.log('SalesLogin - Attempting login with:', { username: form.username });
+      
+      // Simple credential verification
+      const { data } = await axios.post<SalesLoginResponse>(
+        `${API_URL}/api/sales/login`,
+        {
+          username: form.username,
+          password: form.password
+        }
+      );
 
-      if (!data.success || !data.token) {
-        throw new Error('Login failed. No token returned.');
+      console.log('SalesLogin - Login response:', data);
+
+      if (!data.success) {
+        throw new Error('Login failed');
       }
 
-      // Step 2: Sign in to Firebase with the custom token
-      await signInWithCustomToken(auth, data.token);
+      // Clear any existing data first
+      localStorage.clear();
 
-      // Step 3: Store sales rep info in localStorage
+      // Store sales rep info in localStorage
       localStorage.setItem('salesRepId', data.salesRepId);
       localStorage.setItem('salesRepUsername', data.username);
+      localStorage.setItem('salesRepEmail', data.email);
+      localStorage.setItem('userType', 'sales_rep');
 
-      // Step 4: Navigate to sales dashboard
-      navigate('/sales/add-customer');
+      // Verify the data was stored
+      const storedId = localStorage.getItem('salesRepId');
+      const storedUsername = localStorage.getItem('salesRepUsername');
+      
+      console.log('SalesLogin - Stored data:', {
+        salesRepId: storedId,
+        salesRepUsername: storedUsername
+      });
+
+      // Use window.location instead of navigate to force a complete page reload
+      window.location.href = '/sales/add-customer';
+      
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err?.response?.data?.error || err.message || 'Login failed');
