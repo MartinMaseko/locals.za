@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import '../buyers/buyerStyles.css';
+import './salesStyles.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -72,17 +72,11 @@ const AddCustomer = () => {
     <div className="buyer-dashboard">
       <div className="buyer-section">
         <h2>Link Customer to Your Profile</h2>
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div className="add-customer-container">
           
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            padding: '1.5rem', 
-            borderRadius: '8px', 
-            marginBottom: '2rem',
-            border: '1px solid #dee2e6'
-          }}>
-            <h3 style={{ color: '#495057', marginBottom: '1rem' }}>How it works:</h3>
-            <ol style={{ color: '#6c757d', lineHeight: '1.6' }}>
+          <div className="add-customer-info">
+            <h3>How it works:</h3>
+            <ol>
               <li>Customer registers on the LocalsZA app first</li>
               <li>You enter their registered email below to link them to your profile</li>
               <li>Once linked, you can view their orders and earn R10 per order</li>
@@ -91,45 +85,39 @@ const AddCustomer = () => {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#212121', fontWeight: '600' }}>
-                Customer's Registered Email *
+            <div className="email-input-group">
+              <label className="email-input-label">
+                Customer's Registered Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="price-input"
+                className="form-input"
                 placeholder="Enter the email they used to register"
               />
-              <small style={{ color: '#6c757d', fontSize: '0.875rem' }}>
+              <small className="email-input-help">
                 Make sure this is the exact email they used to create their LocalsZA account
               </small>
             </div>
 
             {error && (
-              <div className="error-message" style={{ marginBottom: '1rem' }}>
+              <div className="error-message">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="success-message" style={{ marginBottom: '1rem' }}>
+              <div className="success-message">
                 {success}
               </div>
             )}
 
             {customerInfo && (
-              <div style={{ 
-                backgroundColor: '#d4edda', 
-                padding: '1rem', 
-                borderRadius: '8px', 
-                marginBottom: '1rem',
-                border: '1px solid #c3e6cb'
-              }}>
-                <h4 style={{ color: '#155724', marginBottom: '0.5rem' }}>Customer Linked Successfully!</h4>
-                <p style={{ color: '#155724', margin: 0 }}>
+              <div className="customer-linked-success">
+                <h4>Customer Linked Successfully!</h4>
+                <p>
                   <strong>{customerInfo.name}</strong> ({customerInfo.email}) is now linked to your profile.
                 </p>
               </div>
@@ -144,15 +132,9 @@ const AddCustomer = () => {
             </button>
           </form>
 
-          <div style={{ 
-            marginTop: '2rem', 
-            padding: '1rem', 
-            backgroundColor: '#fff3cd', 
-            borderRadius: '8px',
-            border: '1px solid #ffeaa7'
-          }}>
-            <h4 style={{ color: '#856404', marginBottom: '0.5rem' }}>Need Help?</h4>
-            <p style={{ color: '#856404', fontSize: '0.875rem', margin: 0 }}>
+          <div className="help-section">
+            <h4>Need Help?</h4>
+            <p>
               If the customer hasn't registered yet, ask them to download the LocalsZA app and create an account first. 
               Then come back here to link them using their registered email.
             </p>

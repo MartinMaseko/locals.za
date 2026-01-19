@@ -22,6 +22,7 @@ interface CustomerOrder {
   userId: string;
   customerEmail?: string;
   customerName?: string;
+  salesRepCashedOut?: boolean;
 }
 
 interface RevenueData {
@@ -33,14 +34,65 @@ interface RevenueData {
   recentOrders: CustomerOrder[];
 }
 
+interface SalesRepInfo {
+  name?: string | null;
+  email?: string | null;
+  lastCashoutDate?: string | null;
+  lastCashoutAmount?: number;
+  cashoutHistory?: CashoutRecord[];
+  totalCashedOut?: number;
+}
+
+interface CashoutRecord {
+  id: string;
+  amount: number;
+  orderCount: number;
+  status: string;
+  createdAt: string;
+  orderIds: string[];
+}
+
 const SalesRevenue = () => {
   const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCashingOut, setIsCashingOut] = useState(false);
+  const [cashoutSuccess, setCashoutSuccess] = useState(false);
+  const [cashoutError, setCashoutError] = useState('');
+  const [lastCashout, setLastCashout] = useState<string | null>(null);
+  const [salesRepInfo, setSalesRepInfo] = useState<SalesRepInfo | null>(null);
 
   useEffect(() => {
     fetchRevenueData();
+    fetchSalesRepInfo();
   }, []);
+
+  const fetchSalesRepInfo = async () => {
+    try {
+      const salesRepId = localStorage.getItem('salesRepId');
+      if (!salesRepId) return;
+
+      const { data } = await axios.get<SalesRepInfo>(`${API_URL}/api/sales/info`, {
+        headers: { Authorization: `Bearer ${salesRepId}` }
+      });
+
+      setSalesRepInfo(data);
+      if (data.lastCashoutDate) {
+        setLastCashout(data.lastCashoutDate);
+      }
+    } catch (error: any) {
+      console.error('Error fetching sales rep info:', error);
+      // Set default empty data instead of failing completely
+      setSalesRepInfo({
+        name: undefined,
+        email: undefined,
+        lastCashoutDate: undefined,
+        lastCashoutAmount: 0,
+        cashoutHistory: [],
+        totalCashedOut: 0
+      });
+    }
+  };
 
   const fetchRevenueData = async () => {
     setLoading(true);
@@ -55,8 +107,6 @@ const SalesRevenue = () => {
         `${API_URL}/api/sales/customers`,
         { headers: { Authorization: `Bearer ${salesRepId}` } }
       );
-
-      console.log('Linked customers:', customers.length);
 
       if (customers.length === 0) {
         setRevenueData({
@@ -77,7 +127,7 @@ const SalesRevenue = () => {
 
       // Create customer lookup map
       customers.forEach(customer => {
-        customerMap.set(customer.userId || customer.id, {
+        customerMap.set(customer.id, {
           email: customer.email,
           name: customer.name
         });
@@ -97,9 +147,12 @@ const SalesRevenue = () => {
             { headers: { Authorization: `Bearer ${salesRepId}` } }
           );
 
-          // Filter orders by valid statuses and add customer info
+          // Filter orders by valid statuses and exclude already cashed out orders
           const validOrders = customerOrders
-            .filter(order => validStatuses.includes(order.status?.toLowerCase()))
+            .filter(order => 
+              validStatuses.includes(order.status?.toLowerCase()) &&
+              !order.salesRepCashedOut // Exclude already cashed out orders
+            )
             .map(order => ({
               ...order,
               customerEmail: customer.email,
@@ -142,19 +195,71 @@ const SalesRevenue = () => {
         recentOrders
       });
 
-      console.log('Revenue calculation:', {
-        totalOrders,
-        totalRevenue,
-        totalCustomers,
-        recentOrdersCount: recentOrders.length
-      });
-
     } catch (err: any) {
       console.error('Error fetching revenue data:', err);
       setError(err?.response?.data?.error || 'Failed to load revenue data');
     }
     
     setLoading(false);
+  };
+
+  const handleCashout = async () => {
+    if (!revenueData || revenueData.totalOrders === 0) return;
+    
+    setIsCashingOut(true);
+    setCashoutError('');
+    setCashoutSuccess(false);
+    
+    try {
+      const salesRepId = localStorage.getItem('salesRepId');
+      const salesRepUsername = localStorage.getItem('salesRepUsername');
+      
+      if (!salesRepId) {
+        throw new Error('Please login to continue');
+      }
+      
+      // Get order IDs for cashout
+      const orderIds = revenueData.recentOrders.map(order => order.id);
+      
+      // Calculate total amount
+      const amount = revenueData.totalOrders * 10;
+
+      await axios.post(`${API_URL}/api/sales/cashout`, {
+        orderIds,
+        amount,
+        salesRepName: salesRepInfo?.name || salesRepUsername || 'Sales Rep',
+        salesRepEmail: salesRepInfo?.email || 'No email provided'
+      }, {
+        headers: { Authorization: `Bearer ${salesRepId}` }
+      });
+      
+      // Clear revenue data since orders are now cashed out
+      setRevenueData({
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalCustomers: revenueData.totalCustomers,
+        revenuePerOrder: 10,
+        customers: revenueData.customers,
+        recentOrders: []
+      });
+      
+      // Set last cashout date
+      setLastCashout(new Date().toISOString());
+      
+      // Show success message
+      setCashoutSuccess(true);
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setCashoutSuccess(false);
+      }, 5000);
+      
+    } catch (error: any) {
+      console.error('Cashout failed:', error);
+      setCashoutError(error?.response?.data?.error || 'Failed to process cashout. Please try again.');
+    } finally {
+      setIsCashingOut(false);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -177,7 +282,7 @@ const SalesRevenue = () => {
     return (
       <div className="buyer-dashboard">
         <div className="buyer-section">
-          <p style={{ textAlign: 'center', padding: '2rem' }}>
+          <p className="loading-message">
             Loading revenue data...
           </p>
         </div>
@@ -186,10 +291,10 @@ const SalesRevenue = () => {
   }
 
   return (
-    <div className="buyer-dashboard">
-      <div className="buyer-section">
-        <h2>My Revenue Dashboard</h2>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
+    <div className="sales-dashboard">
+      <div className="sales-section">
+        <h2>Revenue Dashboard</h2>
+        <p className="revenue-subtitle">
           You earn R10 for every order from your linked customers
         </p>
 
@@ -200,7 +305,9 @@ const SalesRevenue = () => {
             {/* Revenue Stats Cards */}
             <div className="revenue-stats">
               <div className="stat-card primary">
-                <div className="stat-icon">💰</div>
+                <div className="stat-icon">
+                  <img width="50" height="50" src="https://img.icons8.com/ios/50/ffb803/cash-in-hand.png" alt="cash-in-hand"/>
+                </div>
                 <div className="stat-content">
                   <h3>Total Earnings</h3>
                   <p className="stat-value">{formatCurrency(revenueData.totalRevenue)}</p>
@@ -209,7 +316,9 @@ const SalesRevenue = () => {
               </div>
 
               <div className="stat-card">
-                <div className="stat-icon">📦</div>
+                <div className="stat-icon">
+                  <img width="48" height="48" src="https://img.icons8.com/sf-regular/48/ffb803/add-shopping-cart.png" alt="add-shopping-cart"/>
+                </div>
                 <div className="stat-content">
                   <h3>Total Orders</h3>
                   <p className="stat-value">{revenueData.totalOrders}</p>
@@ -218,23 +327,108 @@ const SalesRevenue = () => {
               </div>
 
               <div className="stat-card">
-                <div className="stat-icon">👥</div>
+                <div className="stat-icon">
+                  <img width="50" height="50" src="https://img.icons8.com/ios-filled/50/ffb803/gender-neutral-user.png" alt="gender-neutral-user"/>
+                </div>
                 <div className="stat-content">
                   <h3>Linked Customers</h3>
                   <p className="stat-value">{revenueData.totalCustomers}</p>
                   <small>Active customers</small>
                 </div>
               </div>
-
-              <div className="stat-card">
-                <div className="stat-icon">💵</div>
-                <div className="stat-content">
-                  <h3>Per Order Rate</h3>
-                  <p className="stat-value">{formatCurrency(revenueData.revenuePerOrder)}</p>
-                  <small>Fixed commission</small>
+            </div>
+            
+            {/* Request Payout Section */}
+            <div className="request-payout">
+              <div className="payout-card">
+                <h3>Request Payout</h3>
+                <div className="payout-summary">
+                  <div className="payout-amount">
+                    <span className="payout-label">Available for Payout:</span>
+                    <span className="payout-value">{formatCurrency(revenueData.totalRevenue)}</span>
+                  </div>
+                  <div className="payout-orders">
+                    <span className="payout-label">Orders:</span>
+                    <span className="payout-count">{revenueData.totalOrders} orders × R10</span>
+                  </div>
+                  {lastCashout && (
+                    <div className="last-payout">
+                      <span className="payout-label">Last Payout:</span>
+                      <span className="last-payout-date">{formatDate(lastCashout)}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <button 
+                  onClick={handleCashout}
+                  disabled={isCashingOut || revenueData.totalOrders === 0}
+                  className="payout-btn"
+                >
+                  {isCashingOut ? 'Processing...' : `Request Payout - ${formatCurrency(revenueData.totalRevenue)}`}
+                </button>
+                
+                {cashoutSuccess && (
+                  <div className="payout-success">
+                    <p>✅ Payout request submitted successfully!</p>
+                    <p>Your payment will be processed by our admin team.</p>
+                  </div>
+                )}
+                
+                {cashoutError && (
+                  <div className="payout-error">
+                    <p>❌ {cashoutError}</p>
+                  </div>
+                )}
+                
+                <div className="payout-info">
+                  <p>💡 <strong>Note:</strong> Payouts are processed manually by our admin team. You will receive an email confirmation once your payout has been approved and processed.</p>
                 </div>
               </div>
             </div>
+            
+            {/* Cashout History Section */}
+            {salesRepInfo?.cashoutHistory && salesRepInfo.cashoutHistory.length > 0 && (
+              <div className="cashout-history-section">
+                <h3>Payout History</h3>
+                <div className="cashout-summary-stats">
+                  <div className="cashout-stat-card">
+                    <div className="cashout-stat-label">Total Paid Out</div>
+                    <div className="cashout-stat-value">{formatCurrency(salesRepInfo.totalCashedOut || 0)}</div>
+                  </div>
+                  <div className="cashout-stat-card">
+                    <div className="cashout-stat-label">Total Payouts</div>
+                    <div className="cashout-stat-value">{salesRepInfo.cashoutHistory.length}</div>
+                  </div>
+                </div>
+                <div className="cashout-history-list">
+                  {salesRepInfo.cashoutHistory.slice(0, 5).map((cashout) => (
+                    <div key={cashout.id} className="cashout-record">
+                      <div className="cashout-record-header">
+                        <div className="cashout-record-amount">
+                          {formatCurrency(cashout.amount)}
+                        </div>
+                        <div className="cashout-record-date">
+                          {formatDate(cashout.createdAt)}
+                        </div>
+                      </div>
+                      <div className="cashout-record-details">
+                        <span className="cashout-record-orders">
+                          {cashout.orderCount} orders
+                        </span>
+                        <span className={`cashout-record-status status-${cashout.status}`}>
+                          {cashout.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {salesRepInfo.cashoutHistory.length > 5 && (
+                    <div className="more-cashouts-note">
+                      Showing 5 of {salesRepInfo.cashoutHistory.length} payouts
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Customer Performance Section */}
             {revenueData.customers.length > 0 && (
@@ -305,7 +499,6 @@ const SalesRevenue = () => {
             {/* Empty State */}
             {revenueData.totalOrders === 0 && (
               <div className="empty-state">
-                <div className="empty-icon">📊</div>
                 <h3>No Orders Yet</h3>
                 <p>Your linked customers haven't placed any orders yet.</p>
                 <p>

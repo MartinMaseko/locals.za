@@ -41,7 +41,7 @@ import ViewCustomers from './components/pages/sales/ViewCustomers';
 import SalesRevenue from './components/pages/sales/SalesRevenue';
 import SalesShop from './components/pages/sales/SalesShop';
 import SalesCart from './components/pages/sales/SalesCart';
-import HustlePage from './components/pages/sales/HustlePage';
+import SalesTraining from './components/pages/sales/salesTraining';
 import SalesProtectedRoute from './Auth/SalesProtectedRoute';
 
 function App() {
@@ -101,7 +101,7 @@ function App() {
                   <Route path="shop" element={<SalesShop />} />
                   <Route path="cart" element={<SalesCart />} />
                   <Route path="revenue" element={<SalesRevenue />} />
-                  <Route path="hustle" element={<HustlePage />} />
+                  <Route path="training" element={<SalesTraining />} />
                   <Route index element={<Navigate to="add-customer" replace />} />
                 </Route>
                 

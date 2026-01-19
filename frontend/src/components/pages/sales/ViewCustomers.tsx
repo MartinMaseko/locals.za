@@ -110,7 +110,7 @@ const ViewCustomers = () => {
     return (
       <div className="buyer-dashboard">
         <div className="buyer-section">
-          <p style={{ textAlign: 'center', padding: '2rem' }}>Loading customers...</p>
+          <p className="loading-message">Loading customers...</p>
         </div>
       </div>
     );
@@ -120,14 +120,14 @@ const ViewCustomers = () => {
     <div className="buyer-dashboard">
       <div className="buyer-section">
         <h2>My Customers</h2>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '1.5rem' }}>
+        <p className="customers-total-count">
           Total Customers: {customers.length}
         </p>
 
         {error && <div className="error-message">{error}</div>}
 
         {customers.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
+          <p className="no-customers-message">
             No customers yet. Add your first customer to get started!
           </p>
         ) : (
@@ -155,10 +155,6 @@ const ViewCustomers = () => {
                   <div className="detail-row">
                     <span className="detail-label">Last Order:</span>
                     <span className="detail-value">{formatDate(customer.lastOrderDate)}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Customer Since:</span>
-                    <span className="detail-value">{formatDate(customer.createdAt)}</span>
                   </div>
                 </div>
 
@@ -199,13 +195,13 @@ const ViewCustomers = () => {
                 </div>
 
                 {loadingOrders && (
-                  <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="loading-container">
                     <p>Loading order details...</p>
                   </div>
                 )}
 
                 {ordersError && (
-                  <div className="error-message" style={{ margin: '1rem 0' }}>
+                  <div className="error-message">
                     {ordersError}
                   </div>
                 )}
@@ -215,7 +211,7 @@ const ViewCustomers = () => {
                     <h4>Recent Orders ({customerOrders.length} total)</h4>
                     
                     {customerOrders.length === 0 ? (
-                      <p style={{ textAlign: 'center', color: '#666', padding: '1rem' }}>
+                      <p className="no-orders-message">
                         No detailed orders found
                       </p>
                     ) : (
