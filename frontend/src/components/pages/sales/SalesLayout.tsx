@@ -11,20 +11,12 @@ const SalesLayout = () => {
     // Direct check without function wrapper
     const salesRepId = localStorage.getItem('salesRepId');
     const salesRepUsername = localStorage.getItem('salesRepUsername');
-    
-    console.log('SalesLayout - Direct Auth Check:', {
-      salesRepId,
-      salesRepUsername,
-      currentPath: location.pathname,
-      bothPresent: !!(salesRepId && salesRepUsername)
-    });
+  
     
     // Simplified check
     setIsAuthenticated(!!(salesRepId && salesRepUsername));
     
   }, [location.pathname]);
-
-  console.log('SalesLayout - Current auth state:', isAuthenticated);
 
   // Loading state
   if (isAuthenticated === null) {

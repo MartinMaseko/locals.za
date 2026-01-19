@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Logo from '../../assets/logos/LZABLKTRP.webp';
 import '../../../components/assets/UI/loginReg.css';
@@ -17,7 +16,6 @@ const SalesLogin = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -29,8 +27,6 @@ const SalesLogin = () => {
     setError('');
     
     try {
-      console.log('SalesLogin - Attempting login with:', { username: form.username });
-      
       // Simple credential verification
       const { data } = await axios.post<SalesLoginResponse>(
         `${API_URL}/api/sales/login`,
@@ -39,8 +35,6 @@ const SalesLogin = () => {
           password: form.password
         }
       );
-
-      console.log('SalesLogin - Login response:', data);
 
       if (!data.success) {
         throw new Error('Login failed');
@@ -54,15 +48,6 @@ const SalesLogin = () => {
       localStorage.setItem('salesRepUsername', data.username);
       localStorage.setItem('salesRepEmail', data.email);
       localStorage.setItem('userType', 'sales_rep');
-
-      // Verify the data was stored
-      const storedId = localStorage.getItem('salesRepId');
-      const storedUsername = localStorage.getItem('salesRepUsername');
-      
-      console.log('SalesLogin - Stored data:', {
-        salesRepId: storedId,
-        salesRepUsername: storedUsername
-      });
 
       // Use window.location instead of navigate to force a complete page reload
       window.location.href = '/sales/add-customer';
