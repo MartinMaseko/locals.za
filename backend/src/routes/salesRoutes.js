@@ -554,4 +554,204 @@ router.get('/info', authenticateSalesRep, async (req, res) => {
   }
 });
 
+// Get detailed sales rep information for admin (including orders and cashout history)
+router.get('/admin/:salesRepId/details', async (req, res) => {
+  try {
+    const { salesRepId } = req.params;
+    
+    // Get sales rep basic info
+    const salesRepDoc = await admin.firestore()
+      .collection('salesReps')
+      .doc(salesRepId)
+      .get();
+    
+    if (!salesRepDoc.exists) {
+      return res.status(404).json({ error: 'Sales rep not found' });
+    }
+    
+    const salesRepData = salesRepDoc.data();
+    
+    // Get customers linked to this sales rep
+    const customersQuery = admin.firestore()
+      .collection('users')
+      .where('salesRepId', '==', salesRepId);
+    
+    const customersSnapshot = await customersQuery.get();
+    const customers = [];
+    const customerUserIds = [];
+    
+    for (const doc of customersSnapshot.docs) {
+      const userData = doc.data();
+      customerUserIds.push(doc.id);
+      
+      customers.push({
+        id: doc.id,
+        name: userData.full_name || userData.displayName || 'Unknown',
+        email: userData.email,
+        phone: userData.phone_number || '',
+        createdAt: userData.created_at || userData.createdAt
+      });
+    }
+    
+    // Get all orders from these customers with better error handling
+    let allOrders = [];
+    let totalRevenue = 0;
+    
+    if (customerUserIds.length > 0) {
+      // Handle large customer lists by batching
+      const batchSize = 10; // Firestore 'in' query limit
+      for (let i = 0; i < customerUserIds.length; i += batchSize) {
+        const batchCustomerIds = customerUserIds.slice(i, i + batchSize);
+        
+        try {
+          const ordersSnapshot = await admin.firestore()
+            .collection('orders')
+            .where('userId', 'in', batchCustomerIds)
+            .get(); // Remove orderBy to avoid index requirement
+          
+          ordersSnapshot.docs.forEach(doc => {
+            const orderData = doc.data();
+            const orderTotal = orderData.adjustedTotal || orderData.total || 0;
+            totalRevenue += orderTotal;
+            
+            allOrders.push({
+              id: doc.id,
+              total: orderTotal,
+              status: orderData.status,
+              createdAt: orderData.createdAt,
+              userId: orderData.userId,
+              customerName: customers.find(c => c.id === orderData.userId)?.name || 'Unknown',
+              salesRepCashedOut: orderData.salesRepCashedOut || false
+            });
+          });
+        } catch (orderError) {
+          console.error(`Error fetching orders for batch ${i}:`, orderError);
+          // Continue with other batches
+        }
+      }
+      
+      // Sort orders manually by date (newest first)
+      allOrders.sort((a, b) => {
+        const getTime = (timestamp) => {
+          if (!timestamp) return 0;
+          if (timestamp.seconds) return timestamp.seconds * 1000;
+          if (typeof timestamp === 'string') return new Date(timestamp).getTime();
+          return 0;
+        };
+        return getTime(b.createdAt) - getTime(a.createdAt);
+      });
+    }
+    
+    // Get cashout history with error handling
+    let cashoutHistory = [];
+    try {
+      const cashoutSnapshot = await admin.firestore()
+        .collection('salesCashouts')
+        .where('salesRepId', '==', salesRepId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      
+      cashoutSnapshot.docs.forEach(doc => {
+        const cashoutData = doc.data();
+        cashoutHistory.push({
+          id: doc.id,
+          amount: cashoutData.amount,
+          orderCount: cashoutData.orderCount,
+          status: cashoutData.status || 'pending',
+          createdAt: cashoutData.createdAt,
+          orderIds: cashoutData.orderIds || []
+        });
+      });
+    } catch (cashoutError) {
+      console.error('Error fetching cashout history (likely missing index):', cashoutError);
+      
+      // Fallback: try without ordering
+      try {
+        const fallbackCashoutSnapshot = await admin.firestore()
+          .collection('salesCashouts')
+          .where('salesRepId', '==', salesRepId)
+          .get();
+        
+        fallbackCashoutSnapshot.docs.forEach(doc => {
+          const cashoutData = doc.data();
+          cashoutHistory.push({
+            id: doc.id,
+            amount: cashoutData.amount,
+            orderCount: cashoutData.orderCount,
+            status: cashoutData.status || 'pending',
+            createdAt: cashoutData.createdAt,
+            orderIds: cashoutData.orderIds || []
+          });
+        });
+        
+        // Sort manually
+        cashoutHistory.sort((a, b) => {
+          const getTime = (timestamp) => {
+            if (!timestamp) return 0;
+            if (timestamp.seconds) return timestamp.seconds * 1000;
+            return 0;
+          };
+          return getTime(b.createdAt) - getTime(a.createdAt);
+        });
+      } catch (fallbackError) {
+        console.error('Fallback cashout history fetch also failed:', fallbackError);
+        // Continue with empty array
+      }
+    }
+    
+    // Calculate commission earnings
+    const eligibleOrders = allOrders.filter(order => !order.salesRepCashedOut);
+    const pendingCommission = eligibleOrders.length * 10; // R10 per order
+    const totalCashedOut = cashoutHistory.reduce((sum, cashout) => sum + (cashout.amount || 0), 0);
+    
+    res.json({
+      id: salesRepId,
+      username: salesRepData.username,
+      email: salesRepData.email,
+      createdAt: salesRepData.createdAt,
+      totalCustomers: customers.length,
+      totalOrders: allOrders.length,
+      totalRevenue,
+      pendingCommission,
+      totalCashedOut,
+      customers,
+      orders: allOrders.slice(0, 20), // Latest 20 orders
+      cashoutHistory
+    });
+    
+  } catch (error) {
+    console.error('Error getting sales rep admin details:', error);
+    res.status(500).json({ 
+      error: 'Failed to get sales rep details', 
+      details: error.message 
+    });
+  }
+});
+
+// Mark cashout as paid (admin only)
+router.patch('/admin/cashout/:cashoutId/mark-paid', async (req, res) => {
+  try {
+    const { cashoutId } = req.params;
+    
+    const cashoutRef = admin.firestore().collection('salesCashouts').doc(cashoutId);
+    const cashoutDoc = await cashoutRef.get();
+    
+    if (!cashoutDoc.exists) {
+      return res.status(404).json({ error: 'Cashout request not found' });
+    }
+    
+    await cashoutRef.update({
+      status: 'paid',
+      paidAt: admin.firestore.FieldValue.serverTimestamp(),
+      paidBy: 'admin'
+    });
+    
+    res.json({ success: true, message: 'Cashout marked as paid' });
+    
+  } catch (error) {
+    console.error('Error marking cashout as paid:', error);
+    res.status(500).json({ error: 'Failed to mark cashout as paid' });
+  }
+});
+
 module.exports = router;

@@ -171,30 +171,30 @@ const DashboardSection = ({
         <div className="loading-indicator">Loading dashboard data...</div>
       ) : (
         <div className="dashboard-stats">
-          <div className="stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
-          <div className="stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
-          <div className="stat-card"><h3>Orders</h3>
-            <p className="stat-number">
+          <div className="dash-stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
+          <div className="dash-stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
+          <div className="dash-stat-card"><h3>Orders</h3>
+            <p className="dash-stat-number">
               {filterOrdersForCalculations(ordersState.allOrders || ordersState.orders).length}
             </p>
           </div>
-          <div className="stat-card">
+          <div className="dash-stat-card">
             <h3>Service Revenue</h3>
-            <p className="stat-number">R{dashboardStats.serviceRevenue.toFixed(2)}</p>
+            <p className="dash-stat-number">R{dashboardStats.serviceRevenue.toFixed(2)}</p>
             <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
           </div>
           
-          <div className="stat-card">
+          <div className="dash-stat-card">
             <h3>Order Revenue</h3>
-            <p className="stat-number">R{dashboardStats.orderRevenue.toFixed(2)}</p>
+            <p className="dash-stat-number">R{dashboardStats.orderRevenue.toFixed(2)}</p>
             <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
           </div>
-          <div className="stat-card">
+          <div className="dash-stat-card">
             <h3>Users</h3>
-            <p className="stat-number">{users.length}</p>
+            <p className="dash-stat-number">{users.length}</p>
             <p className="stat-period">Total registered users</p>
           </div>
-          <div className="stat-card top-products">
+          <div className="dash-stat-card top-products">
             <h3>Top Selling Products</h3>
             {dashboardStats.topProducts.length > 0 ? (
               dashboardStats.topProducts.map((product, idx) => (
