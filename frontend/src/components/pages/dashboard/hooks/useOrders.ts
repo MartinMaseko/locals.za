@@ -36,23 +36,21 @@ export const useOrders = () => {
     setLoading(true);
     setError('');
     try {
+      // adminApi.getOrders() already filters out pending_payment and cancelled orders
       const data = await adminApi.getOrders();
       
-      // Filter out invalid statuses (pending_payment and cancelled)
-      const validOrders = filterOrdersForCalculations(data);
-      
-      setAllOrders(validOrders);
+      setAllOrders(data);
       
       // Apply status filter if provided
       if (statusFilter) {
-        const filtered = validOrders.filter(order => 
+        const filtered = data.filter(order => 
           order.status && order.status.toLowerCase() === statusFilter.toLowerCase()
         );
         setOrders(filtered);
         setFilteredOrders(filtered);
       } else {
-        setOrders(validOrders);
-        setFilteredOrders(validOrders);
+        setOrders(data);
+        setFilteredOrders(data);
       }
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
@@ -70,6 +68,9 @@ export const useOrders = () => {
       setFilteredOrders(prev =>
         prev.map(o => o.id === orderId ? { ...o, status } : o)
       );
+      setAllOrders(prev =>
+        prev.map(o => o.id === orderId ? { ...o, status } : o)
+      );
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to update status');
     }
@@ -82,6 +83,9 @@ export const useOrders = () => {
         prev.map(o => o.id === orderId ? { ...o, driver_id: driverId } : o)
       );
       setFilteredOrders(prev =>
+        prev.map(o => o.id === orderId ? { ...o, driver_id: driverId } : o)
+      );
+      setAllOrders(prev =>
         prev.map(o => o.id === orderId ? { ...o, driver_id: driverId } : o)
       );
     } catch (err: any) {
@@ -98,13 +102,14 @@ export const useOrders = () => {
     }
   }, [orders]);
 
+  // Since API already filters, we can use for business calculations directly
   const validOrders = useMemo(() => {
     return filterOrdersForCalculations(allOrders);
   }, [allOrders]);
   
   return {
-    orders: validOrders, // Return filtered orders
-    allOrders, // Return all orders
+    orders: validOrders, // Return filtered orders for business calculations
+    allOrders, // Return all API-filtered orders
     filteredOrders,
     loading,
     error,

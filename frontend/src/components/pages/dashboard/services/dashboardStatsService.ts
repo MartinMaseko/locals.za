@@ -32,8 +32,15 @@ export const dashboardStatsService = {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToLookBack);
 
-    // Filter by date
-    const filteredOrders = orders.filter(order => {
+    // First filter out invalid orders (pending_payment, cancelled) and then by date
+    const validOrders = orders.filter(order => 
+      order && 
+      order.status && 
+      !['pending_payment', 'cancelled'].includes(order.status.toLowerCase())
+    );
+
+    // Then filter by date
+    const dateFilteredOrders = validOrders.filter(order => {
       if (!order.createdAt) return false;
       const orderDate = order.createdAt instanceof Date 
         ? order.createdAt 
@@ -45,15 +52,23 @@ export const dashboardStatsService = {
       return orderDate && orderDate >= cutoffDate;
     });
 
-    // Calculate service revenue
-    const serviceRevenue = filteredOrders.reduce((sum, order) => 
-      sum + (Number(order.serviceFee) || 0), 0);
+    // Use the same filtered orders for all calculations to ensure consistency
+    const filteredOrders = dateFilteredOrders.filter(order => 
+      ['pending', 'processing', 'in_transit', 'completed'].includes(order.status.toLowerCase())
+    );
 
-    // Calculate order revenue
-    const orderRevenue = filteredOrders.reduce((sum, order) => 
+    // Service revenue: R78 per valid order
+    const serviceRevenue = filteredOrders.length * 78;
+
+    // Order revenue: sum of subtotals for revenue-generating orders only
+    const revenueEligibleOrders = filteredOrders.filter(order => 
+      ['pending', 'in_transit', 'completed'].includes(order.status.toLowerCase())
+    );
+
+    const orderRevenue = revenueEligibleOrders.reduce((sum, order) => 
       sum + (Number(order.subtotal) || 0), 0);
 
-    // Calculate top products
+    // Calculate top products from the same filtered orders
     const productSales: Record<string, {name: string, count: number, revenue: number}> = {};
 
     filteredOrders.forEach(order => {
@@ -83,6 +98,16 @@ export const dashboardStatsService = {
     const topProducts = Object.values(productSales)
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
+
+    console.log(`Stats calculation for ${period}:`, {
+      totalOrdersReceived: orders.length,
+      validOrdersAfterStatusFilter: validOrders.length,
+      dateFilteredOrders: dateFilteredOrders.length,
+      finalFilteredOrders: filteredOrders.length,
+      serviceRevenue,
+      orderRevenue,
+      topProductsCount: topProducts.length
+    });
 
     return {
       serviceRevenue,
