@@ -1,6 +1,4 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { getAuth, signOut } from 'firebase/auth';
-import { app } from '../../../Auth/firebaseClient';
 import { useState } from 'react';
 import Logo from '../../assets/logos/LZA ICON.png';
 import '../storepages/navbar/navstyle.css';
@@ -9,13 +7,17 @@ import '../drivers/driverStyles.css';
 const SalesNav = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const auth = getAuth(app);
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     try {
-      await signOut(auth);
+      // Clear sales rep data from localStorage
       localStorage.removeItem('salesRepId');
       localStorage.removeItem('salesRepUsername');
+      localStorage.removeItem('salesRepEmail');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('salesRepCart');
+      localStorage.removeItem('salesRepCartInfo');
+      
       console.log('Sales Rep Signed Out');
       setDropdownOpen(false);
       navigate('/sales/login');
@@ -108,6 +110,18 @@ const SalesNav = () => {
                 alt="revenue"
               />
               Revenue
+            </NavLink>
+            <NavLink
+              to="/sales/training"
+              className="navbar-dropdown-item"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <img
+                className="navbar-dropdown-icon"
+                src="https://img.icons8.com/ios-glyphs/35/ffb803/graduation-cap.png"
+                alt="training"
+              />
+              Training
             </NavLink>
             <button
               className="navbar-logout"

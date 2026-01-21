@@ -119,49 +119,49 @@ const SalesCart: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="cart-items">
+          <div className="sales-cart-items">
             {cart.map(item => (
-              <div key={item.id} className="cart-item">
-                <img src={item.image} alt={item.name} className="cart-item-image" />
-                <div className="cart-item-details">
+              <div key={item.id} className="sales-cart-item">
+                <img src={item.image} alt={item.name} className="sales-cart-item-image" />
+                <div className="sales-cart-item-details">
                   <h3>{item.name}</h3>
-                  <p className="cart-item-price">R{item.price.toFixed(2)}</p>
-                  <div className="cart-item-qty">
+                  <p className="sales-cart-item-price">R{item.price.toFixed(2)}</p>
+                  <div className="sales-cart-item-qty">
                     <button onClick={() => updateQuantity(item.id, -1)}>−</button>
                     <span>{item.qty}</span>
                     <button onClick={() => updateQuantity(item.id, 1)}>+</button>
                   </div>
-                  <p className="cart-item-subtotal">
+                  <p className="sales-cart-item-subtotal">
                     Subtotal: R{(item.price * item.qty).toFixed(2)}
                   </p>
                 </div>
-                <button onClick={() => removeItem(item.id)} className="remove-btn">
+                <button onClick={() => removeItem(item.id)} className="sales-remove-btn">
                   Remove
                 </button>
               </div>
             ))}
           </div>
 
-          <div className="cart-summary">
+          <div className="sales-cart-summary">
             <h3>Cart Summary</h3>
-            <div className="summary-row">
+            <div className="sales-summary-row">
               <span>Items:</span>
               <span>{cart.length}</span>
             </div>
-            <div className="summary-row">
+            <div className="sales-summary-row">
               <span>Total Quantity:</span>
               <span>{cart.reduce((sum, item) => sum + item.qty, 0)}</span>
             </div>
-            <div className="summary-row total">
+            <div className="sales-summary-row total">
               <span>Total:</span>
               <span>R{total.toFixed(2)}</span>
             </div>
 
-            <div className="cart-actions">
-              <button onClick={generateShareLink} className="share-link-btn">
+            <div className="sales-cart-actions">
+              <button onClick={generateShareLink} className="sales-share-link-btn">
                 Generate Shareable Link
               </button>
-              <button onClick={clearCart} className="clear-cart-btn">
+              <button onClick={clearCart} className="sales-clear-cart-btn">
                 Clear Cart
               </button>
             </div>

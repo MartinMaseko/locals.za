@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { adminApi } from '../services/adminApi';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface SalesRep {
   id: string;
@@ -9,6 +12,24 @@ interface SalesRep {
   isActive: boolean;
 }
 
+interface Order {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: any;
+  customerName: string;
+  salesRepCashedOut: boolean;
+}
+
+interface CashoutRequest {
+  id: string;
+  amount: number;
+  orderCount: number;
+  status: string;
+  createdAt: any;
+  orderIds: string[];
+}
+
 interface SalesRepDetails {
   id: string;
   username: string;
@@ -16,7 +37,11 @@ interface SalesRepDetails {
   totalCustomers: number;
   totalOrders: number;
   totalRevenue: number;
+  pendingCommission: number;
+  totalCashedOut: number;
   customers: any[];
+  orders: Order[];
+  cashoutHistory: CashoutRequest[];
 }
 
 const PromoteAdminSection = () => {
@@ -30,6 +55,7 @@ const PromoteAdminSection = () => {
   const [loading, setLoading] = useState(false);
   const [selectedRep, setSelectedRep] = useState<SalesRepDetails | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const [processingCashout, setProcessingCashout] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSalesReps();
@@ -76,22 +102,70 @@ const PromoteAdminSection = () => {
   const viewRepDetails = async (repId: string) => {
     setModalLoading(true);
     try {
-      const data = await adminApi.getSalesRepDetails(repId);
-      setSelectedRep(data as SalesRepDetails);
+      // Use the new admin endpoint for detailed info
+      const response = await axios.get(`${API_URL}/api/sales/admin/${repId}/details`);
+      setSelectedRep(response.data as SalesRepDetails);
     } catch (err: any) {
       console.error('Error fetching rep details:', err);
+      setSalesRepMsg('Failed to load sales rep details. Please try again.');
     }
     setModalLoading(false);
   };
 
+  const markCashoutAsPaid = async (cashoutId: string) => {
+    setProcessingCashout(cashoutId);
+    try {
+      await axios.patch(`${API_URL}/api/sales/admin/cashout/${cashoutId}/mark-paid`);
+      setSalesRepMsg('Cashout marked as paid successfully!');
+      // Refresh the details
+      if (selectedRep) {
+        await viewRepDetails(selectedRep.id);
+      }
+    } catch (err: any) {
+      console.error('Error marking cashout as paid:', err);
+      setSalesRepMsg('Failed to mark cashout as paid. Please try again.');
+    }
+    setProcessingCashout(null);
+  };
+
   const formatCurrency = (amount: number) => {
-    return `R${amount.toFixed(2)}`;
+    return `R${(amount || 0).toFixed(2)}`;
   };
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    return date.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-ZA', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const colors = {
+      pending: { bg: '#fff3cd', color: '#856404' },
+      processing: { bg: '#d1ecf1', color: '#0c5460' },
+      paid: { bg: '#d4edda', color: '#155724' },
+      cancelled: { bg: '#f8d7da', color: '#721c24' }
+    };
+    
+    const style = colors[status as keyof typeof colors] || colors.pending;
+    
+    return (
+      <span style={{
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontSize: '0.75rem',
+        fontWeight: '600',
+        backgroundColor: style.bg,
+        color: style.color
+      }}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
 
   return (
@@ -163,57 +237,43 @@ const PromoteAdminSection = () => {
         </form>
 
         {/* Sales Reps List */}
-        <div className="sales-reps-list" style={{ marginTop: '30px' }}>
+        <div className="sales-reps-list">
           <h4>Existing Sales Representatives</h4>
           {loading ? (
             <p>Loading...</p>
           ) : salesReps.length === 0 ? (
-            <p style={{ color: '#666', fontStyle: 'italic' }}>No sales representatives yet.</p>
+            <p className="no-sales-reps">No sales representatives yet.</p>
           ) : (
-            <div className="sales-reps-table">
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="sales-reps-table-container">
+              <table className="sales-reps-table">
                 <thead>
-                  <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                    <th style={{ padding: '12px', textAlign: 'left' }}>Username</th>
-                    <th style={{ padding: '12px', textAlign: 'left' }}>Email</th>
-                    <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-                    <th style={{ padding: '12px', textAlign: 'left' }}>Created</th>
-                    <th style={{ padding: '12px', textAlign: 'left' }}>Actions</th>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {salesReps.map((rep) => (
-                    <tr key={rep.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px' }}>{rep.username}</td>
-                      <td style={{ padding: '12px' }}>{rep.email}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ 
-                          padding: '4px 8px', 
-                          borderRadius: '4px', 
-                          backgroundColor: rep.isActive ? '#d4edda' : '#f8d7da',
-                          color: rep.isActive ? '#155724' : '#721c24',
-                          fontSize: '12px'
-                        }}>
+                    <tr key={rep.id}>
+                      <td>{rep.username}</td>
+                      <td>{rep.email}</td>
+                      <td>
+                        <span className={`sales-rep-status ${rep.isActive ? 'active' : 'inactive'}`}>
                           {rep.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td style={{ padding: '12px' }}>
+                      <td>
                         {rep.createdAt?.seconds 
                           ? new Date(rep.createdAt.seconds * 1000).toLocaleDateString()
                           : 'N/A'}
                       </td>
-                      <td style={{ padding: '12px' }}>
+                      <td>
                         <button 
                           onClick={() => viewRepDetails(rep.id)} 
                           className="view-details-button"
-                          style={{ 
-                            padding: '8px 12px', 
-                            backgroundColor: '#007bff', 
-                            color: '#fff', 
-                            border: 'none', 
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
                         >
                           View Details
                         </button>
@@ -229,107 +289,125 @@ const PromoteAdminSection = () => {
 
       {/* Sales Rep Details Modal */}
       {selectedRep && (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.6)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px'
-      }} onClick={() => setSelectedRep(null)}>
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          maxWidth: '700px',
-          width: '100%',
-          maxHeight: '80vh',
-          overflow: 'auto',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
-        }} onClick={(e) => e.stopPropagation()}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1.5rem',
-            borderBottom: '2px solid #f0f0f0'
-          }}>
-            <h3 style={{ margin: 0 }}>{selectedRep.username}'s Profile</h3>
-            <button 
-              onClick={() => setSelectedRep(null)}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '2rem',
-                cursor: 'pointer',
-                padding: 0,
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%'
-              }}
-            >×</button>
-          </div>
+        <div className="sales-rep-modal-overlay" onClick={() => setSelectedRep(null)}>
+          <div className="sales-rep-modal-container" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="sales-rep-modal-header">
+              <h3>{selectedRep.username}'s Profile</h3>
+              <button className="sales-rep-modal-close" onClick={() => setSelectedRep(null)}>×</button>
+            </div>
 
-          <div style={{ padding: '1.5rem' }}>
-            {modalLoading ? (
-              <p style={{ textAlign: 'center' }}>Loading...</p>
-            ) : (
-              <>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                  gap: '1rem',
-                  marginBottom: '1.5rem'
-                }}>
-                  <div style={{ background: '#f5f5f5', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ color: '#666', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Total Customers</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{selectedRep.totalCustomers}</div>
-                  </div>
-                  <div style={{ background: '#f5f5f5', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ color: '#666', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Total Orders</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{selectedRep.totalOrders}</div>
-                  </div>
-                  <div style={{ background: '#e8f5e9', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ color: '#2e7d32', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Total Revenue</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#2e7d32' }}>
-                      {formatCurrency(selectedRep.totalRevenue)}
+            <div className="sales-rep-modal-content">
+              {modalLoading ? (
+                <p className="modal-loading">Loading...</p>
+              ) : (
+                <>
+                  {/* Statistics Cards */}
+                  <div className="sales-rep-stats-grid">
+                    <div className="salesDash-stat-card stat-customers">
+                      <div className="salesDash-stat-label">Customers</div>
+                      <div className="salesDash-stat-value">{selectedRep.totalCustomers}</div>
+                    </div>
+                    <div className="salesDash-stat-card stat-orders">
+                      <div className="salesDash-stat-label">Orders</div>
+                      <div className="salesDash-stat-value">{selectedRep.totalOrders}</div>
+                    </div>
+                    <div className="salesDash-stat-card stat-revenue">
+                      <div className="salesDash-stat-label">Revenue</div>
+                      <div className="salesDash-stat-value stat-value-revenue">
+                        {formatCurrency(selectedRep.totalRevenue)}
+                      </div>
+                    </div>
+                    <div className="salesDash-stat-card stat-pending">
+                      <div className="salesDash-stat-label">Pending</div>
+                      <div className="salesDash-stat-value stat-value-pending">
+                        {formatCurrency(selectedRep.pendingCommission)}
+                      </div>
+                    </div>
+                    <div className="salesDash-stat-card stat-paid">
+                      <div className="salesDash-stat-label">Paid Out</div>
+                      <div className="salesDash-stat-value stat-value-paid">
+                        {formatCurrency(selectedRep.totalCashedOut)}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <h4>Customers ({selectedRep.customers.length})</h4>
-                  {selectedRep.customers.length > 0 ? (
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      {selectedRep.customers.map((customer: any) => (
-                        <div key={customer.id} style={{
-                          padding: '1rem',
-                          background: '#fafafa',
-                          borderRadius: '8px',
-                          marginBottom: '0.75rem',
-                          border: '1px solid #e0e0e0'
-                        }}>
-                          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>{customer.name}</div>
-                          <div style={{ fontSize: '0.9rem', color: '#666' }}>{customer.email}</div>
-                          <div style={{ fontSize: '0.85rem', color: '#999', marginTop: '0.25rem' }}>
-                            Added: {formatDate(customer.createdAt)}
+                  {/* Tabs */}
+                  <div className="sales-rep-tabs">
+                    <div className="sales-rep-tab-container">
+                      <button className="sales-rep-tab active">
+                        Cashout Requests
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cashout Requests */}
+                  <div>
+                    <h4 className="cashout-section-title">Cashout Requests ({selectedRep.cashoutHistory.length})</h4>
+                    {selectedRep.cashoutHistory.length > 0 ? (
+                      <div className="cashout-requests-container">
+                        {selectedRep.cashoutHistory.map((cashout: CashoutRequest) => (
+                          <div key={cashout.id} className="cashout-request-item">
+                            <div className="cashout-request-details">
+                              <div className="cashout-header">
+                                <div className="cashout-amount">
+                                  {formatCurrency(cashout.amount)}
+                                </div>
+                                {getStatusBadge(cashout.status)}
+                              </div>
+                              <div className="cashout-meta">
+                                {cashout.orderCount} orders • {formatDate(cashout.createdAt)}
+                              </div>
+                            </div>
+                            {cashout.status === 'pending' && (
+                              <button
+                                onClick={() => markCashoutAsPaid(cashout.id)}
+                                disabled={processingCashout === cashout.id}
+                                className={`mark-paid-btn ${processingCashout === cashout.id ? 'processing' : ''}`}
+                              >
+                                {processingCashout === cashout.id ? 'Processing...' : 'Mark as Paid'}
+                              </button>
+                            )}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p style={{ textAlign: 'center', color: '#666', padding: '1rem' }}>No customers yet</p>
-                  )}
-                </div>
-              </>
-            )}
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="no-cashout-requests">No cashout requests yet</p>
+                    )}
+                  </div>
+
+                  {/* Recent Orders */}
+                  <div className="recent-orders-section">
+                    <h4 className="recent-orders-title">Recent Orders ({selectedRep.orders.length})</h4>
+                    {selectedRep.orders.length > 0 ? (
+                      <div className="recent-orders-container">
+                        {selectedRep.orders.slice(0, 10).map((order: Order) => (
+                          <div key={order.id} className={`recent-order-item ${order.salesRepCashedOut ? 'paid' : 'unpaid'}`}>
+                            <div className="order-info">
+                              <div className="order-customer">{order.customerName}</div>
+                              <div className="order-meta">
+                                #{order.id.slice(-8)} • {formatDate(order.createdAt)}
+                              </div>
+                            </div>
+                            <div className="order-summary">
+                              <div className="order-total">{formatCurrency(order.total)}</div>
+                              <div className={`order-status ${order.salesRepCashedOut ? 'paid' : 'pending'}`}>
+                                {order.salesRepCashedOut ? 'Paid' : 'Pending'}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="no-orders">No orders yet</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
       )}
     </div>
   );

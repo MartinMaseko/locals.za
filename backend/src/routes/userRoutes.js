@@ -9,14 +9,36 @@ router.post('/register', authenticateToken, async (req, res) => {
   const { full_name, phone_number, user_type } = req.body;
 
   try {
+    // Check if this email is linked to a sales rep via customers collection
+    const customerSnapshot = await admin.firestore()
+      .collection('customers')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    let salesRepId = null;
+    if (!customerSnapshot.empty) {
+      const customerData = customerSnapshot.docs[0].data();
+      salesRepId = customerData.salesRepId;
+      
+      // Update customer record with userId
+      await admin.firestore()
+        .collection('customers')
+        .doc(customerSnapshot.docs[0].id)
+        .update({ userId: uid });
+    }
+
     // User document
-    await admin.firestore().collection('users').doc(uid).set({
+    const userData = {
       email,
       full_name,
       phone_number,
       user_type,
+      salesRepId, // Link user to their sales rep if applicable
       created_at: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    };
+
+    await admin.firestore().collection('users').doc(uid).set(userData, { merge: true });
 
     // Welcome notification and inbox message
     const welcomeMessage = {
