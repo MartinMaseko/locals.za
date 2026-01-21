@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
-import { app } from '../../../Auth/firebaseClient';
 import axios from 'axios';
 import './salesStyles.css';
 
@@ -17,6 +15,20 @@ interface Customer {
   lastOrderDate: any;
   createdAt: any;
   recentOrders?: any[];
+  userId?: string;
+}
+
+interface CustomerOrder {
+  id: string;
+  items: any[];
+  subtotal: number;
+  serviceFee: number;
+  total: number;
+  status: string;
+  createdAt: any;
+  missingItems?: any[];
+  refundAmount?: number;
+  adjustedTotal?: number;
 }
 
 const ViewCustomers = () => {
@@ -24,7 +36,9 @@ const ViewCustomers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const auth = getAuth(app);
+  const [customerOrders, setCustomerOrders] = useState<CustomerOrder[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [ordersError, setOrdersError] = useState('');
 
   useEffect(() => {
     fetchCustomers();
@@ -34,12 +48,12 @@ const ViewCustomers = () => {
     setLoading(true);
     setError('');
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error('Please login to continue');
+      // Get salesRepId from localStorage instead of Firebase Auth
+      const salesRepId = localStorage.getItem('salesRepId');
+      if (!salesRepId) throw new Error('Please login to continue');
 
-      const token = await user.getIdToken();
       const { data } = await axios.get<Customer[]>(`${API_URL}/api/sales/customers`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${salesRepId}` }
       });
 
       setCustomers(data);
@@ -48,6 +62,38 @@ const ViewCustomers = () => {
       setError(err?.response?.data?.error || 'Failed to load customers');
     }
     setLoading(false);
+  };
+
+  const fetchCustomerOrders = async (customer: Customer) => {
+    setLoadingOrders(true);
+    setOrdersError('');
+    
+    try {
+      // Get salesRepId from localStorage
+      const salesRepId = localStorage.getItem('salesRepId');
+      if (!salesRepId) throw new Error('Please login to continue');
+      
+      const encodedEmail = encodeURIComponent(customer.email);
+      const { data } = await axios.get<CustomerOrder[]>(
+        `${API_URL}/api/orders/customer/email/${encodedEmail}`, 
+        {
+          headers: { Authorization: `Bearer ${salesRepId}` }
+        }
+      );
+      
+      setCustomerOrders(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Error fetching customer orders:', err);
+      setOrdersError(err?.response?.data?.error || 'Failed to load customer orders');
+      setCustomerOrders([]);
+    }
+    
+    setLoadingOrders(false);
+  };
+
+  const handleViewOrderHistory = async (customer: Customer) => {
+    setSelectedCustomer(customer);
+    await fetchCustomerOrders(customer);
   };
 
   const formatDate = (timestamp: any) => {
@@ -64,7 +110,7 @@ const ViewCustomers = () => {
     return (
       <div className="buyer-dashboard">
         <div className="buyer-section">
-          <p style={{ textAlign: 'center', padding: '2rem' }}>Loading customers...</p>
+          <p className="loading-message">Loading customers...</p>
         </div>
       </div>
     );
@@ -74,14 +120,14 @@ const ViewCustomers = () => {
     <div className="buyer-dashboard">
       <div className="buyer-section">
         <h2>My Customers</h2>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '1.5rem' }}>
+        <p className="customers-total-count">
           Total Customers: {customers.length}
         </p>
 
         {error && <div className="error-message">{error}</div>}
 
         {customers.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
+          <p className="no-customers-message">
             No customers yet. Add your first customer to get started!
           </p>
         ) : (
@@ -110,15 +156,11 @@ const ViewCustomers = () => {
                     <span className="detail-label">Last Order:</span>
                     <span className="detail-value">{formatDate(customer.lastOrderDate)}</span>
                   </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Customer Since:</span>
-                    <span className="detail-value">{formatDate(customer.createdAt)}</span>
-                  </div>
                 </div>
 
                 <button
                   className="view-details-btn"
-                  onClick={() => setSelectedCustomer(customer)}
+                  onClick={() => handleViewOrderHistory(customer)}
                 >
                   View Order History
                 </button>
@@ -127,12 +169,12 @@ const ViewCustomers = () => {
           </div>
         )}
 
-        {/* Customer Detail Modal */}
+        {/* Enhanced Customer Detail Modal */}
         {selectedCustomer && (
           <div className="modal-overlay" onClick={() => setSelectedCustomer(null)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h3>{selectedCustomer.name}'s Orders</h3>
+                <h3>{selectedCustomer.name}'s Order History</h3>
                 <button className="modal-close" onClick={() => setSelectedCustomer(null)}>×</button>
               </div>
               
@@ -152,23 +194,81 @@ const ViewCustomers = () => {
                   </div>
                 </div>
 
-                {selectedCustomer.recentOrders && selectedCustomer.recentOrders.length > 0 ? (
-                  <div className="recent-orders">
-                    <h4>Recent Orders</h4>
-                    {selectedCustomer.recentOrders.map((order: any) => (
-                      <div key={order.id} className="order-item">
-                        <div className="order-info">
-                          <span className="order-id">#{order.id.slice(-6)}</span>
-                          <span className="order-date">{formatDate(order.createdAt)}</span>
-                        </div>
-                        <div className="order-amount">{formatCurrency(order.totalAmount || 0)}</div>
-                      </div>
-                    ))}
+                {loadingOrders && (
+                  <div className="loading-container">
+                    <p>Loading order details...</p>
                   </div>
-                ) : (
-                  <p style={{ textAlign: 'center', color: '#666', padding: '1rem' }}>
-                    No orders yet
-                  </p>
+                )}
+
+                {ordersError && (
+                  <div className="error-message">
+                    {ordersError}
+                  </div>
+                )}
+
+                {!loadingOrders && !ordersError && (
+                  <div className="order-history-section">
+                    <h4>Recent Orders ({customerOrders.length} total)</h4>
+                    
+                    {customerOrders.length === 0 ? (
+                      <p className="no-orders-message">
+                        No detailed orders found
+                      </p>
+                    ) : (
+                      <div className="recent-orders-detailed">
+                        {customerOrders.slice(0, 2).map((order: CustomerOrder) => (
+                          <div key={order.id} className="order-detail-card">
+                            <div className="order-header-info">
+                              <div className="order-id-date">
+                                <strong>Order #{order.id.slice(-6)}</strong>
+                                <span className="order-date">{formatDate(order.createdAt)}</span>
+                              </div>
+                              <div className="order-status-total">
+                                <span className={`order-status status-${order.status}`}>
+                                  {order.status}
+                                </span>
+                                <span className="order-total">
+                                  {formatCurrency(order.adjustedTotal || order.total)}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="order-items-summary">
+                              <h5>Items ({order.items.length})</h5>
+                              <div className="items-list">
+                                {order.items.slice(0, 3).map((item: any, idx: number) => (
+                                  <div key={idx} className="item-summary">
+                                    <span className="item-name">
+                                      {item.product?.name || `Product #${item.productId}`}
+                                    </span>
+                                    <span className="item-qty">×{item.qty}</span>
+                                  </div>
+                                ))}
+                                {order.items.length > 3 && (
+                                  <div className="more-items">
+                                    +{order.items.length - 3} more items
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {(order.refundAmount ?? 0) > 0 && (
+                              <div className="refund-info">
+                                <span className="refund-label">Refund Applied:</span>
+                                <span className="refund-amount">-{formatCurrency(order.refundAmount!)}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {customerOrders.length > 2 && (
+                          <div className="more-orders-note">
+                            Showing 2 of {customerOrders.length} orders
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

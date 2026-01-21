@@ -3,6 +3,7 @@ const router = express.Router();
 const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
 const { sendOrderConfirmationMessage, sendOrderStatusMessage, sendUserMessages } = require('../utils/notificationHelper');
+const { authenticateSalesRep } = require('../middleware/auth');
 
 /*
   POST '/'
@@ -872,6 +873,82 @@ router.get('/public/:id', async (req, res) => {
     const orderData = { id: doc.id, ...doc.data() };
     res.json(orderData);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get orders by customer email (for sales reps)
+router.get('/customer/email/:email', authenticateSalesRep, async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { uid } = req.user; // authenticateSalesRep middleware data
+    
+    console.log('Sales rep accessing customer orders:', { email, salesRepId: uid });
+    
+    // Find customer by email
+    const usersSnapshot = await admin.firestore()
+      .collection('users')
+      .where('email', '==', decodeURIComponent(email))
+      .limit(1)
+      .get();
+    
+    if (usersSnapshot.empty) {
+      return res.json([]);
+    }
+    
+    const customerDoc = usersSnapshot.docs[0];
+    const customerData = customerDoc.data();
+    const customerId = customerDoc.id;
+    
+    // Verify this customer belongs to the sales rep
+    if (customerData.salesRepId !== uid) {
+      return res.status(403).json({ 
+        error: "You can only view orders for your own customers" 
+      });
+    }
+    
+    // Get orders for this customer
+    let orders = [];
+    
+    try {
+      const ordersSnapshot = await admin.firestore()
+        .collection('orders')
+        .where('userId', '==', customerId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      
+      orders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (indexError) {
+      // Fallback without sorting if index is missing
+      if (indexError.code === 9 || indexError.message.includes('index')) {
+        console.warn('Missing index, falling back to unsorted query');
+        const ordersSnapshot = await admin.firestore()
+          .collection('orders')
+          .where('userId', '==', customerId)
+          .get();
+        
+        orders = ordersSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const getTime = (doc) => {
+              const ts = doc.createdAt;
+              if (!ts) return 0;
+              if (typeof ts === 'string') return new Date(ts).getTime();
+              if (ts.seconds) return ts.seconds * 1000;
+              return 0;
+            };
+            return getTime(b) - getTime(a);
+          });
+      } else {
+        throw indexError;
+      }
+    }
+    
+    console.log(`Found ${orders.length} orders for customer ${email}`);
+    res.json(orders);
+    
+  } catch (error) {
+    console.error('Error fetching customer orders by email:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -297,7 +297,7 @@
   gap: 20px;
 }
 
-.stat-card {
+.dash-stat-card {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
@@ -307,14 +307,14 @@
   align-items: center;
 }
 
-.stat-card h3 {
+.dash-stat-card h3 {
   color: #212529;
   margin-top: 0;
   text-align: center;
 }
 
-.stat-number {
-  font-size: 2.5rem;
+.dash-stat-number {
+  font-size: 1.5rem;
   font-weight: bold;
   color: #FFB803;
   margin: 10px 0 0;
@@ -895,6 +895,7 @@
 
 .top-products h3 {
   margin-bottom: 10px;
+  text-align: center;
 }
 
 .stat-product {
@@ -936,6 +937,40 @@
   font-style: italic;
   margin-top: 10px;
   text-align: center;
+}
+
+.top-selling-section {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border-top: 2px solid #212121;
+  border-bottom: 2px solid #212121;
+}
+
+.top-selling-section h3{
+  text-align: center;
+}
+
+.top-product-rank {
+  background: #ffb803;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+}
+
+.top-product-name {
+  font-weight: 600;
+}
+
+.top-product-stats {
+  display: flex;
+  gap: 10px;
+}
+
+.top-product-revenue{
+  color: #ffb803;
 }
 
 /* Manage Drivers section - table layout */
@@ -1732,7 +1767,7 @@
   border-radius: 4px;
 }
 
-.qty-cell {
+ qty-cell {
   text-align: center;
   font-weight: 600;
 }
@@ -2059,6 +2094,370 @@
   line-height: 1.3;
 }
 
+
+/* Sales Rep Management Styles */
+.sales-reps-list {
+  margin-top: 30px;
+}
+
+.no-sales-reps {
+  color: #666;
+  font-style: italic;
+}
+
+.sales-reps-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.sales-reps-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sales-reps-table th {
+  padding: 12px;
+  text-align: left;
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+}
+
+.sales-reps-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.sales-reps-table tbody tr:hover {
+  background-color: rgba(255, 184, 3, 0.05);
+}
+
+.sales-rep-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sales-rep-status.active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.sales-rep-status.inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.view-details-button {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: background-color 0.3s ease;
+}
+
+.view-details-button:hover {
+  background-color: #0056b3;
+}
+
+/* Sales Rep Modal Styles */
+.sales-rep-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.sales-rep-modal-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.sales-rep-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  background: #ffb803;
+  border-radius: 16px 16px 0 0;
+}
+
+.sales-rep-modal-header h3 {
+  margin: 0;
+  color: #212121;
+}
+
+.sales-rep-modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #212121;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sales-rep-modal-close:hover {
+  background: rgba(33, 33, 33, 0.1);
+}
+
+.sales-rep-modal-content {
+  padding: 1.5rem;
+}
+
+.modal-loading {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Statistics Grid */
+.sales-rep-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.salesDash-stat-card {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.salesDash-stat-card.stat-revenue {
+  background: #e8f5e9;
+}
+
+.salesDash-stat-card.stat-pending {
+  background: #fff3cd;
+}
+
+.salesDash-stat-card.stat-paid {
+  background: #d4edda;
+}
+
+.salesDash-stat-label {
+  color: #666;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.salesDash-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.salesDash-stat-value-revenue {
+  color: #2e7d32;
+}
+
+.salesDash-stat-value-pending {
+  color: #856404;
+}
+
+.stat-value-paid {
+  color: #155724;
+}
+
+/* Tabs */
+.sales-rep-tabs {
+  margin-bottom: 1rem;
+}
+
+.sales-rep-tab-container {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 1rem;
+}
+
+.sales-rep-tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 8px 8px 0 0;
+  color: #666;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.sales-rep-tab.active {
+  background: #ffb803;
+  color: #212121;
+  font-weight: 600;
+}
+
+/* Cashout Requests */
+.cashout-section-title {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.cashout-requests-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.cashout-request-item {
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cashout-request-details {
+  flex: 1;
+}
+
+.cashout-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cashout-amount {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.cashout-meta {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.mark-paid-btn {
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.mark-paid-btn:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.mark-paid-btn:disabled,
+.mark-paid-btn.processing {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.no-cashout-requests {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+  font-style: italic;
+}
+
+/* Recent Orders */
+.recent-orders-section {
+  margin-top: 2rem;
+}
+
+.recent-orders-title {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.recent-orders-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.recent-order-item {
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recent-order-item.paid {
+  background: #f8f9fa;
+}
+
+.order-info {
+  flex: 1;
+}
+
+.order-customer {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.order-meta {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.order-summary {
+  text-align: right;
+}
+
+.order-total {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.order-status {
+  font-size: 0.7rem;
+}
+
+.order-status.paid {
+  color: #28a745;
+}
+
+.order-status.pending {
+  color: #ffc107;
+}
+
+.no-orders {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+  font-style: italic;
+}
 
 /* Responsive styles */
 @media (max-width: 768px) {

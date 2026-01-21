@@ -18,11 +18,11 @@ const DashboardSection = ({
   driversState
 }: DashboardSectionProps) => {
   const [statsPeriod, setStatsPeriod] = useState<'30'|'60'|'90'|'all'>('30');
-  const [dashboardStats, setDashboardStats] = useState({
+  const [_dashboardStats, setDashboardStats] = useState({
     serviceRevenue: 0,
     orderRevenue: 0,
     topProducts: [] as {name: string, count: number, revenue: number}[]
-  });
+  }); // refactor dashboardStat but unused for now
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -115,11 +115,9 @@ const DashboardSection = ({
       }
       
       console.log('Calculating stats locally');
-      // Use filtered orders for local calculations
+      // Use the same filtering as everywhere else - only include valid business orders
       const allOrders = ordersState.allOrders || ordersState.orders;
-      const validOrders = Array.isArray(allOrders) ? allOrders.filter((order: any) => 
-        order && order.status && !['cancelled', 'refunded', 'failed'].includes(order.status.toLowerCase())
-      ) : [];
+      const validOrders = Array.isArray(allOrders) ? filterOrdersForCalculations(allOrders) : [];
       const calculatedStats = dashboardStatsService.calculateStatsLocally(validOrders, statsPeriod);
       setDashboardStats(calculatedStats);
     } catch (err) {
@@ -171,42 +169,21 @@ const DashboardSection = ({
         <div className="loading-indicator">Loading dashboard data...</div>
       ) : (
         <div className="dashboard-stats">
-          <div className="stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
-          <div className="stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
-          <div className="stat-card"><h3>Orders</h3>
-            <p className="stat-number">
+          <div className="dash-stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
+          <div className="dash-stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
+          <div className="dash-stat-card"><h3>Orders</h3>
+            <p className="dash-stat-number">
               {filterOrdersForCalculations(ordersState.allOrders || ordersState.orders).length}
             </p>
           </div>
-          <div className="stat-card">
+          <div className="dash-stat-card">
             <h3>Service Revenue</h3>
-            <p className="stat-number">R{dashboardStats.serviceRevenue.toFixed(2)}</p>
-            <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
+            <p className="dash-stat-number">R{((ordersState.allOrders || ordersState.orders).length * 78).toFixed(2)}</p>
           </div>
-          
-          <div className="stat-card">
-            <h3>Order Revenue</h3>
-            <p className="stat-number">R{dashboardStats.orderRevenue.toFixed(2)}</p>
-            <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
-          </div>
-          <div className="stat-card">
+          <div className="dash-stat-card">
             <h3>Users</h3>
-            <p className="stat-number">{users.length}</p>
+            <p className="dash-stat-number">{users.length}</p>
             <p className="stat-period">Total registered users</p>
-          </div>
-          <div className="stat-card top-products">
-            <h3>Top Selling Products</h3>
-            {dashboardStats.topProducts.length > 0 ? (
-              dashboardStats.topProducts.map((product, idx) => (
-                <div key={idx} className="stat-product">
-                  <span className="product-name">{product.name}</span>
-                  <span className="product-count">{product.count} sold</span>
-                </div>
-              ))
-            ) : (
-              <p className="no-data">No product data</p>
-            )}
-            <p className="stat-period">Last {statsPeriod === 'all' ? 'all time' : `${statsPeriod} days`}</p>
           </div>
         </div>
       )}

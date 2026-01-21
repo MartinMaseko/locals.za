@@ -1,19 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../storepages/productview/productstyle.css';
+import './salesStyles.css';
 import '../storepages/store/storeCategoriesStyling.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+// Define all possible categories to ensure they all appear in dropdown
+const ALL_CATEGORIES = [
+  'Beverages',
+  'Canned Foods', 
+  'Sugar',
+  'Flour',
+  'Cooking Oils & Fats',
+  'Rice',
+  'Maize Meal',
+  'Snacks & Confectionery',
+  'Household Cleaning & Goods',
+  'Laundry Supplies',
+  'Personal Care',
+  'Food Packaging',
+  'Sauces',
+  'Shampoos & Cleansers',
+  'Conditioners & Treatments',
+  'Relaxers & Perm Kits',
+  'Hair Styling Products',
+  'Hair Food & Oils',
+  'Hair Coloring',
+  'Spices & Seasoning'
+];
 
 interface Product {
   id: string;
   name: string;
   price: number;
-  image: string;
+  image_url: string;
+  image?: string;
   category: string;
-  stock: number;
+  stock?: number;   
   description?: string;
+  brand?: string;   
 }
 
 const SalesShop = () => {
@@ -23,9 +49,33 @@ const SalesShop = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState<any[]>([]);
+  const [salesRepInfo, setSalesRepInfo] = useState<{ id: string; username: string } | null>(null);
+  // Add state for dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  // Close dropdown when clicking outside
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    // Load sales rep info from localStorage
+    const salesRepId = localStorage.getItem('salesRepId');
+    const salesRepUsername = localStorage.getItem('salesRepUsername');
+    
+    if (salesRepId && salesRepUsername) {
+      setSalesRepInfo({ id: salesRepId, username: salesRepUsername });
+    }
+
     fetchProducts();
     loadCart();
   }, []);
@@ -42,7 +92,16 @@ const SalesShop = () => {
   };
 
   const saveCart = (newCart: any[]) => {
-    localStorage.setItem('salesRepCart', JSON.stringify(newCart));
+    // Add sales rep info to cart for tracking
+    const cartWithSalesRep = {
+      items: newCart,
+      salesRepId: salesRepInfo?.id,
+      salesRepUsername: salesRepInfo?.username,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('salesRepCart', JSON.stringify(cartWithSalesRep.items));
+    localStorage.setItem('salesRepCartInfo', JSON.stringify(cartWithSalesRep));
     setCart(newCart);
   };
 
@@ -50,11 +109,13 @@ const SalesShop = () => {
     setLoading(true);
     try {
       const { data } = await axios.get<Product[]>(`${API_URL}/api/products`);
-      const activeProducts = data.filter((p: Product) => p.stock > 0);
-      setProducts(activeProducts);
-      setFilteredProducts(activeProducts);
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
+      // Add error state handling
+      setProducts([]);
+      setFilteredProducts([]);
     }
     setLoading(false);
   };
@@ -93,7 +154,7 @@ const SalesShop = () => {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          image: product.image_url || product.image, // Handle both field names
           qty: 1
         }
       ];
@@ -102,54 +163,46 @@ const SalesShop = () => {
     saveCart(newCart);
   };
 
-  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
-
-  const formatCurrency = (amount: number) => `R${amount.toFixed(2)}`;
+  const categories = ['All', ...Array.from(new Set([
+    ...products.map(p => p.category).filter(Boolean),
+    ...ALL_CATEGORIES
+  ])).sort()];
+  
+  const formatCurrency = (amount: number | string) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return `R${(numAmount || 0).toFixed(2)}`;
+  };
 
   if (loading) {
     return (
       <div className="buyer-dashboard">
         <div className="buyer-section">
-          <p style={{ textAlign: 'center', padding: '2rem' }}>Loading products...</p>
+          <p className="loading-message">Loading products...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="buyer-dashboard">
-      <div className="buyer-section" style={{ maxWidth: '1400px' }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: '2rem',
-          flexWrap: 'wrap',
-          gap: '1rem'
-        }}>
-          <div>
-            <h2 style={{ margin: 0 }}>Shop for Customers</h2>
-            <p style={{ color: '#666', margin: '0.5rem 0 0 0' }}>
+    <div className="sales-dashboard">
+      <div className="sales-section">
+        <div className="sales-shop-header">
+          <div className="sales-shop-info">
+            <h2>Shop for Customers</h2>
+            <p className="sales-shop-subtitle">
               Browse products and create shared carts for your customers
             </p>
+            {salesRepInfo && (
+              <p className="sales-rep-info">
+                Shopping as: <strong>{salesRepInfo.username}</strong>
+              </p>
+            )}
           </div>
           
           {cart.length > 0 && (
             <button
               onClick={() => navigate('/sales/cart')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: '#4caf50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
+              className="cart-button"
             >
               🛒 View Cart ({cart.length})
             </button>
@@ -157,146 +210,90 @@ const SalesShop = () => {
         </div>
 
         {/* Search and Filter */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '1rem', 
-          marginBottom: '2rem',
-          flexWrap: 'wrap'
-        }}>
+        <div className="search-filter-section">
           <input
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              flex: 1,
-              minWidth: '250px',
-              padding: '0.75rem',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              fontSize: '1rem'
-            }}
+            className="search-input-shop"
           />
-          
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{
-              padding: '0.75rem',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              minWidth: '150px',
-              cursor: 'pointer'
-            }}
-          >
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <div className="sales-category-select-container" ref={dropdownRef}>
+            <button
+              type="button"
+              className="sales-category-toggle"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span>Category {selectedCategory !== 'All' ? `: ${selectedCategory}` : ''}</span>
+              <span className={`sales-category-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
+            </button>
+            
+            <div className={`sales-category-dropdown${isDropdownOpen ? ' open' : ''}`}>
+              <ul>
+                {categories.map(cat => (
+                  <li
+                    key={cat}
+                    className={`sales-category-item ${cat === selectedCategory ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    {cat}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
 
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
+          <p className="no-products-message">
             No products found
           </p>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-            gap: '1.5rem'
-          }}>
+          <div className="sales-products-grid">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="product-card"
-                style={{
-                  background: 'white',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
+                className="sales-product-card"
               >
-                <div style={{ 
-                  width: '100%', 
-                  height: '200px', 
-                  overflow: 'hidden',
-                  background: '#f5f5f5'
-                }}>
+                <div className="sales-product-image-container">
                   <img
-                    src={product.image}
+                    src={product.image_url || product.image} // Handle both field names
                     alt={product.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
+                    className="sales-product-image"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://via.placeholder.com/250x200?text=No+Image';
                     }}
                   />
                 </div>
                 
-                <div style={{ padding: '1rem' }}>
-                  <h3 style={{ 
-                    margin: '0 0 0.5rem 0', 
-                    fontSize: '1.1rem',
-                    color: '#212121'
-                  }}>
+                <div className="sales-product-details">
+                  <h3 className="sales-product-name">
                     {product.name}
                   </h3>
                   
-                  <p style={{ 
-                    margin: '0 0 0.5rem 0', 
-                    color: '#666',
-                    fontSize: '0.9rem'
-                  }}>
+                  <p className="sales-product-category">
                     {product.category}
                   </p>
                   
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '1rem'
-                  }}>
-                    <span style={{
-                      fontSize: '1.3rem',
-                      fontWeight: '700',
-                      color: '#4caf50'
-                    }}>
+                  <div className="sales-product-footer">
+                    <span className="sales-product-price">
                       {formatCurrency(product.price)}
                     </span>
                     
                     <button
                       onClick={() => handleAddToCart(product)}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: '#1976d2',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        fontWeight: '600',
-                        transition: 'background 0.3s ease'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.background = '#1565c0'}
-                      onMouseOut={(e) => e.currentTarget.style.background = '#1976d2'}
+                      className="sales-add-to-cart-btn"
                     >
                       Add to Cart
                     </button>
                   </div>
                   
-                  <p style={{
-                    margin: '0.5rem 0 0 0',
-                    fontSize: '0.85rem',
-                    color: product.stock < 10 ? '#f44336' : '#666'
-                  }}>
-                    {product.stock} in stock
+                  <p className="sales-product-stock">
+                    {product.stock !== undefined ? `${product.stock} in stock` : 'Stock info unavailable'}
                   </p>
                 </div>
               </div>
