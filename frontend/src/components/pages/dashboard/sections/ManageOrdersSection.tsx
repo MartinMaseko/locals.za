@@ -71,6 +71,57 @@ const ManageOrdersSection = ({
         </div>
       </div>
 
+      {/* Top Selling Products Section */}
+      <div className="top-selling-section">
+        <h3>Top Selling Products</h3>
+        <div className="top-selling-products">
+          {(() => {
+            const allOrders = ordersState.allOrders || ordersState.orders;
+            const validOrders = filterOrdersForCalculations(allOrders);
+            const productsMap: { [key: string]: { name: string; qty: number; revenue: number } } = {};
+            
+            validOrders.forEach((order: any) => {
+              order.items?.forEach((item: any) => {
+                const productId = item.productId;
+                const productName = item.product?.name || `Product ${productId}`;
+                const qty = Number(item.qty || 0);
+                const price = Number(item.product?.price || 0);
+                
+                if (!productsMap[productId]) {
+                  productsMap[productId] = { name: productName, qty: 0, revenue: 0 };
+                }
+                
+                productsMap[productId].qty += qty;
+                productsMap[productId].revenue += price * qty;
+              });
+            });
+
+            const topProducts = Object.values(productsMap)
+              .sort((a, b) => b.qty - a.qty)
+              .slice(0, 5);
+
+            return topProducts.length > 0 ? (
+              <div className="top-products-grid">
+                {topProducts.map((product, idx) => (
+                  <div key={idx} className="top-product-card">
+                    <div className="top-product-rank">#{idx + 1}</div>
+                    <div className="product-info">
+                      <div className="top-product-name">{product.name}</div>
+                      <div className="top-product-stats">
+                        <span className="qty-sold">{product.qty} sold</span>
+                        <span className="top-product-revenue">R{product.revenue.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-data">No product sales data available</div>
+            );
+          })()}
+        </div>
+      </div>
+
       {ordersState.loading ? <div className="loading-indicator">Loading orders...</div> :
         ordersState.error ? <div className="error-message">{ordersState.error}</div> :
         ordersState.filteredOrders.length === 0 ? <div className="no-orders">{orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found'}</div> :

@@ -92,7 +92,17 @@ export const adminApi = {
     const { data } = await axios.get(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    return Array.isArray(data) ? data : [];
+    
+    // Filter out pending_payment and cancelled orders at API level
+    const filteredData = Array.isArray(data) 
+      ? data.filter(order => 
+          order && 
+          order.status && 
+          !['pending_payment', 'cancelled'].includes(order.status.toLowerCase())
+        )
+      : [];
+    
+    return filteredData;
   },
 
   updateOrderStatus: async (orderId: string, status: string) => {
