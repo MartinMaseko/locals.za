@@ -48,6 +48,21 @@ const productCategories = [
   'Hair Coloring'
 ];
 
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  brand?: string;
+  price: number;
+  description?: string;
+  image_url?: string;
+}
+
+interface UserProfile {
+  full_name?: string;
+  email?: string;
+}
+
 const HomePage = () => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true); 
@@ -59,7 +74,7 @@ const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('Beverages'); // Default to Beverages
 
   // Products state - now category-specific
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loadedCategories, setLoadedCategories] = useState<Set<string>>(new Set(['Beverages']));
 
   // Product request states
@@ -88,11 +103,10 @@ const HomePage = () => {
       if (user) {
         const token = await user.getIdToken();
         try {
-          const { data } = await axios.get(`${API_URL}/api/users/me`, {
+          const { data } = await axios.get<UserProfile>(`${API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          const userData = data as { full_name?: string; email?: string };
-          setName(userData.full_name || userData.email || '');
+          setName(data.full_name || data.email || '');
         } catch {
           setName(user.email || '');
         }
@@ -108,10 +122,10 @@ const HomePage = () => {
     
     setProductsLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/products`, {
+      const response = await axios.get<Product[]>(`${API_URL}/api/products`, {
         params: category ? { category } : undefined
       });
-      const categoryProducts = response.data.filter((p: any) => 
+      const categoryProducts = response.data.filter((p: Product) => 
         p.category && p.category.toLowerCase() === category.toLowerCase()
       );
       
@@ -135,7 +149,7 @@ const HomePage = () => {
   }, []);
 
   // Filter products by search and selectedCategory
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = products.filter((p: Product) => {
     const nameMatch = (p.name || '').toLowerCase().includes(search.toLowerCase());
     const categoryMatch = (p.category || '').toLowerCase().includes(search.toLowerCase());
     const searchMatch = search ? (nameMatch || categoryMatch) : true;
@@ -144,7 +158,7 @@ const HomePage = () => {
   });
 
   // Group products by category for rendering
-  const groupedProducts = filteredProducts.reduce((acc: Record<string, any[]>, prod) => {
+  const groupedProducts = filteredProducts.reduce((acc: Record<string, Product[]>, prod) => {
     const cat = (prod.category && prod.category.trim()) || 'Uncategorized';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(prod);
@@ -200,7 +214,7 @@ const HomePage = () => {
     setRequestStatus(null);
     
     try {
-      await axios.post(`${API_URL}/api/product-requests`, {
+      await axios.post<{ success: boolean; message: string }>(`${API_URL}/api/product-requests`, {
         productName: productRequest,
         email: name.includes('@') ? name : undefined,
         timestamp: new Date().toISOString(),
@@ -374,7 +388,7 @@ const HomePage = () => {
                     const productsInCategory = groupedProducts[category] || [];
                     const brandGroups: Record<string, any[]> = {};
 
-                    productsInCategory.forEach((p: any) => {
+                    productsInCategory.forEach((p: Product) => {
                       const brand = (p.brand && p.brand.trim()) || 'Other';
                       if (!brandGroups[brand]) brandGroups[brand] = [];
                       brandGroups[brand].push(p);
@@ -390,7 +404,7 @@ const HomePage = () => {
                             <div key={brand} className="brand-group">
                               <h5 className="brand-title">{brand}</h5>
                               <ul className='products-list'>
-                                {productsForBrand.map((product: any) => (
+                                {productsForBrand.map((product: Product) => (
                                   <li key={product.id} className='products-list-item'>
                                     <ProductCard product={product} />
                                   </li>
