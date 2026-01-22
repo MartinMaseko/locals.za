@@ -12,10 +12,19 @@ exports.createProduct = async (req, res) => {
 };
 
 
-// Get All Products
+// Get All Products with optional category filtering
 exports.getAllProducts = async (req, res) => {
   try {
-    const snapshot = await admin.firestore().collection('products').get();
+    const { category } = req.query;
+    
+    let query = admin.firestore().collection('products');
+    
+    // Add category filter if provided
+    if (category) {
+      query = query.where('category', '==', category);
+    }
+    
+    const snapshot = await query.get();
     const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(products);
   } catch (error) {

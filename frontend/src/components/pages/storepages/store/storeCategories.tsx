@@ -30,7 +30,6 @@ import Sauces from '../../../assets/images/sauces.webp';
 
 // Category definitions
 const productCategories = [
-  // Fast-Moving Consumer Goods (FMCG) Categories
   'Beverages',
   'Canned Foods',
   'Sugar',
@@ -43,8 +42,6 @@ const productCategories = [
   'Personal Care',
   'Food Packaging',
   'Sauces',
-
-  // Hair Care & Cosmetics Categories
   'Shampoos & Cleansers',
   'Conditioners & Treatments',
   'Relaxers & Perm Kits',
@@ -78,7 +75,6 @@ const categoryImages: {[key: string]: string} = {
 // Display names
 const categoryDisplayNames: {[key: string]: string} = {
   'Beverages': 'Beverages',
-  'Groceries & Pantry': 'Groceries',
   'Canned Foods': 'Canned Foods',
   'Sugar': 'Sugar',
   'Flour': 'Flour',
@@ -109,55 +105,66 @@ const priceRanges = [
 ];
 
 const StoreCategories: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>(''); // No default category
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false); // Don't load immediately
   const [search, setSearch] = useState('');
+  const [loadedCategories, setLoadedCategories] = useState<Set<string>>(new Set());
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const productsSectionRef = useRef<HTMLDivElement>(null);
   
-  // New filter states
+  // Filter states
   type PriceRange = { label: string; min: number; max: number };
-  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<PriceRange>(priceRanges[0] as PriceRange);
   const [showFilters, setShowFilters] = useState(false);
   
-  // Get global loading state from context
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
 
-  // Update loading state in context
   useEffect(() => {
     setGlobalLoading(loading);
     return () => setGlobalLoading(false);
   }, [loading, setGlobalLoading]);
 
-  // Fetch products when component mounts
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const { data } = await axios.get<any[]>(`${API_URL}/api/products`);
-        const productsData = Array.isArray(data) ? data : [];
-        setProducts(productsData);
-        
-        // Extract unique brands from products
-        const brands = productsData
-          .map(p => p.brand)
-          .filter((brand): brand is string => !!brand)
-          .filter((brand, index, self) => self.indexOf(brand) === index)
-          .sort();
-          
-        setAvailableBrands(brands);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch products for a specific category
+  const fetchProductsByCategory = async (category: string) => {
+    if (!category || loadedCategories.has(category)) return;
     
-    fetchProducts();
-  }, []);
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/products`);
+      const allProducts = Array.isArray(response.data) ? response.data : [];
+      
+      // Filter products for the specific category
+      const categoryProducts = allProducts.filter((p: any) => 
+        p.category && p.category.toLowerCase() === category.toLowerCase()
+      );
+      
+      // Add to existing products, avoiding duplicates
+      setProducts(prev => {
+        const existing = prev.filter(p => p.category !== category);
+        return [...existing, ...categoryProducts];
+      });
+      
+      // Extract brands for filters
+      const brands = categoryProducts
+        .map(p => p.brand)
+        .filter((brand): brand is string => !!brand)
+        .filter((brand, index, self) => self.indexOf(brand) === index)
+        .sort();
+        
+      setAvailableBrands(prev => {
+        const combined = [...new Set([...prev, ...brands])];
+        return combined.sort();
+      });
+      
+      setLoadedCategories(prev => new Set([...prev, category]));
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle brand selection
   const handleBrandToggle = (brand: string) => {
@@ -205,9 +212,14 @@ const StoreCategories: React.FC = () => {
     return acc;
   }, {});
 
-  // Handle category selection
-  const handleCategorySelect = (category: string) => {
+  // Handle category selection with lazy loading
+  const handleCategorySelect = async (category: string) => {
     setSelectedCategory(category);
+    
+    // Load products for selected category
+    if (category && !loadedCategories.has(category)) {
+      await fetchProductsByCategory(category);
+    }
     
     // Scroll to products section
     setTimeout(() => {
@@ -218,19 +230,9 @@ const StoreCategories: React.FC = () => {
     }, 100);
   };
 
-  // Toggle filters visibility
   const toggleFilters = () => {
     setShowFilters(prev => !prev);
   };
-
-  if (loading) {
-    return (
-      <div className='loading-container'>
-        <img src={LogoAnime} alt="Loading..." className="loading-gif" />
-        Loading categories...
-      </div>
-    );
-  }
 
   return (
     <div className="store-categories-container">
@@ -253,7 +255,6 @@ const StoreCategories: React.FC = () => {
 
       {/* Search and Filters Section */}
       <div className="search-filter-container">
-        {/* Search bar */}
         <div className="store-search">
           <input
             type="text"
@@ -263,7 +264,6 @@ const StoreCategories: React.FC = () => {
           />
         </div>
         
-        {/* Filter Toggle Button */}
         <button 
           className="filter-toggle-button"
           onClick={toggleFilters}
@@ -278,7 +278,7 @@ const StoreCategories: React.FC = () => {
         </button>
         
         {/* Filters Panel */}
-        {showFilters && (
+        {showFilters && availableBrands.length > 0 && (
           <div className="filters-panel">
             <div className="filters-header">
               <h3>Filter Products</h3>
@@ -348,69 +348,82 @@ const StoreCategories: React.FC = () => {
 
       {/* Products Section */}
       <div className="category-products-section" ref={productsSectionRef}>
-        <h2 className="category-products-section-title">
-          {selectedCategory || (search ? `Search Results: "${search}"` : 'All Products')}
-          <span className="product-count">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
-          </span>
-        </h2>
-
-        {Object.keys(groupedProducts).length === 0 ? (
-          <div className="no-products">
-            <p>No products found matching your filters.</p>
-            <button 
-              className="view-all-button"
-              onClick={() => {
-                handleCategorySelect('');
-                clearFilters();
-                setSearch('');
-              }}
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
+        {selectedCategory ? (
           <>
-            {Object.keys(groupedProducts).map(category => (
-              <section key={category} className="category-products-category-group">
-                <h3 className="category-products-category-title">{category}</h3>
-                
-                {/* Group products by brand within this category */}
-                {(() => {
-                  const productsInCategory = groupedProducts[category] || [];
-                  const brandGroups: Record<string, any[]> = {};
+            <h2 className="category-products-section-title">
+              {selectedCategory}
+              {filteredProducts.length > 0 && (
+                <span className="product-count">
+                  {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+                </span>
+              )}
+            </h2>
 
-                  productsInCategory.forEach((p: any) => {
-                    const brand = (p.brand && p.brand.trim()) || 'Other';
-                    if (!brandGroups[brand]) brandGroups[brand] = [];
-                    brandGroups[brand].push(p);
-                  });
+            {loading ? (
+              <div className='loading-container'>
+                <img src={LogoAnime} alt="Loading..." className="loading-gif" />
+                Loading {selectedCategory} products...
+              </div>
+            ) : Object.keys(groupedProducts).length === 0 ? (
+              <div className="no-products">
+                <p>No products found in {selectedCategory}.</p>
+                <button 
+                  className="view-all-button"
+                  onClick={() => {
+                    setSelectedCategory('');
+                    clearFilters();
+                    setSearch('');
+                  }}
+                >
+                  Browse Other Categories
+                </button>
+              </div>
+            ) : (
+              <>
+                {Object.keys(groupedProducts).map(category => (
+                  <section key={category}>
+                    {(() => {
+                      const productsInCategory = groupedProducts[category] || [];
+                      const brandGroups: Record<string, any[]> = {};
 
-                  const sortedBrands = Object.keys(brandGroups).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+                      productsInCategory.forEach((p: any) => {
+                        const brand = (p.brand && p.brand.trim()) || 'Other';
+                        if (!brandGroups[brand]) brandGroups[brand] = [];
+                        brandGroups[brand].push(p);
+                      });
 
-                  return (
-                    <div className="category-brands">
-                      {sortedBrands.map(brand => {
-                        const productsForBrand = brandGroups[brand].slice().sort((x, y) => (x.name || '').toLowerCase().localeCompare((y.name || '').toLowerCase()));
-                        return (
-                          <div key={brand} className="brand-group">
-                            <h4 className="brand-title">{brand}</h4>
-                            <ul className="category-products-list">
-                              {productsForBrand.map((product: any) => (
-                                <li key={product.id} className="category-products-list-item">
-                                  <ProductCard product={product} />
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-              </section>
-            ))}
+                      const sortedBrands = Object.keys(brandGroups).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+                      return (
+                        <div className="category-brands">
+                          {sortedBrands.map(brand => {
+                            const productsForBrand = brandGroups[brand].slice().sort((x, y) => (x.name || '').toLowerCase().localeCompare((y.name || '').toLowerCase()));
+                            return (
+                              <div key={brand} className="brand-group">
+                                <h4 className="brand-title">{brand}</h4>
+                                <ul className="category-products-list">
+                                  {productsForBrand.map((product: any) => (
+                                    <li key={product.id} className="category-products-list-item">
+                                      <ProductCard product={product} />
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </section>
+                ))}
+              </>
+            )}
           </>
+        ) : (
+          <div className="no-category-selected">
+            <h2>Select a Category</h2>
+            <p>Choose a category above to browse products</p>
+          </div>
         )}
       </div>
     </div>

@@ -27,29 +27,41 @@ import { Link, useLocation } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const productCategories = [
-  // Fast-Moving Consumer Goods (FMCG) Categories
-  'Beverages', // Van Vehicle
-  'Canned Foods', // Van Vehicle
-  'Sugar', // Van Vehicle
-  'Flour', // Van Vehicle
-  'Cooking Oils & Fats', // Van Vehicle
-  'Rice', // Van Vehicle
-  'Maize Meal', // Van Vehicle
-  'Snacks & Confectionery', //light Vehicle
-  'Household Cleaning & Goods', //light Vehicle
-  'Laundry Supplies', //light Vehicle
-  'Personal Care', //light Vehicle
-  'Food Packaging', //Van Vehicle
-  'Sauces', //Van Vehicle
-
-  // Hair Care & Cosmetics Categories
-  'Shampoos & Cleansers', //light Vehicle
-  'Conditioners & Treatments', //light Vehicle
-  'Relaxers & Perm Kits', //light Vehicle
-  'Hair Styling Products', //light Vehicle
-  'Hair Food & Oils', //light Vehicle
-  'Hair Coloring' //light Vehicle
+  'Beverages',
+  'Canned Foods',
+  'Sugar',
+  'Flour',
+  'Cooking Oils & Fats',
+  'Rice',
+  'Maize Meal',
+  'Snacks & Confectionery',
+  'Household Cleaning & Goods',
+  'Laundry Supplies',
+  'Personal Care',
+  'Food Packaging',
+  'Sauces',
+  'Shampoos & Cleansers',
+  'Conditioners & Treatments',
+  'Relaxers & Perm Kits',
+  'Hair Styling Products',
+  'Hair Food & Oils',
+  'Hair Coloring'
 ];
+
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  brand?: string;
+  price: number;
+  description?: string;
+  image_url?: string;
+}
+
+interface UserProfile {
+  full_name?: string;
+  email?: string;
+}
 
 const HomePage = () => {
   const [name, setName] = useState('');
@@ -59,28 +71,23 @@ const HomePage = () => {
 
   // New states for category UI
   const [showCategories, setShowCategories] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Beverages'); // Default to Beverages
 
-  // New: Products state (keep your existing fetch logic)
-  const [products, setProducts] = useState<any[]>([]);
+  // Products state - now category-specific
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadedCategories, setLoadedCategories] = useState<Set<string>>(new Set(['Beverages']));
 
-  // Add this import at the top with your other imports
+  // Product request states
   const [productRequest, setProductRequest] = useState('');
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestStatus, setRequestStatus] = useState<{success?: boolean; message: string} | null>(null);
   
-  // access global loading setter from context
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
-
-  // Create a ref for the products section
   const productsSectionRef = useRef<HTMLDivElement>(null);
-
-   // Get location from router
   const location = useLocation();
 
   // Scroll restoration
   useLayoutEffect(() => {
-    // Scroll to top when component mounts or location changes
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
@@ -96,11 +103,10 @@ const HomePage = () => {
       if (user) {
         const token = await user.getIdToken();
         try {
-          const { data } = await axios.get(`${API_URL}/api/users/me`, {
+          const { data } = await axios.get<UserProfile>(`${API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          const userData = data as { full_name?: string; email?: string };
-          setName(userData.full_name || userData.email || '');
+          setName(data.full_name || data.email || '');
         } catch {
           setName(user.email || '');
         }
@@ -110,23 +116,40 @@ const HomePage = () => {
     fetchProfile();
   }, []);
 
-  // New: Fetch products from backend
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setProductsLoading(true);
-      try {
-        const { data } = await axios.get(`${API_URL}/api/products`);
-        setProducts(data as any[]);
-      } catch {
-        setProducts([]);
-      }
+  // Fetch products for specific category
+  const fetchProductsByCategory = async (category: string) => {
+    if (loadedCategories.has(category) && category !== 'Beverages') return;
+    
+    setProductsLoading(true);
+    try {
+      const response = await axios.get<Product[]>(`${API_URL}/api/products`, {
+        params: category ? { category } : undefined
+      });
+      const categoryProducts = response.data.filter((p: Product) => 
+        p.category && p.category.toLowerCase() === category.toLowerCase()
+      );
+      
+      // Add new products to existing ones, avoiding duplicates
+      setProducts(prev => {
+        const existing = prev.filter(p => p.category !== category);
+        return [...existing, ...categoryProducts];
+      });
+      
+      setLoadedCategories(prev => new Set([...prev, category]));
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
       setProductsLoading(false);
-    };
-    fetchProducts();
+    }
+  };
+
+  // Load default Beverages category on mount
+  useEffect(() => {
+    fetchProductsByCategory('Beverages');
   }, []);
 
-  // filter products by search and selectedCategory
-  const filteredProducts = (Array.isArray(products) ? products : []).filter(p => {
+  // Filter products by search and selectedCategory
+  const filteredProducts = products.filter((p: Product) => {
     const nameMatch = (p.name || '').toLowerCase().includes(search.toLowerCase());
     const categoryMatch = (p.category || '').toLowerCase().includes(search.toLowerCase());
     const searchMatch = search ? (nameMatch || categoryMatch) : true;
@@ -134,30 +157,27 @@ const HomePage = () => {
     return searchMatch && categoryFilter;
   });
 
-  // group products by category for rendering
-  const groupedProducts = filteredProducts.reduce((acc: Record<string, any[]>, prod) => {
+  // Group products by category for rendering
+  const groupedProducts = filteredProducts.reduce((acc: Record<string, Product[]>, prod) => {
     const cat = (prod.category && prod.category.trim()) || 'Uncategorized';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(prod);
     return acc;
   }, {});
 
-  // Sort categories alphabetically (A-Z)
   const sortedCategories = Object.keys(groupedProducts).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
-  // listen for appnav toggle event
-  useEffect(() => {
-    const handleToggle = () => setShowCategories(prev => !prev);
-    window.addEventListener('toggleCategories', handleToggle);
-    return () => window.removeEventListener('toggleCategories', handleToggle);
-  }, []);
-
-  // Create a function to handle category selection and scrolling
-  const handleCategorySelect = (category: string) => {
+  // Handle category selection with lazy loading
+  const handleCategorySelect = async (category: string) => {
     setSelectedCategory(category);
     setShowCategories(false);
     
-    // Scroll to products section with a small delay to allow filtering to complete
+    // Load category products if not already loaded
+    if (category && !loadedCategories.has(category)) {
+      await fetchProductsByCategory(category);
+    }
+    
+    // Scroll to products section
     setTimeout(() => {
       productsSectionRef.current?.scrollIntoView({ 
         behavior: 'smooth',
@@ -166,13 +186,11 @@ const HomePage = () => {
     }, 100);
   };
 
-  // Create a function to handle brand selection and scrolling
   const handleBrandSelect = (brandName: string) => {
     setSearch('');
     setSelectedCategory('Beverages');
     setSearch(brandName);
     
-    // Scroll to products section with a small delay to allow filtering to complete
     setTimeout(() => {
       productsSectionRef.current?.scrollIntoView({ 
         behavior: 'smooth',
@@ -181,7 +199,6 @@ const HomePage = () => {
     }, 100);
   };
 
-  // Add this function to handle product requests
   const handleProductRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -197,9 +214,9 @@ const HomePage = () => {
     setRequestStatus(null);
     
     try {
-      await axios.post(`${API_URL}/api/product-requests`, {
+      await axios.post<{ success: boolean; message: string }>(`${API_URL}/api/product-requests`, {
         productName: productRequest,
-        email: name.includes('@') ? name : undefined, // Use email if available
+        email: name.includes('@') ? name : undefined,
         timestamp: new Date().toISOString(),
         emailTo: 'admin@locals-za.co.za'
       });
@@ -208,9 +225,8 @@ const HomePage = () => {
         success: true,
         message: 'Thank you! We\'ve received your product request.'
       });
-      setProductRequest(''); // Clear the input
+      setProductRequest('');
       
-      // Reset status message after 5 seconds
       setTimeout(() => {
         setRequestStatus(null);
       }, 5000);
@@ -224,9 +240,8 @@ const HomePage = () => {
       setRequestSubmitting(false);
     }
   };
-  
-  // Conditional rendering for the products loading state
-  if (loading || productsLoading) {
+
+  if (loading) {
     return (
       <div className='loading-container'>
         <img src={LogoAnime} alt="Loading..." className="loading-gif" />
@@ -248,7 +263,6 @@ const HomePage = () => {
             className="homepage-search-input"
           />
 
-          {/* clickable "Category" word under the input */}
           <div className="homepage-category-toggle-wrapper">
             <button
               type="button"
@@ -261,7 +275,6 @@ const HomePage = () => {
             </button>
           </div>
           
-          {/* Updated dropdown to use handleCategorySelect */}
           <div className={`homepage-category-dropdown${showCategories ? ' open' : ''}`} aria-hidden={!showCategories}>
             <ul>
               <li
@@ -355,31 +368,32 @@ const HomePage = () => {
           <img  className='appnav-icons' src="https://img.icons8.com/material-rounded/40/ffb803/shop.png" alt="shop"/>
           <Link className='ExploreText' to="/shop">Browse Categories</Link>
         </div>
-        {/* Add ref to the products section */}
+        
         <div className='products-section' ref={productsSectionRef}>
-          {/* Rest of your products section remains unchanged */}
           {productsLoading ? (
             <div>Loading products...</div>
           ) : Object.keys(groupedProducts).length === 0 ? (
-            <p>No products found.</p>
+            selectedCategory ? (
+              <p>No products found in {selectedCategory}.</p>
+            ) : (
+              <p>No products found.</p>
+            )
           ) : (
             <>
               {sortedCategories.map(category => (
                 <section key={category} className="products-category-group">
                   <h4 className="products-category-title">{category}</h4>
 
-                  {/* Group products by brand within this category */}
                   {(() => {
                     const productsInCategory = groupedProducts[category] || [];
                     const brandGroups: Record<string, any[]> = {};
 
-                    productsInCategory.forEach((p: any) => {
+                    productsInCategory.forEach((p: Product) => {
                       const brand = (p.brand && p.brand.trim()) || 'Other';
                       if (!brandGroups[brand]) brandGroups[brand] = [];
                       brandGroups[brand].push(p);
                     });
 
-                    // Sort brand names alphabetically (case-insensitive)
                     const sortedBrands = Object.keys(brandGroups).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
                     return (
@@ -390,7 +404,7 @@ const HomePage = () => {
                             <div key={brand} className="brand-group">
                               <h5 className="brand-title">{brand}</h5>
                               <ul className='products-list'>
-                                {productsForBrand.map((product: any) => (
+                                {productsForBrand.map((product: Product) => (
                                   <li key={product.id} className='products-list-item'>
                                     <ProductCard product={product} />
                                   </li>
