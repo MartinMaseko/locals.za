@@ -297,69 +297,76 @@ const HomePage = () => {
         </div>
 
         <div className="homepage-welcome">
-          <img src={AppBanner} alt="Locals ZA App Banner" className="homepage-appbanner" />
+          <img 
+            src={AppBanner} 
+            alt="Locals ZA App Banner" 
+            className="homepage-appbanner" 
+            fetchPriority="high"
+            width="800"
+            height="320"
+          />
           <p className='headertext'>Beverage Brands</p>
 
           {/* Beverage brand logos section */}
           <div className='brands-section'>
               <div className="brand-item" onClick={() => handleBrandSelect('Coca')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={CocaCola} alt="Coca-Cola" />
+                  <img className="brand-logo" src={CocaCola} alt="Coca-Cola" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Pepsi')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Pepsi} alt="Pepsi" />
+                  <img className="brand-logo" src={Pepsi} alt="Pepsi" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Kingsley')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={kingsley} alt="Kingsley" />
+                  <img className="brand-logo" src={kingsley} alt="Kingsley" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Refreshh')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Refreshh} alt="Refreshh" />
+                  <img className="brand-logo" src={Refreshh} alt="Refreshh" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Twizza')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Twizza} alt="Twizza" />
+                  <img className="brand-logo" src={Twizza} alt="Twizza" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Cappy')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Cappy} alt="Cappy" />
+                  <img className="brand-logo" src={Cappy} alt="Cappy" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Fruto')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Fruto} alt="Fruto" />
+                  <img className="brand-logo" src={Fruto} alt="Fruto" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Powerade')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={powerade} alt="Powerade" />
+                  <img className="brand-logo" src={powerade} alt="Powerade" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Red Bull')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Redbull} alt="Red Bull" />
+                  <img className="brand-logo" src={Redbull} alt="Red Bull" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Mofaya')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Mofaya} alt="Mofaya" />
+                  <img className="brand-logo" src={Mofaya} alt="Mofaya" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Monster')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={monster} alt="Monster" />
+                  <img className="brand-logo" src={monster} alt="Monster" loading="lazy" width="75" height="75" />
                 </div>
               </div>
               <div className="brand-item" onClick={() => handleBrandSelect('Score')}>
                 <div className="brand-icon">
-                  <img className="brand-logo" src={Score} alt="Score" />
+                  <img className="brand-logo" src={Score} alt="Score" loading="lazy" width="75" height="75" />
                 </div>
               </div>
           </div>
