@@ -1,7 +1,7 @@
 /* NavBar styles */
 .navbar {
   width: 100vw;
-  height: 85px;
+  height: 75px;
   background: #454E50;
   position: sticky;
   padding: calc(1rem + env(safe-area-inset-top)) 0rem 0.75rem 0;
@@ -22,7 +22,7 @@
   cursor: pointer;
 }
 .navbar-logo img {
-  height: 55px;
+  height: 45px;
   max-width: 120px;
 }
 .navbar-menu {
