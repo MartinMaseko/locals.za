@@ -1,3 +1,4 @@
+/* Global Reset and Font Application */
 :root {
   font-family: "Michroma", sans-serif;
   font-style: normal;
@@ -14,6 +15,16 @@
   --nav-height: 75px;
 }
 
+/* Force Michroma on ALL elements */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Explicitly target elements that don't inherit fonts by default */
+body, button, input, optgroup, select, textarea, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Michroma', sans-serif;
+}
+
 body {
   margin: 0;
   display: flex;
@@ -23,9 +34,7 @@ body {
   background-color: #f8f9fa;
   overflow-x: hidden;
   width: 100%;
-  margin: 0;
   padding: 0;
-  box-sizing: border-box;
   max-height: fit-content;
 }
 
