@@ -4,7 +4,7 @@
   height: 75px;
   background: #454E50;
   position: sticky;
-  padding: calc(1rem + env(safe-area-inset-top)) 0 0.75rem 0;
+  padding: calc(1rem + env(safe-area-inset-top)) 0rem 0.75rem 0;
   top: 0;
   z-index: 100;
 }
@@ -120,7 +120,7 @@
 @media (min-width: 992px) {
   .navbar {
     padding: 1rem 0;
-    height: 60px;
+    height: 85px;
   }
 
   .navbar-fullscreen-dropdown {
