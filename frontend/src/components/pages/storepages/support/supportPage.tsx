@@ -426,7 +426,7 @@ const SupportPage: React.FC = () => {
                 <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/men-age-group-5.png" alt="men-age-group-5"/>
               </Link>
               <h3>Sales Rep Login</h3>
-              <Link to="/buyer-login" className="team-login-link">
+              <Link to="/sales/login" className="team-login-link">
                 <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/user-male-circle.png" alt="user-male-circle"/>
               </Link>
             </div>
