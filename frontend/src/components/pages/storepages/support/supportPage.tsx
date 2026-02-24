@@ -425,13 +425,17 @@ const SupportPage: React.FC = () => {
               <Link to="/buyer-login" className="team-login-link">
                 <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/men-age-group-5.png" alt="men-age-group-5"/>
               </Link>
+              <h3>Sales Rep Login</h3>
+              <Link to="/buyer-login" className="team-login-link">
+                <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/user-male-circle.png" alt="user-male-circle"/>
+              </Link>
             </div>
             
             <div className="contact-method">
               <h3>WhatsApp Support</h3>
               <p>Get in touch with our Sales Representative</p>
               <a 
-                href="https://wa.me/27704158880" 
+                href="https://wa.me/27682858930" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="whatsapp-link"
@@ -447,6 +451,8 @@ const SupportPage: React.FC = () => {
                 </div>
               </a>
               <p className="contact-hours">Monday-Friday: 8am - 5pm</p>
+              <p className="contact-hours">Saturday: 9am - 3pm</p>
+              <p className="contact-hours">Sunday: 9am - 1pm</p>
             </div>
           </div>
         </div>
