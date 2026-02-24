@@ -1,4 +1,7 @@
 :root {
+  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
   font-family: "Michroma", "Montserrat", "Arial Black", "Arial Bold", sans-serif, -apple-system, BlinkMacSystemFont;
   font-style: normal;
   line-height: 1.5;
@@ -16,19 +19,13 @@
 
 body {
   margin: 0;
-  display: flex;
-  min-width: 100vw;
+  padding: 0;
   min-height: 100vh;
   color: #454E50;
   background-color: #f8f9fa;
   overflow-x: hidden;
-  width: 100%;
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
-  max-height: fit-content;
   font-family: inherit;
-
 }
 
 .loading-container {
