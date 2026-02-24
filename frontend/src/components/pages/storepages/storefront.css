@@ -343,6 +343,6 @@
   }
 
   .homepage-appbanner {
-    display: none;
+    min-height:fit-content;
   }
 }
