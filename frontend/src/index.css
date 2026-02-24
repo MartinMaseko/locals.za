@@ -1,8 +1,8 @@
 :root {
-  font-family: "Michroma";
+  font-family: "Michroma", "Montserrat", "Arial Black", "Arial Bold", sans-serif, -apple-system, BlinkMacSystemFont;
   font-style: normal;
   line-height: 1.5;
-
+  font-display: swap; 
   color-scheme: light dark;
   color: #DEDEDE;
   background-color: #f8f9fa;
@@ -27,6 +27,8 @@ body {
   padding: 0;
   box-sizing: border-box;
   max-height: fit-content;
+  font-family: inherit;
+
 }
 
 .loading-container {
