@@ -71,6 +71,9 @@ const BuyerLogin = () => {
         <button className='app-btn' type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
+        <a href="/" className="back-to-app">
+          Back to Store
+        </a>
       </form>
       {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
     </div>
