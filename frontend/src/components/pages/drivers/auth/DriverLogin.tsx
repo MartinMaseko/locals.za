@@ -195,6 +195,9 @@ const DriverLogin: React.FC = () => {
                 </div>
               </a>
       </div>
+        <a href="/" className="back-to-app">
+          Back to Store
+        </a>
     </div>
   );
 };

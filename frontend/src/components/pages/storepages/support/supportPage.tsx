@@ -433,7 +433,7 @@ const SupportPage: React.FC = () => {
             
             <div className="contact-method">
               <h3>WhatsApp Support</h3>
-              <p>Get in touch with our Sales Representative</p>
+              <p>Get in touch with our Representative</p>
               <a 
                 href="https://wa.me/27682858930" 
                 target="_blank"
