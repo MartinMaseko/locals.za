@@ -179,7 +179,7 @@ const DriverLogin: React.FC = () => {
         <p>Need help? Email support at <strong className='help-cta'>admin@locals-za.co.za</strong></p>
         <p>WhatsApp Support</p> 
         <a 
-                href="https://wa.me/27629973007" // Replace with business No.
+                href="https://wa.me/27682858930" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="whatsapp-link"
