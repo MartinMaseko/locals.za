@@ -83,6 +83,9 @@ const SalesLogin = () => {
         <button className='app-btn' type="submit" disabled={loading}>
           {loading ? 'Signing in...' : 'Login'}
         </button>
+        <a href="/" className="back-to-app">
+          Back to Store
+        </a>
       </form>
       {error && <div className='sales-login-error'>{error}</div>}
     </div>
