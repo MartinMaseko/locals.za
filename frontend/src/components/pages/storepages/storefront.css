@@ -114,11 +114,11 @@
 /*Searchbar Styling */
 .homepage-searchbar {
   position: sticky;
-  top: 75px;
-  z-index: 101;
+  top: 70px;
+  z-index: 103;
   width: 100%;
   min-width: 100vw;         
-  padding: 1rem 1rem;
+  padding: 2rem 1rem;
   background: #454E50;
   box-sizing: border-box;
   display: flex;
