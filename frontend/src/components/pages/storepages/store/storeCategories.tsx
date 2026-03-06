@@ -13,10 +13,8 @@ import Beverages from '../../../assets/images/Beverages.webp';
 import HairColoring from '../../../assets/images/HairColour.webp';
 import HairFoodOils from '../../../assets/images/HairFood.webp';
 import HairStylingProducts from '../../../assets/images/HairStyling.webp';
-import PersonalCare from '../../../assets/images/PersonalCare.webp';
 import RelaxersPermKits from '../../../assets/images/Relaxers.webp';
 import shampoosCleansers from '../../../assets/images/Shampoo.webp';
-import SnacksConfectionery from '../../../assets/images/Snacks.webp';
 import ConditionersTreatments from '../../../assets/images/ConditionerTreatments.webp';
 import CannedFoods from '../../../assets/images/canned.webp';
 import SugarImage from '../../../assets/images/sugar.webp';
@@ -24,9 +22,7 @@ import FlourImage from '../../../assets/images/flour.webp';
 import CookingOils from '../../../assets/images/oil.webp';
 import RiceImage from '../../../assets/images/rice.webp';
 import MaizeMealImage from '../../../assets/images/maize.webp';
-import LaundrySuppliesImage from '../../../assets/images/laundry.webp';
 import FoodPackaging from '../../../assets/images/FoodPackaging.webp';
-import Sauces from '../../../assets/images/sauces.webp';
 
 // Category definitions
 const productCategories = [
@@ -37,11 +33,7 @@ const productCategories = [
   'Cooking Oils & Fats',
   'Rice',
   'Maize Meal',
-  'Snacks & Confectionery',
-  'Laundry Supplies',
-  'Personal Care',
   'Food Packaging',
-  'Sauces',
   'Shampoos & Cleansers',
   'Conditioners & Treatments',
   'Relaxers & Perm Kits',
@@ -59,17 +51,13 @@ const categoryImages: {[key: string]: string} = {
   'Cooking Oils & Fats': CookingOils,
   'Rice': RiceImage,
   'Maize Meal': MaizeMealImage,
-  'Snacks & Confectionery': SnacksConfectionery,
-  'Laundry Supplies': LaundrySuppliesImage,
-  'Personal Care': PersonalCare,
   'Shampoos & Cleansers': shampoosCleansers,
   'Conditioners & Treatments': ConditionersTreatments,
   'Relaxers & Perm Kits': RelaxersPermKits,
   'Hair Styling Products': HairStylingProducts,
   'Hair Food & Oils': HairFoodOils,
   'Hair Coloring': HairColoring,
-  'Food Packaging': FoodPackaging,
-  'Sauces': Sauces
+  'Food Packaging': FoodPackaging
 };
 
 // Display names
@@ -81,17 +69,13 @@ const categoryDisplayNames: {[key: string]: string} = {
   'Cooking Oils & Fats': 'Cooking Oils',
   'Rice': 'Rice',
   'Maize Meal': 'Maize Meal',
-  'Snacks & Confectionery': 'Snacks',
-  'Laundry Supplies': 'Laundry',
-  'Personal Care': 'Personal Care',
   'Shampoos & Cleansers': 'Shampoos',
   'Conditioners & Treatments': 'Conditioners',
   'Relaxers & Perm Kits': 'Relaxers',
   'Hair Styling Products': 'Hair Styling',
   'Hair Food & Oils': 'Hair Food',
   'Hair Coloring': 'Hair Color',
-  'Food Packaging': 'Food Packaging',
-  'Sauces': 'Sauces'
+  'Food Packaging': 'Food Packaging'
 };
 
 // Price range options
