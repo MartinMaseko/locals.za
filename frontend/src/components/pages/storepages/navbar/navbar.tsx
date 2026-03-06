@@ -81,6 +81,10 @@ const Navbar = () => {
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/lift-cart-here.png" alt="lift-cart-here"/>
             Cart
           </Link>
+          <Link to="/support" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
+            <img className='navbar-dropdown-icon' src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="support"/>
+            Support
+          </Link>
           <button className="navbar-logout" onClick={handleSignOut}>
             <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/logout-rounded-left.png" alt="logout-rounded-left"/>
             Sign Out
