@@ -119,8 +119,11 @@
 /* Desktop layout */
 @media (min-width: 992px) {
   .navbar {
-    padding: 1rem 0;
-    height: 85px;
+    padding: 0rem 0;
+    height: 75px;
+    position: sticky;
+    top: 0;
+    z-index: 102;
   }
 
   .navbar-fullscreen-dropdown {

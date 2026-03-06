@@ -113,7 +113,9 @@
 }
 /*Searchbar Styling */
 .homepage-searchbar {
-  position: relative;
+  position: sticky;
+  top: 75px;
+  z-index: 101;
   width: 100%;
   min-width: 100vw;         
   padding: 1rem 1rem;
