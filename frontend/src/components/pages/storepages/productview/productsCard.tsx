@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './productstyle.css';
 import { useFavorites } from '../../../contexts/FavoritesContext';
 import type { Product } from '../../../contexts/FavoritesContext';
+import { calculateUnitPrice, formatUnitPrice } from '../../../../utils/priceHelper';
 
 type Props = {
   product: Product;
@@ -31,6 +32,12 @@ const ProductCard: React.FC<Props> = ({ product, onClick }) => {
   };
 
   const favorited = isFavorite(product.id);
+
+  const productName = (product.name ?? '').trim() || 'Unnamed product';
+  const productPrice = Number(product.price ?? 0);
+
+  // Calculate unit price
+  const priceInfo = calculateUnitPrice(productName, productPrice);
 
   return (
     <div
@@ -64,7 +71,14 @@ const ProductCard: React.FC<Props> = ({ product, onClick }) => {
           )}
         </button>
         <div className="product-card-name">{product.name}</div>
-        <div className="product-card-price">R {Number(product.price || 0).toFixed(2)}</div>
+        <div className="product-card-price-container">
+          <div className="product-card-price">R {priceInfo.totalPrice.toFixed(2)}</div>
+          {priceInfo.hasMultipleUnits && priceInfo.unitPrice && (
+            <div className="product-card-unit-price">
+              {formatUnitPrice(priceInfo.unitPrice)}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

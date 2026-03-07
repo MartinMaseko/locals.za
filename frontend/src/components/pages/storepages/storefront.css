@@ -104,13 +104,9 @@
 }
 
 .ExploreLinkContainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  display: none;
 }
+
 /*Searchbar Styling */
 .homepage-searchbar {
   position: sticky;
@@ -333,7 +329,19 @@
   }
 
   .ExploreLinkContainer {
-    display: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    background-color: #191919;
+    padding: 1rem 0.75rem;
+    width: 100px;
+    border-radius: 10px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .homepage-search-input{
