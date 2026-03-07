@@ -340,6 +340,19 @@
     max-width: 600px;
   }
 
+  .category-brands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-left: 25px;
+  }
+
+  .brand-group {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
   .brands-section {
     grid-template-columns: repeat(6, 1fr);
   }
