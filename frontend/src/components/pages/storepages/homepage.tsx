@@ -356,7 +356,7 @@ const HomePage = () => {
         </div>
         <div className='ExploreLinkContainer'>
           <img  className='appnav-icons' src="https://img.icons8.com/material-rounded/40/ffb803/shop.png" alt="shop"/>
-          <Link className='ExploreText' to="/shop">Browse Categories</Link>
+          <Link className='ExploreText' to="/shop">Shop</Link>
         </div>
         
         <div className='products-section' ref={productsSectionRef}>

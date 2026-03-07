@@ -8,6 +8,7 @@ import ProductCard from './productsCard';
 import LogoAnime from '../../../assets/logos/locals-svg.gif';
 import LoadingContext from '../LoadingContext';
 import { Analytics } from '../../../../utils/analytics';
+import { calculateUnitPrice, formatUnitPrice } from '../../../../utils/priceHelper';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -237,6 +238,11 @@ const ProductDetailPage: React.FC = () => {
   const inCart = isInCart(product.id);
   const qty = getQty(product.id);
 
+  // Price helper support for detail page
+  const productNameForPricing = (product.name ?? '').trim() || 'Unnamed product';
+  const productPriceForPricing = Number(product.price ?? 0);
+  const productPriceInfo = calculateUnitPrice(productNameForPricing, productPriceForPricing);
+
   return (
     <div className="product-detail-page">
       <button className="product-detail-back" onClick={handleBackNavigation}>
@@ -249,6 +255,11 @@ const ProductDetailPage: React.FC = () => {
         <div className="product-detail-info">
           <h1 className="product-modal-title">{product.name}</h1>
           <p className="product-modal-price">R {Number(product.price || 0).toFixed(2)}</p>
+
+          {productPriceInfo.hasMultipleUnits && productPriceInfo.unitPrice && (
+            <p className="product-modal-unitprice">{formatUnitPrice(productPriceInfo.unitPrice)}</p>
+          )}
+
           {product.brand && (
             <p className='product-modal-subtext'>
               <strong>Brand:</strong>{' '}

@@ -54,6 +54,11 @@ const Navbar = () => {
               src="https://img.icons8.com/material-sharp/30/ffb803/ask-question.png" alt="support"
             />
           </Link>
+          <Link to="/useraccount" className="navbar-icon-support" aria-label="Account">
+            <img 
+              src="https://img.icons8.com/pulsar-line/30/ffb803/guest-male.png" alt="guest-male"
+            />
+          </Link>
           <button
             className="navbar-icon"
             onClick={() => setDropdownOpen(!dropdownOpen)}
