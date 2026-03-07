@@ -37,6 +37,23 @@ const Navbar = () => {
           </a>
         </div>
         <div className="navbar-menu">
+          <Link to="/userorders" className="navbar-icon-orders" aria-label="Orders">
+            <img 
+              src="https://img.icons8.com/external-kmg-design-glyph-kmg-design/30/ffb803/external-logistics-shipping-delivery-kmg-design-glyph-kmg-design-2.png"
+              alt="Orders"
+            /> Orders
+          </Link>
+          <Link to="/cart" className="navbar-icon-cart" aria-label="Cart">
+            <img 
+              src="https://img.icons8.com/ios-glyphs/30/ffb803/lift-cart-here.png"
+              alt="Cart"
+            /> Cart
+          </Link>
+          <Link to="/support" className="navbar-icon-support" aria-label="Support">
+            <img 
+              src="https://img.icons8.com/material-sharp/30/ffb803/ask-question.png" alt="support"
+            />
+          </Link>
           <button
             className="navbar-icon"
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -46,7 +63,6 @@ const Navbar = () => {
             <img 
               src="https://img.icons8.com/forma-thin-filled/40/FFB803/menu.png"
               alt="User Menu"
-              style={{ width: '40px', height: '40px' }}
             />
           </button>
         </div>
