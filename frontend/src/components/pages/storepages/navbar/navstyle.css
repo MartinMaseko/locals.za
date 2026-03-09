@@ -1,10 +1,10 @@
 /* NavBar styles */
 .navbar {
   width: 100vw;
-  height: 75px;
+  height: 70px;
   background: #454E50;
   position: sticky;
-  padding: calc(1rem + env(safe-area-inset-top)) 0rem 0.75rem 0;
+  padding: calc(1rem + env(safe-area-inset-top)) 0rem 0.7rem 0;
   top: 0;
   z-index: 105;
 }
@@ -17,9 +17,9 @@
 .navbar-logo {
   display: flex;
   justify-content: center;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  align-items: center;
   cursor: pointer;
+  padding: 0.5rem 0.5rem;
 }
 .navbar-logo img {
   height: 45px;
