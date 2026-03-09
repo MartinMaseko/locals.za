@@ -104,13 +104,10 @@
 }
 
 .ExploreLinkContainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  display: none;
 }
+
+
 /*Searchbar Styling */
 .homepage-searchbar {
   position: sticky;
@@ -118,7 +115,7 @@
   z-index: 103;
   width: 100%;
   min-width: 100vw;         
-  padding: 2rem 1rem;
+  padding: 0.5rem 1rem;
   background: #454E50;
   box-sizing: border-box;
   display: flex;
@@ -127,6 +124,7 @@
 }
 
 .homepage-search-input {
+  margin-top: 1.3rem;
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -328,16 +326,55 @@
     gap: 0.5rem;
   }
 
-  .homepage-searchbar {
-    padding: 0.5rem 1rem;
-  }
 
   .ExploreLinkContainer {
-    display: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    background-color: #191919;
+    padding: 1rem 0.75rem;
+    width: 90%;
+    border-radius: 10px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    transition: transform 0.2s;
+  }
+
+  .ExploreLinkContainer:hover {
+    scale: 1.02;
+  }
+
+  .ExploreText {
+    text-decoration: none;
+    color: #f8f9fa;
+    font-weight: 600;
+    margin-top: 1rem;
+    cursor: pointer;
+  }
+
+  .ExploreText:hover {
+    color: #FFB803;
   }
 
   .homepage-search-input{
     max-width: 600px;
+  }
+
+  .category-brands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-left: 25px;
+  }
+
+  .brand-group {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
   }
 
   .brands-section {

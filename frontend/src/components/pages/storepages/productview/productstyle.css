@@ -158,6 +158,20 @@
   font-weight: 700;
 }
 
+.product-card-unit-price {
+  margin-top: 0.5rem;
+}
+
+.product-card-unit-price,
+.product-modal-unitprice {
+  font-size: 0.75rem;
+  color: #191919;
+  background: #ffb803;
+  padding: 0.5rem;
+  border-radius: 10px;
+  width: fit-content;
+}
+
 .product-detail-info {
   color: #454E50;
 }
@@ -250,8 +264,8 @@
 
   .product-card {
     width: 200px;
-    min-height: 270px;
-    max-height: 270px;
+    min-height: 320px;
+    max-height: 320px;
     flex-direction: column;
   }
 
