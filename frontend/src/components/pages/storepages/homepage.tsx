@@ -34,13 +34,7 @@ const productCategories = [
   'Cooking Oils & Fats',
   'Rice',
   'Maize Meal',
-  'Food Packaging',
-  'Shampoos & Cleansers',
-  'Conditioners & Treatments',
-  'Relaxers & Perm Kits',
-  'Hair Styling Products',
-  'Hair Food & Oils',
-  'Hair Coloring'
+  'Food Packaging'
 ];
 
 interface Product {
@@ -272,12 +266,6 @@ const HomePage = () => {
           
           <div className={`homepage-category-dropdown${showCategories ? ' open' : ''}`} aria-hidden={!showCategories}>
             <ul>
-              <li
-                className="homepage-category-item"
-                onClick={() => handleCategorySelect('')}
-              >
-                All Categories
-              </li>
               {productCategories.map(cat => (
                 <li
                   key={cat}
@@ -368,7 +356,7 @@ const HomePage = () => {
         </div>
         <div className='ExploreLinkContainer'>
           <img  className='appnav-icons' src="https://img.icons8.com/material-rounded/40/ffb803/shop.png" alt="shop"/>
-          <Link className='ExploreText' to="/shop">Browse Categories</Link>
+          <Link className='ExploreText' to="/shop">Shop</Link>
         </div>
         
         <div className='products-section' ref={productsSectionRef}>

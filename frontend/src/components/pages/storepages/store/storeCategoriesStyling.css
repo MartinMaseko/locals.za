@@ -410,3 +410,37 @@
   font-weight: 400;
   margin-left: 1rem;
 }
+
+/* Desktop layout */
+@media (min-width: 992px) {
+  .store-categories-container {
+    margin: 0 auto;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .category-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .category-name {
+    font-size: 0.85rem;
+  }
+
+  .category-brands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-left: 25px;
+  }
+
+  .category-products-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
