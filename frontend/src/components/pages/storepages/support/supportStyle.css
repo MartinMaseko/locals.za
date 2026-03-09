@@ -102,6 +102,15 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+.contact-link {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.contact-link:hover {
+  color: #FFB803;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -185,6 +194,11 @@
 .contact-hours {
   font-size: 0.85rem;
   color: #aaa;
+}
+
+.info-highlight {
+  color: #FFB803;
+  font-weight: 600;
 }
 
 /* Support Form Styling */

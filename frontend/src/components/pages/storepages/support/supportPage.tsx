@@ -75,6 +75,18 @@ const SupportPage: React.FC = () => {
       <div className="support-header">
         <h1>Support Center</h1>
         <p>Find answers to common questions about using Locals.ZA</p>
+        <p className='locals-info-text'>
+          <span className='info-highlight'>LOCALSZA (PTY) LTD </span>
+          <br/>
+          <br/> Locals ZA is an SMME wholesale buyer and last mile delivery service.
+          <br/> Locals ZA is registered with the Companies and Intellectual Property Commission (CIPC) of South Africa, ensuring compliance with all legal requirements for operating a business in the country.<br/>
+          <br/> Reg No: 2025/692802/07
+        </p>
+        <p className='locals-info-text'>
+          <span className='info-highlight'>Contact us at:</span><br/>
+          Email: <a href="mailto:admin@locals-za.co.za" className="contact-link"> admin@locals-za.co.za </a><br/> 
+          Call: <a href="tel:+27682858930" className="contact-link">+27 68 285 8930</a>
+        </p>
       </div>
 
       <div className="support-content">
