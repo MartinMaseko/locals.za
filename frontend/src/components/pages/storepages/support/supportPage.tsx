@@ -468,6 +468,314 @@ const SupportPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Terms and Conditions Section */}
+        <div className="faq-section">
+          <h2>Terms and Conditions</h2>
+          
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('acceptance-terms')}
+            >
+              <h3>1. Acceptance of Terms</h3>
+            </div>
+            
+            {expandedSection === 'acceptance-terms' && (
+              <div className="faq-answer">
+                <p>By accessing and using the LocalsZA application and services, you accept and agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.</p>
+                <p><strong>Company Information:</strong></p>
+                <ul>
+                  <li>Legal Entity: LOCALSZA (PTY) LTD</li>
+                  <li>Registration Number: 2025/692802/07</li>
+                  <li>Type: Private Company</li>
+                  <li>Registered with: Companies and Intellectual Property Commission (CIPC) of South Africa</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('service-description')}
+            >
+              <h3>2. Service Description</h3>
+            </div>
+            
+            {expandedSection === 'service-description' && (
+              <div className="faq-answer">
+                <p>LocalsZA provides:</p>
+                <ul>
+                  <li><strong>Supply Chain Aggregation:</strong> We consolidate wholesale suppliers to offer competitive pricing on fast-moving consumer goods.</li>
+                  <li><strong>Last-Mile Delivery:</strong> We deliver orders to registered business clients in the Kathorus region (Katlehong, Vosloorus, Thokoza and surrounding areas).</li>
+                  <li><strong>Business-to-Business Service:</strong> Our services are exclusively for registered SMME business owners including spaza shops, salons, and food outlets.</li>
+                </ul>
+                <p>We reserve the right to modify, suspend, or discontinue any aspect of our services at any time.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('user-eligibility')}
+            >
+              <h3>3. User Eligibility and Account Registration</h3>
+            </div>
+            
+            {expandedSection === 'user-eligibility' && (
+              <div className="faq-answer">
+                <p><strong>Eligibility:</strong></p>
+                <ul>
+                  <li>You must be at least 18 years of age</li>
+                  <li>You must be a registered business owner or authorized representative</li>
+                  <li>Your business must operate within our service area</li>
+                  <li>You must have the legal capacity to enter into binding contracts</li>
+                </ul>
+                <p><strong>Account Responsibility:</strong></p>
+                <ul>
+                  <li>You are responsible for maintaining the confidentiality of your account credentials</li>
+                  <li>You are responsible for all activities that occur under your account</li>
+                  <li>You must notify us immediately of any unauthorized use of your account</li>
+                  <li>Providing false or misleading information may result in account termination</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('ordering-payment')}
+            >
+              <h3>4. Ordering and Payment Terms</h3>
+            </div>
+            
+            {expandedSection === 'ordering-payment' && (
+              <div className="faq-answer">
+                <p><strong>Order Placement:</strong></p>
+                <ul>
+                  <li>All orders are subject to acceptance and availability</li>
+                  <li>Prices are subject to change without notice until payment is confirmed</li>
+                  <li>We reserve the right to refuse or cancel any order</li>
+                  <li>Order confirmation is sent via email and in-app notification</li>
+                </ul>
+                <p><strong>Payment:</strong></p>
+                <ul>
+                  <li>Payment must be made via Instant EFT through our payment provider, Payfast</li>
+                  <li>Orders are only processed after successful payment verification</li>
+                  <li>All prices are in South African Rand (ZAR) and include VAT where applicable</li>
+                  <li>A flat delivery fee of R80 applies to all orders</li>
+                </ul>
+                <p><strong>Order Modifications:</strong></p>
+                <ul>
+                  <li>Orders cannot be modified after payment confirmation</li>
+                  <li>Cancellation requests must be made before 12:00pm the day before scheduled delivery</li>
+                  <li>Cancellations after this time may not be honored due to logistics constraints</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('delivery-terms')}
+            >
+              <h3>5. Delivery Terms</h3>
+            </div>
+            
+            {expandedSection === 'delivery-terms' && (
+              <div className="faq-answer">
+                <p><strong>Delivery Schedule:</strong></p>
+                <ul>
+                  <li>Deliveries are made on fixed days: Monday, Wednesday, and Friday</li>
+                  <li>Delivery timing depends on route optimization and may vary</li>
+                  <li>We aim to deliver within the scheduled day but cannot guarantee specific time slots</li>
+                </ul>
+                <p><strong>Delivery Requirements:</strong></p>
+                <ul>
+                  <li>A responsible person must be available to receive the delivery</li>
+                  <li>Signature confirmation is required for all deliveries</li>
+                  <li>Delivery address must be within our service area (Kathorus region)</li>
+                  <li>Accurate delivery information is the customer's responsibility</li>
+                </ul>
+                <p><strong>Failed Deliveries:</strong></p>
+                <ul>
+                  <li>If delivery cannot be completed due to incorrect address or unavailability, additional fees may apply</li>
+                  <li>We will attempt to contact you using the provided contact details</li>
+                  <li>Rescheduled deliveries may incur additional charges</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('liability')}
+            >
+              <h3>6. Limitation of Liability</h3>
+            </div>
+            
+            {expandedSection === 'liability' && (
+              <div className="faq-answer">
+                <p><strong>Service Availability:</strong></p>
+                <ul>
+                  <li>We strive for uninterrupted service but do not guarantee continuous availability</li>
+                  <li>We are not liable for delays caused by circumstances beyond our control (weather, traffic, supplier issues, etc.)</li>
+                </ul>
+                <p><strong>Product Quality:</strong></p>
+                <ul>
+                  <li>We source products from reputable wholesale partners</li>
+                  <li>Product quality issues must be reported within 4 hours of delivery</li>
+                  <li>Our liability is limited to refund or credit for verified damaged or missing items</li>
+                </ul>
+                <p><strong>Maximum Liability:</strong></p>
+                <ul>
+                  <li>Our total liability shall not exceed the value of the specific order in question</li>
+                  <li>We are not liable for indirect, consequential, or punitive damages</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('intellectual-property')}
+            >
+              <h3>7. Intellectual Property</h3>
+            </div>
+            
+            {expandedSection === 'intellectual-property' && (
+              <div className="faq-answer">
+                <p>All content on the LocalsZA application, including but not limited to text, graphics, logos, images, and software, is the property of LOCALSZA (PTY) LTD and is protected by South African and international intellectual property laws.</p>
+                <ul>
+                  <li>You may not reproduce, distribute, or create derivative works without written permission</li>
+                  <li>The LocalsZA name, logo, and brand are registered trademarks</li>
+                  <li>Unauthorized use may result in legal action</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('prohibited-conduct')}
+            >
+              <h3>8. Prohibited Conduct</h3>
+            </div>
+            
+            {expandedSection === 'prohibited-conduct' && (
+              <div className="faq-answer">
+                <p>You agree not to:</p>
+                <ul>
+                  <li>Use the service for any unlawful purpose</li>
+                  <li>Attempt to gain unauthorized access to our systems</li>
+                  <li>Interfere with or disrupt the service or servers</li>
+                  <li>Upload malicious code or viruses</li>
+                  <li>Impersonate another person or entity</li>
+                  <li>Harass, abuse, or harm other users or our staff</li>
+                  <li>Use automated systems to access the service without permission</li>
+                  <li>Resell or redistribute our services without authorization</li>
+                </ul>
+                <p>Violation of these terms may result in immediate account termination and legal action.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('termination')}
+            >
+              <h3>9. Account Termination</h3>
+            </div>
+            
+            {expandedSection === 'termination' && (
+              <div className="faq-answer">
+                <p><strong>By LocalsZA:</strong></p>
+                <ul>
+                  <li>We reserve the right to suspend or terminate accounts at our discretion</li>
+                  <li>Accounts may be terminated for violation of these terms</li>
+                  <li>We will provide reasonable notice unless immediate termination is necessary</li>
+                </ul>
+                <p><strong>By User:</strong></p>
+                <ul>
+                  <li>You may close your account at any time by contacting support</li>
+                  <li>Outstanding payments must be settled before account closure</li>
+                  <li>Closed accounts cannot be reactivated; a new registration is required</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('governing-law')}
+            >
+              <h3>10. Governing Law and Dispute Resolution</h3>
+            </div>
+            
+            {expandedSection === 'governing-law' && (
+              <div className="faq-answer">
+                <p>These Terms and Conditions are governed by the laws of the Republic of South Africa.</p>
+                <p><strong>Dispute Resolution:</strong></p>
+                <ul>
+                  <li>Any disputes will first be attempted to be resolved through good faith negotiations</li>
+                  <li>If negotiations fail, disputes will be subject to the jurisdiction of South African courts</li>
+                  <li>The venue for any legal proceedings shall be in Gauteng, South Africa</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('changes-terms')}
+            >
+              <h3>11. Changes to Terms</h3>
+            </div>
+            
+            {expandedSection === 'changes-terms' && (
+              <div className="faq-answer">
+                <p>We reserve the right to modify these Terms and Conditions at any time. Changes will be effective immediately upon posting to the application.</p>
+                <ul>
+                  <li>Continued use of the service after changes constitutes acceptance</li>
+                  <li>Material changes will be communicated via email or in-app notification</li>
+                  <li>It is your responsibility to review these terms periodically</li>
+                </ul>
+                <p><strong>Last Updated:</strong> March 2026</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div 
+              className="faq-question" 
+              onClick={() => toggleSection('privacy-policy')}
+            >
+              <h3>Privacy Policy</h3>
+            </div>
+            
+            {expandedSection === 'privacy-policy' && (
+              <div className="faq-answer">
+                <p>LOCALSZA (PTY) LTD ("LocalsZA", "we", "us", or "our") is committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application and services.</p>
+                <p><strong>Compliance:</strong></p>
+                <ul>
+                  <li>This policy complies with the Protection of Personal Information Act (POPIA) of South Africa</li>
+                  <li>We are registered with CIPC (Reg No: 2025/692802/07)</li>
+                  <li>We adhere to principles of lawfulness, fairness, and transparency in data processing</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
