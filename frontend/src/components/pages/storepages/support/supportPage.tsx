@@ -125,7 +125,7 @@ const SupportPage: React.FC = () => {
             
             {expandedSection === 'service-area' && (
               <div className="faq-answer">
-                <p>We currently service (Kathorus) Katlehong, Vosloorus, Thokoza and surrounding areas. Please ensure your delivery address falls within this area when placing an order.</p>
+                <p>We currently service Ekurhuleni. Please ensure your delivery address falls within this area when placing an order.</p>
               </div>
             )}
           </div>
@@ -150,7 +150,7 @@ const SupportPage: React.FC = () => {
                   <li><strong>Access our APP:</strong> Use the LocalsZA App on your mobile phone or tablet.</li>
                   <li><strong>Browse & Select:</strong> View the consolidated list of products we offer at the best prices.</li>
                   <li><strong>Checkout:</strong> Confirm your order and delivery details.</li>
-                  <li><strong>Payment:</strong> Payfast is our payment service provider with instant EFT secure payment options.</li>
+                  <li><strong>Payment:</strong> Ozow is our payment service provider with instant EFT secure payment options.</li>
                 </ul>
               </div>
             )}
@@ -228,29 +228,7 @@ const SupportPage: React.FC = () => {
             
             {expandedSection === 'delivery-days' && (
               <div className="faq-answer">
-                <p>To ensure optimal route efficiency and the lowest possible costs, LocalsZA delivers to the East of Johannesburg (Ekhuruleni) on three fixed days a week:</p>
-                <p className="highlight-text">MONDAY, WEDNESDAY, and FRIDAY</p>
-              </div>
-            )}
-          </div>
-
-          <div className="faq-item">
-            <div 
-              className="faq-question" 
-              onClick={() => toggleSection('delivery-timing')}
-            >
-              <h3>When will my delivery arrive?</h3>
-            </div>
-            
-            {expandedSection === 'delivery-timing' && (
-              <div className="faq-answer">
-                <p>Your order's delivery day is based on the day you successfully place and pay for your order via Instant EFT:</p>
-                <ul>
-                  <li><strong>Sunday, Monday, or Tuesday</strong> – Delivery on Wednesday</li>
-                  <li><strong>Wednesday or Thursday</strong> – Delivery on Friday</li>
-                  <li><strong>Friday or Saturday</strong> – Delivery on Monday</li>
-                </ul>
-                <p className="important-note">Important: You must successfully complete your Instant EFT payment by 12:00pm the day before a delivery day (e.g., Tuesday before 12pm for a Wednesday delivery) to ensure your stock is included in that day's route.</p>
+                <p>Next day delivery within 24hrs of placing your order.</p>
               </div>
             )}
           </div>
