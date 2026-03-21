@@ -4,12 +4,17 @@ import { app } from '../../../../Auth/firebaseClient';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../../../assets/logos/LZAWHTTRP.webp';
+import { useCart } from '../../../contexts/CartContext';
 import './navstyle.css';
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth(app);
+  const { cart } = useCart();
+
+  // Calculate total items in cart
+  const totalItems = cart.reduce((total, item) => total + item.qty, 0);
 
   const handleSignOut = async () => {
     try {
@@ -47,7 +52,10 @@ const Navbar = () => {
             <img 
               src="https://img.icons8.com/ios-glyphs/30/ffb803/lift-cart-here.png"
               alt="Cart"
-            /> Cart
+            /> 
+            {totalItems > 0 && (
+                <span className="cart-counter">{totalItems}</span>
+          )}
           </Link>
           <Link to="/support" className="navbar-icon-support" aria-label="Support">
             <img 
