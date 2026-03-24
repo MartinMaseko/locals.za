@@ -170,14 +170,13 @@ const DashboardSection = ({
       ) : (
         <div className="dashboard-stats">
           <div className="dash-stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
-          <div className="dash-stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
           <div className="dash-stat-card"><h3>Orders</h3>
             <p className="dash-stat-number">
               {filterOrdersForCalculations(ordersState.allOrders || ordersState.orders).length}
             </p>
           </div>
           <div className="dash-stat-card">
-            <h3>Service Revenue</h3>
+            <h3>Revenue</h3>
             <p className="dash-stat-number">R{((ordersState.allOrders || ordersState.orders).length * 78).toFixed(2)}</p>
           </div>
           <div className="dash-stat-card">
