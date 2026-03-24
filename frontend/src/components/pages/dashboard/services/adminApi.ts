@@ -93,16 +93,7 @@ export const adminApi = {
       headers: { Authorization: `Bearer ${token}` }
     });
     
-    // Filter out pending_payment and cancelled orders at API level
-    const filteredData = Array.isArray(data) 
-      ? data.filter(order => 
-          order && 
-          order.status && 
-          !['pending_payment', 'cancelled'].includes(order.status.toLowerCase())
-        )
-      : [];
-    
-    return filteredData;
+     return Array.isArray(data) ? data : [];
   },
 
   updateOrderStatus: async (orderId: string, status: string) => {
