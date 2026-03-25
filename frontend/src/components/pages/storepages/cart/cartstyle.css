@@ -463,22 +463,21 @@
   height: auto;
 }
 
-.payfast-information {
+.ozow-information {
   font-size: 0.875rem;
   text-align: center;
   margin-top: 1rem;
   color: #6c757d;
 }
 
-.payfast-logos{
+.ozow-logos{
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 0.5rem;
 }
 
-.payfast-logo,
-.instanteft-logo {
+.ozow-logo {
   width: 100px;
   height: auto;
   margin-top: 0.5rem;
