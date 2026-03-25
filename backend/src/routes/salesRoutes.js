@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { authenticateSalesRep } = require('../middleware/auth');
-// Import email helper functions
 const { sendEmail, formatCashoutEmail } = require('../utils/emailHelper');
 
 // Sales Rep Login - Simple credential verification

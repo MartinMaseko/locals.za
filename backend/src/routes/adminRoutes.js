@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase'); 
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcryptjs'); 
 const authenticateToken = require('../middleware/auth'); 
 const adminController = require('../controllers/adminController');
 

@@ -82,9 +82,10 @@ const OrderConfirmationPage: React.FC = () => {
         console.log("Current user:", user ? "Logged in" : "Not logged in");
         
         // For orders coming from PayFast, we may need to fetch without auth first
-        const isFromPayFast = location.search.includes('pf_') || 
-                             location.pathname.includes('/order-confirmation/');
-        
+        const isFromPaymentProvider = location.search.includes('TransactionReference') || 
+                              location.search.includes('Status') ||
+                              location.pathname.includes('/order-confirmation/');
+
         let orderData: Order | null = null;
         
         try {
@@ -98,7 +99,7 @@ const OrderConfirmationPage: React.FC = () => {
             });
             
             orderData = response.data;
-          } else if (isFromPayFast) {
+          } else if (isFromPaymentProvider) {
             // If coming from PayFast and no user is logged in, try a special endpoint
             console.log("No user logged in, but coming from PayFast. Trying public endpoint");
             const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
@@ -110,7 +111,7 @@ const OrderConfirmationPage: React.FC = () => {
           console.error("Error with initial fetch:", authError);
           
           // As a last resort for PayFast returns, try the public endpoint
-          if (isFromPayFast) {
+          if (isFromPaymentProvider) {
             console.log("Trying public endpoint as fallback");
             const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
             orderData = response.data;
