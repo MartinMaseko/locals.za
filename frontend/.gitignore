@@ -8,7 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dev-dist
+dev-dist                    
+frontend/dev-dist/sw.js.map 
+frontend/dev-dist/sw.js
 dist
 dist-ssr
 *.local
