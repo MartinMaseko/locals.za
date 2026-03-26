@@ -1,79 +1,82 @@
 const { onRequest } = require('firebase-functions/v2/https');
-const express = require('express');
-const cors = require('cors');
-const admin = require('./firebase');
 
-// Import routes
-const authRoutes = require('./src/routes/authRoutes');
-const userRoutes = require('./src/routes/userRoutes');
-const productRoutes = require('./src/routes/productRoutes');
-const orderRoutes = require('./src/routes/orderRoutes');
-const adminRoutes = require('./src/routes/adminRoutes');
-const driverRoutes = require('./src/routes/driverRoutes');
-const paymentRoutes = require('./src/routes/paymentRoutes');
-const messageRoutes = require('./src/routes/messageRoutes');
-const supportRoutes = require('./src/routes/supportRoutes');
-const mapsRoutes = require('./src/routes/mapsRoutes');
-const dashboardRoutes = require('./src/routes/dashboardRoutes');
-const reportRoutes = require('./src/routes/reportRoutes');
-const ticketRoutes = require('./src/routes/ticketRoutes');
-const productRequestRoutes = require('./src/routes/productRequestRoutes');
-const discountRoutes = require('./src/routes/discountRoutes');
-const salesRoutes = require('./src/routes/salesRoutes');
+let app;
 
-const app = express();
+function getApp() {
+  if (!app) {
+    const express = require('express');
+    const cors = require('cors');
+    require('./firebase');
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'https://locals-za.co.za',
-  'https://locals-za.netlify.app'
-];
+    const authRoutes = require('./src/routes/authRoutes');
+    const userRoutes = require('./src/routes/userRoutes');
+    const productRoutes = require('./src/routes/productRoutes');
+    const orderRoutes = require('./src/routes/orderRoutes');
+    const adminRoutes = require('./src/routes/adminRoutes');
+    const driverRoutes = require('./src/routes/driverRoutes');
+    const paymentRoutes = require('./src/routes/paymentRoutes');
+    const messageRoutes = require('./src/routes/messageRoutes');
+    const supportRoutes = require('./src/routes/supportRoutes');
+    const mapsRoutes = require('./src/routes/mapsRoutes');
+    const dashboardRoutes = require('./src/routes/dashboardRoutes');
+    const reportRoutes = require('./src/routes/reportRoutes');
+    const ticketRoutes = require('./src/routes/ticketRoutes');
+    const productRequestRoutes = require('./src/routes/productRequestRoutes');
+    const discountRoutes = require('./src/routes/discountRoutes');
+    const salesRoutes = require('./src/routes/salesRoutes');
 
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      return callback(new Error('CORS policy violation'), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
+    app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://locals-za.co.za',
+      'https://locals-za.netlify.app'
+    ];
 
-// Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/drivers', driverRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/support', supportRoutes);
-app.use('/api/maps', mapsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/tickets', ticketRoutes);
-app.use('/api/product-requests', productRequestRoutes);
-app.use('/api/discounts', discountRoutes);
-app.use('/api/sales', salesRoutes);
+    app.use(cors({
+      origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+          return callback(new Error('CORS policy violation'), false);
+        }
+        return callback(null, true);
+      },
+      credentials: true
+    }));
 
-// Health check
-app.get('/', (req, res) => {
-  res.status(200).send('LocalsZA API is running');
-});
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('API Error:', err);
-  res.status(500).json({ error: 'Internal server error', message: err.message });
-});
+    app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/products', productRoutes);
+    app.use('/api/orders', orderRoutes);
+    app.use('/api/admin', adminRoutes);
+    app.use('/api/drivers', driverRoutes);
+    app.use('/api/payment', paymentRoutes);
+    app.use('/api/messages', messageRoutes);
+    app.use('/api/support', supportRoutes);
+    app.use('/api/maps', mapsRoutes);
+    app.use('/api/dashboard', dashboardRoutes);
+    app.use('/api/reports', reportRoutes);
+    app.use('/api/tickets', ticketRoutes);
+    app.use('/api/product-requests', productRequestRoutes);
+    app.use('/api/discounts', discountRoutes);
+    app.use('/api/sales', salesRoutes);
 
-// Export as Firebase Function (v2)
+    app.get('/', (req, res) => {
+      res.status(200).send('LocalsZA API is running');
+    });
+
+    app.use((err, req, res, next) => {
+      console.error('API Error:', err);
+      res.status(500).json({ error: 'Internal server error', message: err.message });
+    });
+  }
+  return app;
+}
+
 exports.api = onRequest(
   {
     region: 'europe-west4',
@@ -81,5 +84,5 @@ exports.api = onRequest(
     memory: '1GiB',
     maxInstances: 10
   },
-  app
+  (req, res) => getApp()(req, res)
 );

@@ -1,5 +1,5 @@
 const admin = require('../../firebase');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {
