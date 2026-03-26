@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mapsController = require('../controllers/mapsController');
 const authenticateToken = require('../middleware/auth');
-const admin = require('firebase-admin');
+const admin = require('../../firebase');
 
 // Get directions and ETA (protected route - requires authentication)
 router.get('/directions', authenticateToken, mapsController.getDirections);

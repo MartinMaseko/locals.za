@@ -1,4 +1,4 @@
-const admin = require('firebase-admin');
+const admin = require('../../firebase');
 const db = admin.firestore();
 
 // Save paid price for a product on a specific date

@@ -74,10 +74,10 @@ const PaymentCancelledPage: React.FC = () => {
         console.log("Fetching order:", id);
         console.log("Current user:", user ? "Logged in" : "Not logged in");
         
-        // For orders coming from PayFast, we may need to fetch without auth first
-        const isFromPayFast = location.search.includes('pf_') || 
-                             location.pathname.includes('/payment-cancelled/');
-        
+        const isFromPaymentProvider = location.search.includes('TransactionReference') || 
+                              location.search.includes('Status') ||
+                              location.pathname.includes('/payment-cancelled/');
+
         let orderData: Order | null = null;
         
         try {
@@ -91,7 +91,7 @@ const PaymentCancelledPage: React.FC = () => {
             });
             
             orderData = response.data;
-          } else if (isFromPayFast) {
+          } else if (isFromPaymentProvider) {
             // If coming from PayFast and no user is logged in, try a special endpoint
             console.log("No user logged in, but coming from PayFast. Trying public endpoint");
             const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
@@ -103,7 +103,7 @@ const PaymentCancelledPage: React.FC = () => {
           console.error("Error with initial fetch:", authError);
           
           // As a last resort for PayFast returns, try the public endpoint
-          if (isFromPayFast) {
+          if (isFromPaymentProvider) {
             console.log("Trying public endpoint as fallback");
             const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
             orderData = response.data;
@@ -141,7 +141,7 @@ const PaymentCancelledPage: React.FC = () => {
         
         // Even if the user isn't logged in but we fetched the order, mark it as cancelled
         // through a public endpoint if coming from PayFast
-        else if (!statusUpdatedRef.current && !user && isFromPayFast && 
+        else if (!statusUpdatedRef.current && !user && isFromPaymentProvider && 
                 orderData.status === 'pending_payment') {
           try {
             console.log("Updating order status to 'cancelled' via public endpoint");
