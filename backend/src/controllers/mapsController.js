@@ -1,5 +1,5 @@
 const mapsService = require('../services/mapsService');
-const admin = require('firebase-admin');
+const admin = require('../../firebase');
 
 /**
  * Maps controller for handling maps-related requests

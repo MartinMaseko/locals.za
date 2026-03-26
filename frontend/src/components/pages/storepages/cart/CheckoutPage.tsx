@@ -6,8 +6,7 @@ import { useDiscounts } from '../../dashboard/hooks/useDiscounts';
 import ProductCard from '../productview/productsCard';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
-import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
-import InstantEftLogo from '../../../assets/images/instantEFT.webp';
+import OzowLogo from '../../../assets/images/OzowLogo.png';
 import LogoIcon from '../../../assets/logos/LZA ICON.png';
 import './cartstyle.css';
 
@@ -263,26 +262,26 @@ const CheckoutPage: React.FC = () => {
       
       clearCart();
       
-      // Step 3: Redirect to PayFast with URL parameters (bypasses CSP form-action)
+      // Step 3: Redirect to Ozow via form POST
       if (paymentData.formData && paymentData.url) {
-        console.log('Processing PayFast payment...', paymentData.formData);
+        console.log('Processing Ozow payment...', paymentData.formData);
         
-        // Build URL with parameters
-        const params = new URLSearchParams();
-        Object.keys(paymentData.formData).forEach(fieldName => {
-          const fieldValue = paymentData.formData![fieldName];
-          if (fieldValue !== undefined && fieldValue !== null && String(fieldValue).trim() !== '') {
-            params.append(fieldName, String(fieldValue));
-          }
+        // Create a hidden form and submit it (Ozow requires POST)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = paymentData.url;
+        form.style.display = 'none';
+        
+        Object.entries(paymentData.formData).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
         });
         
-        const payfastUrl = `${paymentData.url}?${params.toString()}`;
-        
-        console.log('Redirecting to PayFast:', paymentData.url);
-        console.log('Signature Frontend:', paymentData.formData?.signature);
-        
-        // Redirect to PayFast
-        window.location.href = payfastUrl;
+        document.body.appendChild(form);
+        form.submit();
       } else {
         throw new Error('Payment data not received from backend');
       }
@@ -431,14 +430,13 @@ const CheckoutPage: React.FC = () => {
           <input value={postal} onChange={e => setPostal(e.target.value)} maxLength={20} aria-invalid={!!postalError} />
         {postalError && <div className="field-error">{postalError}</div>}
 
-        <div className="payfast-information">
-          <div className="payfast-logos">
-            <img src={PayfastLogo} alt="PayFast Logo" className="payfast-logo" />
-            <img src={InstantEftLogo} alt="Instant EFT Logo" className="instanteft-logo" />
+        <div className="ozow-information">
+          <div className="ozow-logos">
+            <img src={OzowLogo} alt="Ozow Logo" className="ozow-logo" />
           </div>
-          <h3>Payment via PayFast</h3>
+          <h3>Payment via Ozow</h3>
           <p>
-            You will be redirected to PayFast to complete your payment securely.
+            You will be redirected to Ozow to complete your payment securely.
             Please ensure all details are correct before proceeding.
           </p>
         </div>
