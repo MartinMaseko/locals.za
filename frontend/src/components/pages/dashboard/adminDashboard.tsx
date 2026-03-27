@@ -76,6 +76,7 @@ const AdminDashboard: React.FC = () => {
   const [admin, setAdmin] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Use custom hooks for data management
   const ordersState = useOrders();
@@ -174,8 +175,19 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="admin-dashboard">
       <div className="admin-layout">
-        <div className="admin-sidebar">
+        <div className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="admin-header">
+            <button 
+              className="sidebar-toggle" 
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? 
+              <img width="32" height="32" src="https://img.icons8.com/ios-filled/32/ffb803/show-right-side-panel.png" alt="show-right-side-panel"/> 
+              : 
+              <img width="32" height="32" src="https://img.icons8.com/ios/32/ffb803/show-left-side-panel.png" alt="show-left-side-panel"/>
+              }
+            </button>
             <img src={Logo} className='dashLogo' alt='Logo' />
             <h3>Dashboard</h3>
             <div className="admin-info">{admin?.full_name || admin?.email}</div>
@@ -187,18 +199,19 @@ const AdminDashboard: React.FC = () => {
                 key={section.id}
                 className={`nav-item ${activeSection === section.id ? 'active' : ''}`}
                 onClick={() => setActiveSection(section.id)}
+                title={sidebarCollapsed ? section.label : ''}
               >
-                {section.label}
+                <span>{section.label}</span>
               </button>
             ))}
             <div className="nav-spacer" />
-            <button className="nav-item signout-btn" onClick={handleSignOut}>
-              Sign Out
+            <button className="nav-item signout-btn" onClick={handleSignOut} title={sidebarCollapsed ? 'Sign Out' : ''}>
+              <span>Sign Out</span>
             </button>
           </nav>
         </div>
 
-        <div className="admin-content">
+        <div className={`admin-content ${sidebarCollapsed ? 'expanded' : ''}`}>
           {SectionComponent && (
             <Suspense fallback={<div className="loading-indicator">Loading section...</div>}>
               <SectionComponent {...sharedProps} />
