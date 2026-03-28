@@ -7,9 +7,13 @@ export const dashboardStatsService = {
   fetchStats: async (token: string, period: string): Promise<StatsResponse | null> => {
     try {
       const { data } = await axios.get<StatsResponse>(
-        `${API_URL}/api/admin/stats?period=${period}`,
+        `${API_URL}/api/admin/stats?period=${period}&limit=10`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      // 10 products even if API returns more
+      if (data && data.topProducts) {
+        data.topProducts = data.topProducts.slice(0, 10);
+      }
       return data;
     } catch (apiError) {
       console.warn('Stats API not available, calculating locally', apiError);
@@ -67,7 +71,7 @@ export const dashboardStatsService = {
 
     const topProducts = Object.values(productSales)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
+      .slice(0, 10);
 
     console.log(`Stats calculation for ${period}:`, {
       totalOrdersReceived: orders.length,

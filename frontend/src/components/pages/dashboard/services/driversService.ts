@@ -39,6 +39,38 @@ export const driversService = {
   },
 
   /**
+   * Fetch all orders for all drivers (for dashboard statistics)
+   */
+  fetchAllDriverOrders: async (token: string): Promise<any[]> => {
+    try {
+      const { data } = await axios.get(`${API_URL}/api/orders/drivers/all`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return Array.isArray(data) ? data : [];
+    } catch (err: any) {
+      console.error('Error fetching all driver orders:', err);
+      return [];
+    }
+  },
+
+  /**
+   * Fetch orders for a specific driver
+   */
+  fetchDriverOrders: async (token: string, driverId: string): Promise<any[]> => {
+    if (!driverId) return [];
+    
+    try {
+      const { data } = await axios.get(`${API_URL}/api/orders/driver/${driverId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return Array.isArray(data) ? data : [];
+    } catch (err: any) {
+      console.error('Error fetching driver orders:', err);
+      return [];
+    }
+  },
+
+  /**
    * Register a new driver
    */
   registerDriver: async (token: string, driverData: any) => {

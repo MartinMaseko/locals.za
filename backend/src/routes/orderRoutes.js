@@ -952,5 +952,43 @@ router.get('/customer/email/:email', authenticateSalesRep, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
+// Get all orders for all drivers (admin only) - for driver dashboard statistics
+router.get('/drivers/all', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all orders that have been assigned to drivers
+    let orders = [];
+    
+    try {
+      // Try to get orders where driver_id field exists (not null)
+      const snapshot = await admin.firestore()
+        .collection('orders')
+        .where('driver_id', '!=', null)
+        .get();
+        
+      orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (indexError) {
+      // If index error, get all orders and filter in memory
+      console.log('Index error, fetching all orders and filtering for drivers:', indexError.message);
+      const snapshot = await admin.firestore().collection('orders').get();
+      orders = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(order => order.driver_id && order.driver_id !== null);
+    }
+    
+    console.log(`Found ${orders.length} orders assigned to drivers`);
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching all driver orders:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 module.exports = router;
