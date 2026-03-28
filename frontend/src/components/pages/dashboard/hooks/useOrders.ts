@@ -1,29 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { adminApi } from '../services/adminApi';
+import { ordersService } from '../services/ordersService';
 import { filterOrdersForCalculations } from '../utils/orderStatusUtils';
-
-interface Order {
-  id: string;
-  userId: string;
-  salon_id: string | null;
-  items: any[];
-  subtotal: number;
-  serviceFee: number;
-  total: number;
-  deliveryAddress: any;
-  status: string;
-  createdAt: any;
-  updatedAt: any;
-  driver_id?: string | null;
-  missingItems?: any[];
-  refundAmount?: number;
-  adjustedTotal?: number;
-  refundStatus?: string;
-  driverNote?: string;
-  rating?: number;
-  ratingComment?: string;
-  ratedAt?: any;
-}
+import type { Order, OrderStatus } from '../types/index';
 
 export const useOrders = () => {
   const [allOrders, setAllOrders] = useState<Order[]>([]);
@@ -31,6 +10,7 @@ export const useOrders = () => {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [customerDetails, setCustomerDetails] = useState<Record<string, any>>({});
 
   const fetchOrders = useCallback(async (statusFilter = '') => {
     setLoading(true);
@@ -52,6 +32,10 @@ export const useOrders = () => {
         setOrders(data);
         setFilteredOrders(data);
       }
+      
+      // Fetch customer details for all orders to enable name/email search
+      await fetchCustomerDetailsForOrders(data);
+      
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
     } finally {
@@ -59,7 +43,39 @@ export const useOrders = () => {
     }
   }, []);
 
-  const updateStatus = useCallback(async (orderId: string, status: string) => {
+  const fetchCustomerDetailsForOrders = useCallback(async (ordersList: Order[]) => {
+    const uniqueUserIds = [...new Set(ordersList.map(order => order.userId).filter(Boolean))];
+    
+    const detailsPromises = uniqueUserIds.map(async (userId) => {
+      try {
+        const data = await adminApi.getCustomerDetails(userId);
+        const customer = data as { full_name?: string; email?: string; phone_number?: string };
+        return {
+          userId,
+          details: {
+            name: customer.full_name || customer.email || 'Unknown',
+            email: customer.email,
+            phone: customer.phone_number
+          }
+        };
+      } catch (err) {
+        return {
+          userId,
+          details: { name: 'Unknown Customer', email: '', phone: '' }
+        };
+      }
+    });
+
+    const results = await Promise.all(detailsPromises);
+    const newCustomerDetails = results.reduce((acc, { userId, details }) => {
+      acc[userId] = details;
+      return acc;
+    }, {} as Record<string, any>);
+
+    setCustomerDetails(prev => ({ ...prev, ...newCustomerDetails }));
+  }, []);
+
+  const updateStatus = useCallback(async (orderId: string, status: OrderStatus) => {
     try {
       await adminApi.updateOrderStatus(orderId, status);
       setOrders(prev =>
@@ -94,13 +110,14 @@ export const useOrders = () => {
   }, []);
 
   const filterByQuery = useCallback((query: string) => {
-    const q = (query || '').trim().toLowerCase();
-    if (!q) {
+    if (!query.trim()) {
       setFilteredOrders(orders);
     } else {
-      setFilteredOrders(orders.filter(o => o.id?.toLowerCase().includes(q)));
+      // Use the ordersService filterOrders method that searches by ID, name, and email
+      const filtered = ordersService.filterOrders(orders, query, customerDetails);
+      setFilteredOrders(filtered);
     }
-  }, [orders]);
+  }, [orders, customerDetails]);
 
   // Since API already filters, we can use for business calculations directly
   const validOrders = useMemo(() => {
@@ -111,6 +128,7 @@ export const useOrders = () => {
     orders: validOrders, // Return filtered orders for business calculations
     allOrders, // Return all API-filtered orders
     filteredOrders,
+    customerDetails, // Return customer details for search functionality
     loading,
     error,
     setError,

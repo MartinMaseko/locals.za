@@ -621,6 +621,7 @@
 .order-search-input,
 .product-search-input {
   width: 100%;
+  min-width: 500px;
   padding: 8px 12px;
   padding-right: 30px;
   border-radius: 4px;

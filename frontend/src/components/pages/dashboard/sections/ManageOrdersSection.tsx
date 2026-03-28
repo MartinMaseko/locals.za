@@ -27,6 +27,19 @@ const ManageOrdersSection = ({
     }
   }, [selectedOrder, fetchCustomerDetails]);
 
+  // Fetch customer details for all filtered orders
+  useEffect(() => {
+    if (ordersState.filteredOrders && ordersState.filteredOrders.length > 0) {
+      const userIds = ordersState.filteredOrders
+        .map((order: any) => order.userId)
+        .filter((userId: string) => userId && !customerDetails[userId]);
+      
+      userIds.forEach((userId: string) => {
+        fetchCustomerDetails(userId);
+      });
+    }
+  }, [ordersState.filteredOrders, customerDetails, fetchCustomerDetails]);
+
   // Fetch all orders on initial mount
   useEffect(() => {
     ordersState.fetchOrders('');
@@ -48,7 +61,7 @@ const ManageOrdersSection = ({
         <div className="order-search">
           <input 
             type="text" 
-            placeholder="Search by Order ID" 
+            placeholder="Search by Order ID, Customer Name, or Email" 
             value={orderSearchQuery} 
             onChange={e => setOrderSearchQuery(e.target.value)} 
             className="order-search-input" 
@@ -70,70 +83,23 @@ const ManageOrdersSection = ({
           </div>
         </div>
       </div>
-
-      {/* Top Selling Products Section */}
-      <div className="top-selling-section">
-        <h3>Top Selling Products</h3>
-        <div className="top-selling-products">
-          {(() => {
-            const allOrders = ordersState.allOrders || ordersState.orders;
-            const validOrders = filterOrdersForCalculations(allOrders);
-            const productsMap: { [key: string]: { name: string; qty: number; revenue: number } } = {};
-            
-            validOrders.forEach((order: any) => {
-              order.items?.forEach((item: any) => {
-                const productId = item.productId;
-                const productName = item.product?.name || `Product ${productId}`;
-                const qty = Number(item.qty || 0);
-                const price = Number(item.product?.price || 0);
-                
-                if (!productsMap[productId]) {
-                  productsMap[productId] = { name: productName, qty: 0, revenue: 0 };
-                }
-                
-                productsMap[productId].qty += qty;
-                productsMap[productId].revenue += price * qty;
-              });
-            });
-
-            const topProducts = Object.values(productsMap)
-              .sort((a, b) => b.qty - a.qty)
-              .slice(0, 5);
-
-            return topProducts.length > 0 ? (
-              <div className="top-products-grid">
-                {topProducts.map((product, idx) => (
-                  <div key={idx} className="top-product-card">
-                    <div className="top-product-rank">#{idx + 1}</div>
-                    <div className="product-info">
-                      <div className="top-product-name">{product.name}</div>
-                      <div className="top-product-stats">
-                        <span className="qty-sold">{product.qty} sold</span>
-                        <span className="top-product-revenue">R{product.revenue.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="no-data">No product sales data available</div>
-            );
-          })()}
-        </div>
-      </div>
-
       {ordersState.loading ? <div className="loading-indicator">Loading orders...</div> :
         ordersState.error ? <div className="error-message">{ordersState.error}</div> :
         ordersState.filteredOrders.length === 0 ? <div className="no-orders">{orderSearchQuery ? `No orders match "${orderSearchQuery}"` : 'No orders found'}</div> :
         <div className="orders-grid"><div className="orders-list">
           <table className="orders-table">
-            <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Rating</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Order ID</th><th>Date</th><th>Customer Name</th><th>Total</th><th>Status</th><th>Rating</th><th>Actions</th></tr></thead>
             <tbody>
               {ordersState.filteredOrders.map((order: any) => (
                 <tr key={order.id} onClick={() => setSelectedOrder(order as Order)} className={selectedOrder?.id === order.id ? 'selected' : ''}>
                   <td>{order.id?.substring(0,8)}...</td>
                   <td>{formatDate(order.createdAt)}</td>
-                  <td>{order.userId?.substring(0,8)}...</td>
+                  <td>
+                    {customerDetails[order.userId] 
+                      ? customerDetails[order.userId].name 
+                      : `${order.userId?.substring(0,8)}...`
+                    }
+                  </td>
                   <td>R{Number(order.total || 0).toFixed(2)}</td>
                   <td><div className={`status-badge ${order.status}`}>{order.status}</div></td>
                   <td>
