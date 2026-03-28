@@ -52,5 +52,29 @@ export const ordersService = {
       console.error('Error fetching driver orders:', err);
       return [];
     }
+  },
+
+  /**
+   * Filter orders by search query (order ID, customer name, or email)
+   */
+  filterOrders: (orders: Order[], searchQuery: string, customerDetails: any): Order[] => {
+    if (!searchQuery.trim()) return orders;
+    
+    const query = searchQuery.toLowerCase().trim();
+    
+    return orders.filter(order => {
+      // Search by Order ID
+      if (order.id?.toLowerCase().includes(query)) return true;
+      
+      // Search by Customer Name
+      const customerName = customerDetails[order.userId]?.name?.toLowerCase();
+      if (customerName && customerName.includes(query)) return true;
+      
+      // Search by Customer Email  
+      const customerEmail = customerDetails[order.userId]?.email?.toLowerCase();
+      if (customerEmail && customerEmail.includes(query)) return true;
+      
+      return false;
+    });
   }
 };
