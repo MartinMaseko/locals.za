@@ -227,9 +227,9 @@ const DashboardSection = ({
           {/* Top Products Section */}
           {dashboardStats.topProducts.length > 0 && (
             <div className="top-selling-section">
-              <h3>Top Selling Products - {getPeriodLabel()}</h3>
+              <h3>Top 10 Selling Products - {getPeriodLabel()}</h3>
               <div className="top-products">
-                {dashboardStats.topProducts.map((product, index) => (
+                {dashboardStats.topProducts.slice(0, 10).map((product, index) => (
                   <div key={index} className="stat-product">
                     <div className="top-product-rank">{index + 1}</div>
                     <div className="product-name">{product.name}</div>

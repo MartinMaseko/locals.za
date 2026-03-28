@@ -87,7 +87,7 @@ exports.getDashboardStats = async (req, res) => {
     // Sort by count (quantity sold)
     const topProducts = Object.values(productSales)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
+      .slice(0, 10);
     
     // Calculate driver revenue
     let driverRevenue = 0;
