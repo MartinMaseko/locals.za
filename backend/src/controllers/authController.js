@@ -31,15 +31,32 @@ exports.getSession = async (req, res) => {
   }
 };
 
-// Promote user to admin (set custom claim)
+// Promote user to admin (set custom claim + password)
 exports.promoteToAdmin = async (req, res) => {
-  const { uid } = req.body; // Firebase UID of the user to promote
-  if (!uid) return res.status(400).json({ error: 'UID required' });
+  const { email, adminPassword } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  if (!adminPassword) return res.status(400).json({ error: 'Admin password required' });
 
   try {
+    // Look up the user by email
+    const userRecord = await admin.auth().getUserByEmail(email);
+    const uid = userRecord.uid;
+
+    // Set admin custom claim
     await admin.auth().setCustomUserClaims(uid, { admin: true });
-    res.json({ message: 'User promoted to admin.' });
+    await admin.auth().updateUser(uid, {
+      password: adminPassword,
+    });
+
+    await admin.firestore().collection('users').doc(uid).update({
+      user_type: 'admin',
+    });
+
+    res.json({ message: `User ${email} promoted to admin with login credentials set.` });
   } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      return res.status(404).json({ error: 'No user found with that email address' });
+    }
     res.status(500).json({ error: error.message });
   }
 };

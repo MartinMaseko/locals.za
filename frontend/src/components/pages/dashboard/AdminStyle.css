@@ -1358,11 +1358,13 @@
   border-radius: 8px;
   border: 1px solid #e0e0e0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .summary-card h3 {
   margin: 0 0 10px 0;
-  font-size: 14px;
+  font-size: 1rem;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1370,9 +1372,9 @@
 
 .summary-value {
   margin: 0;
-  font-size: 28px;
+  font-size: 1rem;
   font-weight: 700;
-  color: #2196F3;
+  color: #ffb803;
 }
 
 /* Order Status Indicators */
@@ -1926,6 +1928,28 @@
 .date-group-content {
   padding: 20px;
   background: white;
+  overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.date-group-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.date-group-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.date-group-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.date-group-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .procurement-table {
@@ -1933,6 +1957,26 @@
   border-collapse: collapse;
   font-size: 12px;
   table-layout: fixed;
+  min-width: 900px;
+}
+
+.procurement-table::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.procurement-table::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.procurement-table::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.procurement-table::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .procurement-table th {
@@ -1942,6 +1986,9 @@
   font-weight: 600;
   border-bottom: 2px solid #dee2e6;
   font-size: 11px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .procurement-table td {
@@ -2068,6 +2115,26 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin-top: 30px;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+.procurement-summary::-webkit-scrollbar {
+  height: 6px;
+}
+
+.procurement-summary::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.procurement-summary::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.procurement-summary::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 /* Discount Analytics Section Styles */

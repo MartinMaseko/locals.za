@@ -52,11 +52,12 @@ export const adminApi = {
     return data;
   },
 
-  promoteToAdmin: async (uid: string) => {
+  promoteToAdmin: async (email: string, adminPassword: string) => {
     const token = await getToken();
-    const { data } = await axios.post(`${API_URL}/api/auth/promote-admin`, { uid }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const { data } = await axios.post(`${API_URL}/api/auth/promote-admin`, 
+      { email, adminPassword }, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
     return data;
   },
 
