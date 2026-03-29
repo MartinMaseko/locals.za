@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../../assets/logos/LZA ICON.png';
 import '../storepages/navbar/navstyle.css';
-import '../drivers/driverStyles.css';
+
 
 const BuyerNav = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,18 +24,17 @@ const BuyerNav = () => {
   };
 
   return (
-    <div className="driver-nav-container">
-      <nav className="navbar drivers-navbar">
-        <div className="driver-navbar-content">
-          <div className="driver-navbar-logo">
+      <nav className="buyer-navbar">
+        <div className="buyer-navbar-content">
+          <div className="buyer-navbar-logo">
             <Link to="/buyer/orders">
-              <img src={Logo} alt="LocalsZA" className="driver-logo" />
+              <img src={Logo} alt="LocalsZA" className="buyer-navbar-logo" />
             </Link>
           </div>
 
-          <div className="navbar-menu">
+          <div className="buyer-navbar-menu">
             <button
-              className="navbar-icon"
+              className="buyer-navbar-icon"
               onClick={() => setDropdownOpen(!dropdownOpen)}
               aria-label="Menu"
               style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
@@ -97,7 +96,6 @@ const BuyerNav = () => {
           </div>
         </div>
       </nav>
-    </div>
   );
 };
 
