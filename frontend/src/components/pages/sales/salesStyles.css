@@ -1,4 +1,24 @@
 /* Sales Dashboard Styles - Comprehensive */
+.sales-navbar {
+  width: 100vw;
+  height: 70px;
+  background: #454E50;
+  position: sticky;
+  top: 0;
+  z-index: 105;
+}
+
+.sales-navbar-content {
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sales-logo {
+  width: 50px;
+}
+
 .sales-dashboard,
 .sales-cart-container {
   max-width: 100vw;

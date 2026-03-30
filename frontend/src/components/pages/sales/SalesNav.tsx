@@ -27,12 +27,11 @@ const SalesNav = () => {
   };
 
   return (
-    <div className="driver-nav-container">
-      <nav className="navbar drivers-navbar">
-        <div className="driver-navbar-content">
-          <div className="driver-navbar-logo">
+      <nav className="sales-navbar">
+        <div className="sales-navbar-content">
+          <div className="sales-navbar-logo">
             <NavLink to="/sales/revenue">
-              <img src={Logo} alt="LocalsZA" className="driver-logo" />
+              <img src={Logo} alt="LocalsZA" className="sales-logo" />
             </NavLink>
           </div>
 
@@ -137,7 +136,6 @@ const SalesNav = () => {
           </div>
         </div>
       </nav>
-    </div>
   );
 };
 
