@@ -20,7 +20,7 @@ const SalesNav = () => {
       
       console.log('Sales Rep Signed Out');
       setDropdownOpen(false);
-      navigate('/sales/login');
+      navigate('/saleslogin');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -109,18 +109,6 @@ const SalesNav = () => {
                 alt="revenue"
               />
               Revenue
-            </NavLink>
-            <NavLink
-              to="/sales/training"
-              className="navbar-dropdown-item"
-              onClick={() => setDropdownOpen(false)}
-            >
-              <img
-                className="navbar-dropdown-icon"
-                src="https://img.icons8.com/ios-glyphs/35/ffb803/graduation-cap.png"
-                alt="training"
-              />
-              Training
             </NavLink>
             <button
               className="navbar-logout"

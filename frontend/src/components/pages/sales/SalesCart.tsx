@@ -104,7 +104,7 @@ const SalesCart: React.FC = () => {
   return (
     <div className="sales-cart-container">
       <div className="sales-cart-header">
-        <h2>Sales Cart</h2>
+        <h2>Sales Qoute Cart</h2>
         <button onClick={() => navigate('/sales/shop')} className="continue-shopping-btn">
           ← Continue Shopping
         </button>
