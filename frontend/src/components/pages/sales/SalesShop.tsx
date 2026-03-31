@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './salesStyles.css';
 import '../storepages/store/storeCategoriesStyling.css';
+import { calculateUnitPrice, formatUnitPrice } from '../../../utils/priceHelper';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -134,7 +135,13 @@ const SalesShop = () => {
       );
     }
 
+    filtered.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
     setFilteredProducts(filtered);
+  };
+
+  const getCartQty = (productId: string) => {
+    const item = cart.find(item => item.id === productId);
+    return item ? item.qty : 0;
   };
 
   const handleAddToCart = (product: Product) => {
@@ -160,6 +167,23 @@ const SalesShop = () => {
       ];
     }
     
+    saveCart(newCart);
+  };
+
+  const handleDecrement = (productId: string) => {
+    const existingItem = cart.find(item => item.id === productId);
+    if (!existingItem) return;
+
+    let newCart;
+    if (existingItem.qty <= 1) {
+      newCart = cart.filter(item => item.id !== productId);
+    } else {
+      newCart = cart.map(item =>
+        item.id === productId
+          ? { ...item, qty: item.qty - 1 }
+          : item
+      );
+    }
     saveCart(newCart);
   };
 
@@ -204,7 +228,7 @@ const SalesShop = () => {
               onClick={() => navigate('/sales/cart')}
               className="cart-button"
             >
-              🛒 View Cart ({cart.length})
+              View Cart ({cart.length})
             </button>
           )}
         </div>
@@ -253,48 +277,87 @@ const SalesShop = () => {
             No products found
           </p>
         ) : (
-          <div className="sales-products-grid">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="sales-product-card"
-              >
-                <div className="sales-product-image-container">
-                  <img
-                    src={product.image_url || product.image} // Handle both field names
-                    alt={product.name}
-                    className="sales-product-image"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/250x200?text=No+Image';
-                    }}
-                  />
-                </div>
-                
-                <div className="sales-product-details">
-                  <h3 className="sales-product-name">
-                    {product.name}
-                  </h3>
-                  
-                  <p className="sales-product-category">
-                    {product.category}
-                  </p>
-                  
-                  <div className="sales-product-footer">
-                    <span className="sales-product-price">
-                      {formatCurrency(product.price)}
-                    </span>
+          <div>
+            {Object.entries(
+              filteredProducts.reduce<Record<string, Product[]>>((groups, product) => {
+                const cat = product.category || 'Uncategorized';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(product);
+                return groups;
+              }, {})
+            ).map(([category, categoryProducts]) => (
+              <div key={category} className="sales-category-group">
+                <h3 className="sales-category-title">{category}</h3>
+                <div className="sales-products-grid">
+                  {categoryProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="sales-product-card"
+                  >
+                    <div className="sales-product-image-container">
+                      <img
+                        src={product.image_url || product.image} // Handle both field names
+                        alt={product.name}
+                        className="sales-product-image"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/250x200?text=No+Image';
+                        }}
+                      />
+                    </div>
                     
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      className="sales-add-to-cart-btn"
-                    >
-                      Add to Cart
-                    </button>
+                    <div className="sales-product-details">
+                      <h3 className="sales-product-name">
+                        {product.name}
+                      </h3>
+                      
+                      <p className="sales-product-category">
+                        {product.category}
+                      </p>
+                      
+                      <div className="sales-product-footer">
+                        <div className="sales-product-price-container">
+                          <span className="sales-product-price">
+                            {formatCurrency(product.price)}
+                          </span>
+                          {(() => {
+                            const priceInfo = calculateUnitPrice(product.name, Number(product.price));
+                            return priceInfo.hasMultipleUnits && priceInfo.unitPrice ? (
+                              <span className="sales-product-unit-price">
+                                {formatUnitPrice(priceInfo.unitPrice)}
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
+                        <div className="sales-product-actions">
+                          {getCartQty(product.id) > 0 ? (
+                            <div className="sales-qty-toggle">
+                              <button
+                                onClick={() => handleDecrement(product.id)}
+                                className="sales-qty-btn"
+                              >
+                                −
+                              </button>
+                              <span className="sales-qty-value">{getCartQty(product.id)}</span>
+                              <button
+                                onClick={() => handleAddToCart(product)}
+                                className="sales-qty-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleAddToCart(product)}
+                              className="sales-add-to-cart-btn"
+                            >
+                              Add to Cart
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <p className="sales-product-stock">
-                    {product.stock !== undefined ? `${product.stock} in stock` : 'Stock info unavailable'}
-                  </p>
+                  ))}
                 </div>
               </div>
             ))}

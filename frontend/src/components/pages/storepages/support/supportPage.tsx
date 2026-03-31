@@ -408,15 +408,15 @@ const SupportPage: React.FC = () => {
             </div>
             <div className="contact-method">
               <h3>Drivers Login</h3>
-              <Link to="/driver-login" className="team-login-link">
+              <Link to="/driverlogin" className="team-login-link">
                 <img width="45" height="45" src="https://img.icons8.com/liquid-glass/45/driver.png" alt="driver"/>
               </Link>
               <h3>Buyers Login</h3>
-              <Link to="/buyer-login" className="team-login-link">
+              <Link to="/buyerlogin" className="team-login-link">
                 <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/men-age-group-5.png" alt="men-age-group-5"/>
               </Link>
               <h3>Sales Rep Login</h3>
-              <Link to="/sales/login" className="team-login-link">
+              <Link to="/saleslogin" className="team-login-link">
                 <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/user-male-circle.png" alt="user-male-circle"/>
               </Link>
             </div>

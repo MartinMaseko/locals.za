@@ -17,7 +17,7 @@ const BuyerNav = () => {
       await signOut(auth);
       console.log('Buyer Signed Out');
       setDropdownOpen(false);
-      navigate('/buyer-login');
+      navigate('/buyerlogin');
     } catch (error) {
       console.error('Error signing out:', error);
     }
