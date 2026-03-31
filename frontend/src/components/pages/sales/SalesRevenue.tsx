@@ -304,33 +304,33 @@ const SalesRevenue = () => {
           <>
             {/* Revenue Stats Cards */}
             <div className="revenue-stats">
-              <div className="stat-card primary">
+              <div className="sales-stat-card primary">
                 <div className="stat-icon">
                   <img width="50" height="50" src="https://img.icons8.com/ios/50/ffb803/cash-in-hand.png" alt="cash-in-hand"/>
                 </div>
-                <div className="stat-content">
+                <div className="sales-stat-content">
                   <h3>Total Earnings</h3>
                   <p className="stat-value">{formatCurrency(revenueData.totalRevenue)}</p>
                   <small>{revenueData.totalOrders} orders × R10</small>
                 </div>
               </div>
 
-              <div className="stat-card">
+              <div className="sales-stat-card">
                 <div className="stat-icon">
                   <img width="48" height="48" src="https://img.icons8.com/sf-regular/48/ffb803/add-shopping-cart.png" alt="add-shopping-cart"/>
                 </div>
-                <div className="stat-content">
+                <div className="sales-stat-content">
                   <h3>Total Orders</h3>
                   <p className="stat-value">{revenueData.totalOrders}</p>
                   <small>From linked customers</small>
                 </div>
               </div>
 
-              <div className="stat-card">
+              <div className="sales-stat-card">
                 <div className="stat-icon">
                   <img width="50" height="50" src="https://img.icons8.com/ios-filled/50/ffb803/gender-neutral-user.png" alt="gender-neutral-user"/>
                 </div>
-                <div className="stat-content">
+                <div className="sales-stat-content">
                   <h3>Linked Customers</h3>
                   <p className="stat-value">{revenueData.totalCustomers}</p>
                   <small>Active customers</small>
@@ -447,11 +447,11 @@ const SalesRevenue = () => {
                         <div className="customer-stats">
                           <div className="stat">
                             <span className="stat-label">Orders:</span>
-                            <span className="stat-value">{customer.totalOrders}</span>
+                            <span className="stat-value-orders">{customer.totalOrders}</span>
                           </div>
                           <div className="stat">
                             <span className="stat-label">Your Earnings:</span>
-                            <span className="stat-value highlight">
+                            <span className="stat-value-highlight">
                               {formatCurrency(customer.totalOrders * 10)}
                             </span>
                           </div>

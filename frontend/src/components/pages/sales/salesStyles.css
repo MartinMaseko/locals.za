@@ -265,8 +265,8 @@
   margin-bottom: 2rem;
 }
 
-.stat-card {
-  background: white;
+.sales-stat-card {
+  background: #212121;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   padding: 1.5rem;
@@ -285,7 +285,7 @@
   background: linear-gradient(135deg, #212121 0%, #363636 100%);
 }
 
-.stat-card.primary {
+.sales-stat-card.primary {
   background:#212121;
   color: white;
   border: none;
@@ -299,10 +299,10 @@
   text-align: center;
 }
 
-.stat-content h3 {
+.sales-stat-content h3 {
   margin: 0;
   font-size: 0.9rem;
-  color: #666;
+  color: #f0f0f0;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1595,6 +1595,11 @@
 .customer-email-small {
   font-size: 0.85rem;
   color: #666;
+}
+
+.stat-value-highlight,
+.stat-value-orders {
+  color: #ffb803;
 }
 
 .order-status {
