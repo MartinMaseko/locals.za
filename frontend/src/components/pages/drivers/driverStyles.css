@@ -1,9 +1,17 @@
 /* Driver NavBar */
+.drivers-navbar {
+  background: #454E50;
+  height: 75px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
 
 .driver-navbar-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
 }
 
 .driver-navbar-logo {
@@ -11,8 +19,7 @@
 }
 
 .driver-logo {
-  height: 50px;
-  max-width: 120px;
+  width:50px;
 }
 
 /* driver-delivery-page */
@@ -29,18 +36,71 @@
 
 .driver-section,
 .driver-stat-card {
-  background: #212121;
   border-radius: 8px;
   padding: 10px;
 }
 
 .driver-stat-card {
-  color: #f8f9fa;
+  background-color: #1f1f1f;
+  color: #f0f0f0;
   text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .stat-number {
   margin-bottom: 15px;
+  color: #ffb803;
+}
+
+/* Orders toolbar - search & filter */
+.driver-orders-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.driver-order-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.driver-order-search:focus {
+  border-color: #454E50;
+}
+
+.driver-status-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: inherit;
+}
+
+.driver-status-filter-btn {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #f8f9fa;
+  color: #333;
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.driver-status-filter-btn:hover {
+  background: #e9ecef;
+}
+
+.driver-status-filter-btn.active {
+  background: #454E50;
+  color: #fff;
+  border-color: #454E50;
 }
 
 .no-orders-message {
@@ -64,7 +124,7 @@
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   background-color: #f8f9fa;
   transition: all 0.3s ease;
   color: #212121;
@@ -73,8 +133,14 @@
 
 .driver-order-status,
 .driver-order-status2 {
-  color: #ffb803;
+  color: #212121;
   margin-top: 10px;
+  background: #ffb803;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  padding: 8px 8px;
+  border-radius: 8px;
+  width: fit-content;
+  font-size: 0.75rem;;
 }
 
 .driver-order-status2 {
@@ -88,9 +154,15 @@
   padding: 10px;
   margin-top: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  background-color: #fff;
   transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.driver-order-address,
+.driver-order-time {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .delivery-section.order-items {
@@ -182,7 +254,7 @@
 }
 
 .delivery-header h1{
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 .delivery-section.customer-info h2{
@@ -1129,6 +1201,280 @@
 
 .show-route-btn:hover {
   background-color: #333333;
+}
+
+/* Alert Customer Button */
+.alert-customer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #ff6b00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.alert-customer-btn:hover:not(:disabled) {
+  background-color: #e05e00;
+}
+
+.alert-customer-btn.sent {
+  background-color: #4CAF50;
+  cursor: default;
+}
+
+.alert-customer-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Delivery Modal Overlay */
+.delivery-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.delivery-modal {
+  background-color: #1a1a1a;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid #333;
+}
+
+.delivery-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #333;
+}
+
+.delivery-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  color: #fff;
+}
+
+.delivery-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pin-sending-status,
+.pin-sent-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.pin-sending-status {
+  background-color: #2a2a2a;
+  color: #ffb803;
+}
+
+.pin-sent-status {
+  background-color: #1a3a1a;
+  color: #4CAF50;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ddd;
+  padding: 12px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: #ffb803;
+  flex-shrink: 0;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+/* Proof Image Upload */
+.proof-image-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #2a2a2a;
+  color: white;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.upload-btn:hover {
+  border-color: #ffb803;
+}
+
+.proof-image-preview {
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 200px;
+}
+
+.proof-image-preview img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* PIN Input */
+.pin-input-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.pin-digit-input {
+  width: 56px;
+  height: 64px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  background-color: #2a2a2a;
+  border: 2px solid #444;
+  border-radius: 12px;
+  color: #ffb803;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pin-digit-input:focus {
+  border-color: #ffb803;
+}
+
+.delivery-error-message {
+  background-color: #3a1a1a;
+  color: #ff6b6b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid #552222;
+}
+
+.delivery-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #333;
+}
+
+.cancel-delivery-btn {
+  flex: 1;
+  padding: 14px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-delivery-btn:hover {
+  background-color: #444;
+}
+
+.confirm-delivery-btn {
+  flex: 2;
+  padding: 14px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirm-delivery-btn:hover:not(:disabled) {
+  background-color: #43a047;
+}
+
+.confirm-delivery-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Navigation overlay styles */

@@ -37,7 +37,6 @@ import ViewCustomers from './components/pages/sales/ViewCustomers';
 import SalesRevenue from './components/pages/sales/SalesRevenue';
 import SalesShop from './components/pages/sales/SalesShop';
 import SalesCart from './components/pages/sales/SalesCart';
-import SalesTraining from './components/pages/sales/salesTraining';
 import SalesProtectedRoute from './Auth/SalesProtectedRoute';
 import SEOHead from './components/SEO/SEOHead';
 import StructuredData from './components/SEO/StructuredData';
@@ -85,10 +84,10 @@ function App() {
                         <AdminDashboard />
                       </ProtectedRoute>
                     } />
-                    <Route path="/driver-login" element={<DriverLogin />} />
+                    <Route path="/driverlogin" element={<DriverLogin />} />
                     
                     <Route path="/driver" element={
-                      <ProtectedRoute redirectTo="/driver-login">
+                      <ProtectedRoute redirectTo="/driverlogin">
                         <DriverLayout />
                       </ProtectedRoute>
                     }>
@@ -97,9 +96,9 @@ function App() {
                       <Route path="revenue" element={<DriverRevenue />} />
                     </Route>
                     
-                    <Route path="/buyer-login" element={<BuyerLogin/>} />
+                    <Route path="/buyerlogin" element={<BuyerLogin/>} />
                     <Route path="/buyer" element={
-                      <ProtectedRoute redirectTo="/buyer-login">
+                      <ProtectedRoute redirectTo="/buyerlogin">
                         <BuyerLayout />
                       </ProtectedRoute>
                     }>
@@ -108,9 +107,9 @@ function App() {
                       <Route index element={<Navigate to="orders" replace />} />
                     </Route>
                     
-                    <Route path="/sales/login" element={<SalesLogin />} />
+                    <Route path="/saleslogin" element={<SalesLogin />} />
                     <Route path="/sales" element={
-                      <SalesProtectedRoute redirectTo="/sales/login">
+                      <SalesProtectedRoute redirectTo="/saleslogin">
                         <SalesLayout />
                       </SalesProtectedRoute>
                     }>
@@ -119,7 +118,6 @@ function App() {
                       <Route path="shop" element={<SalesShop />} />
                       <Route path="cart" element={<SalesCart />} />
                       <Route path="revenue" element={<SalesRevenue />} />
-                      <Route path="training" element={<SalesTraining />} />
                       <Route index element={<Navigate to="add-customer" replace />} />
                     </Route>
                     

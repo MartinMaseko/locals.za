@@ -71,7 +71,7 @@ const RegisterDriverSection = ({ getToken, driversState }: RegisterDriverSection
         <div className="form-group"><input name="vehicle_model" type="text" placeholder="Vehicle Model" value={driverForm.vehicle_model} onChange={handleDriverChange} required /></div>
         <div className="form-group"><input name="bank_details" type="text" placeholder="Bank Details" value={driverForm.bank_details} onChange={handleDriverChange} required /></div>
         <div className="form-group"><input name="license_number" type="text" placeholder="License Number" value={driverForm.license_number} onChange={handleDriverChange} required /></div>
-        <div className="form-group file-input-group"><label>License Image:</label><input name="license_image" type="file" accept="image/*" onChange={handleDriverImageChange} /></div>
+        <div className="form-group file-input-group"><label>Driver Documents:</label><input name="license_image" type="file" accept=".pdf,application/pdf" onChange={handleDriverImageChange} /></div>
         <button type="submit" className="form-button">Register Driver</button>
         {driversState.error && <div className="error-message">{driversState.error}</div>}
         {driversState.success && <div className="success-message">{driversState.success}</div>}

@@ -87,7 +87,6 @@ const BuyerOrders = () => {
           return dateB.getTime() - dateA.getTime();
         });
         
-        console.log('Processing orders for buyers:', sortedOrders.length);
         setOrders(sortedOrders);
         aggregateItemsByDay(sortedOrders);
       } else {

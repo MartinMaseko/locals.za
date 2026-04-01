@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useFetchCustomerDetails } from '../hooks/useFetch';
+import { driversService } from '../services/driversService';
 import { formatDate } from '../utils/helpers';
 import type { OrderItem } from '../types/index';
 
@@ -7,59 +8,102 @@ interface ManageDriversSectionProps {
   getToken: () => Promise<string>;
   driversList: any[];
   driverOrders: any[];
-  fetchDriverOrders: (getToken: () => Promise<string>, driverId: string) => void;
+  setDriversList?: (drivers: any[]) => void;
+  setDriverOrders?: (orders: any[]) => void;
 }
 
 const ManageDriversSection = ({
   getToken,
   driversList,
   driverOrders,
-  fetchDriverOrders
+  setDriversList,
+  setDriverOrders
 }: ManageDriversSectionProps) => {
   const [selectedDriver, setSelectedDriver] = useState<any | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedDriverOrders, setSelectedDriverOrders] = useState<any[]>([]);
   const { customerDetails } = useFetchCustomerDetails();
 
+  // Fetch initial data when component loads
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        
+        // Fetch drivers if not already loaded
+        if (driversList.length === 0 && setDriversList) {
+          const drivers = await driversService.fetchAllDrivers(token);
+          setDriversList(drivers);
+        }
+        
+        // Fetch all driver orders for statistics
+        if (driverOrders.length === 0 && setDriverOrders) {
+          const orders = await driversService.fetchAllDriverOrders(token);
+          setDriverOrders(orders);
+        }
+      } catch (error) {
+        console.error('Error fetching initial driver data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [getToken, driversList.length, driverOrders.length, setDriversList, setDriverOrders]);
+
+  // Fetch orders for selected driver
   useEffect(() => {
     if (selectedDriver) {
-      fetchDriverOrders(getToken, selectedDriver.driver_id || selectedDriver.id);
+      const fetchSelectedDriverOrders = async () => {
+        try {
+          const token = await getToken();
+          const driverId = selectedDriver.driver_id || selectedDriver.id;
+          const orders = await driversService.fetchDriverOrders(token, driverId);
+          setSelectedDriverOrders(orders);
+          console.log(`Fetched ${orders.length} orders for driver ${driverId}`);
+        } catch (error) {
+          console.error('Error fetching selected driver orders:', error);
+          setSelectedDriverOrders([]);
+        }
+      };
+      
+      fetchSelectedDriverOrders();
+    } else {
+      setSelectedDriverOrders([]);
     }
-  }, [selectedDriver, fetchDriverOrders, getToken]);
+  }, [selectedDriver, getToken]);
 
   return (
     <div className="manage-drivers-section">
       <div className="section-header">
         <h2>Manage Drivers</h2>
+        {loading && <div className="loading-indicator">Loading driver data...</div>}
       </div>
       
-      <div className="drivers-table-container">
-        <table className="drivers-table">
+      {loading ? (
+        <div className="loading-container">
+          <p>Loading drivers and order data...</p>
+        </div>
+      ) : driversList.length === 0 ? (
+        <div className="no-data-container">
+          <p>No drivers found. Please check your connection or try refreshing.</p>
+        </div>
+      ) : (
+        <div className="drivers-table-container">
+          <table className="drivers-table">
           <thead>
             <tr>
               <th>Driver Name</th>
               <th>Phone</th>
               <th>Vehicle</th>
-              <th>Assigned Orders</th>
-              <th>Accepted Orders</th>
-              <th>Delivered Orders</th>
-              <th>Revenue</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {driversList.map(driver => {
               const driverId = driver.driver_id || driver.id;
-              
-              // Use driverOrders (same data source as the modal)
-              const allDriverOrders = driverOrders.filter((o: any) => o.driver_id === driverId);
-              const driverOrderCount = allDriverOrders.length;
-              const driverDeliveredCount = allDriverOrders.filter((o: any) => 
-                o.status === 'delivered' || o.status === 'completed'
-              ).length;
-              const driverAcceptedCount = allDriverOrders.filter((o: any) => 
-                o.status === 'processing' || o.status === 'in transit' || o.status === 'delivered' || o.status === 'completed'
-              ).length;
-              const driverRevenue = driverDeliveredCount * 40;
               
               return (
                 <tr 
@@ -70,10 +114,6 @@ const ManageDriversSection = ({
                   <td>{driver.full_name || 'Unknown'}</td>
                   <td>{driver.phone_number || 'N/A'}</td>
                   <td>{driver.vehicle_type} {driver.vehicle_model}</td>
-                  <td>{driverOrderCount}</td>
-                  <td>{driverAcceptedCount}</td>
-                  <td>{driverDeliveredCount}</td>
-                  <td className="revenue-cell">R{driverRevenue.toFixed(2)}</td>
                   <td>
                     <div className="action-buttons">
                       <button 
@@ -93,6 +133,7 @@ const ManageDriversSection = ({
           </tbody>
         </table>
       </div>
+      )}
       
       {selectedDriver && (
         <div className="order-details-overlay" onClick={() => setSelectedDriver(null)}>
@@ -104,7 +145,12 @@ const ManageDriversSection = ({
             </div>
             
             <div className="driver-orders-accordion">
-              {driverOrders.map(order => (
+              {selectedDriverOrders.length === 0 ? (
+                <div className="no-orders-message">
+                  <p>No orders found for this driver.</p>
+                </div>
+              ) : (
+                selectedDriverOrders.map(order => (
                 <div key={order.id} className="order-accordion-item">
                   <div 
                     className={`order-accordion-header ${expandedOrderId === order.id ? 'expanded' : ''}`}
@@ -205,7 +251,8 @@ const ManageDriversSection = ({
                     </div>
                   )}
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </div>
         </div>

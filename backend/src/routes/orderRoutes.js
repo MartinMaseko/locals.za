@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const admin = require('../../firebase');
 const authenticateToken = require('../middleware/auth');
-const { sendOrderConfirmationMessage, sendOrderStatusMessage, sendUserMessages } = require('../utils/notificationHelper');
+const { sendOrderConfirmationMessage, sendOrderStatusMessage, sendUserMessages, sendDriverAlertMessage, sendDeliveryPinMessage } = require('../utils/notificationHelper');
 const { authenticateSalesRep } = require('../middleware/auth');
 
 /*
@@ -950,6 +950,192 @@ router.get('/customer/email/:email', authenticateSalesRep, async (req, res) => {
   } catch (error) {
     console.error('Error fetching customer orders by email:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+// Get all orders for all drivers (admin only) - for driver dashboard statistics
+router.get('/drivers/all', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const { uid } = req.user;
+    const userRef = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userRef.data();
+    
+    if (userData?.user_type !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    // Get all orders that have been assigned to drivers
+    let orders = [];
+    
+    try {
+      // Try to get orders where driver_id field exists (not null)
+      const snapshot = await admin.firestore()
+        .collection('orders')
+        .where('driver_id', '!=', null)
+        .get();
+        
+      orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (indexError) {
+      // If index error, get all orders and filter in memory
+      console.log('Index error, fetching all orders and filtering for drivers:', indexError.message);
+      const snapshot = await admin.firestore().collection('orders').get();
+      orders = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(order => order.driver_id && order.driver_id !== null);
+    }
+    
+    console.log(`Found ${orders.length} orders assigned to drivers`);
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching all driver orders:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Alert customer that driver is heading to their address
+router.post('/:id/alert-customer', authenticateToken, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.user.uid;
+
+    const orderDoc = await admin.firestore().collection('orders').doc(orderId).get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const orderData = orderDoc.data();
+
+    // Verify driver is assigned to this order
+    const isDriver = orderData.driver_id === userId ||
+                     req.user.driver_id === orderData.driver_id;
+    if (!isDriver) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const customerId = orderData.userId;
+    if (!customerId) {
+      return res.status(400).json({ error: 'No customer found for this order' });
+    }
+
+    await sendDriverAlertMessage(customerId, orderId);
+
+    // Mark alert sent on the order
+    await admin.firestore().collection('orders').doc(orderId).update({
+      driverAlertSent: true,
+      driverAlertSentAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true, message: 'Customer has been alerted' });
+  } catch (error) {
+    console.error('Error alerting customer:', error);
+    res.status(500).json({ error: 'Failed to alert customer' });
+  }
+});
+
+// Generate delivery PIN and send to customer
+router.post('/:id/generate-delivery-pin', authenticateToken, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.user.uid;
+
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+    const orderDoc = await orderRef.get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const orderData = orderDoc.data();
+
+    // Verify driver is assigned to this order
+    const isDriver = orderData.driver_id === userId ||
+                     req.user.driver_id === orderData.driver_id;
+    if (!isDriver) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const customerId = orderData.userId;
+    if (!customerId) {
+      return res.status(400).json({ error: 'No customer found for this order' });
+    }
+
+    // Generate a random 4-digit PIN
+    const pin = String(Math.floor(1000 + Math.random() * 9000));
+
+    // Store hashed pin on the order (do not expose raw pin in DB long-term)
+    await orderRef.update({
+      deliveryPin: pin,
+      deliveryPinGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
+      deliveryPinGeneratedBy: userId
+    });
+
+    // Send PIN to customer via inbox & notification
+    await sendDeliveryPinMessage(customerId, orderId, pin);
+
+    res.json({ success: true, message: 'Delivery PIN sent to customer' });
+  } catch (error) {
+    console.error('Error generating delivery PIN:', error);
+    res.status(500).json({ error: 'Failed to generate delivery PIN' });
+  }
+});
+
+// Confirm delivery with PIN verification
+router.post('/:id/confirm-delivery', authenticateToken, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.user.uid;
+    const { pin, confirmItems, hasProofImage } = req.body;
+
+    if (!pin) {
+      return res.status(400).json({ error: 'Delivery PIN is required' });
+    }
+
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+    const orderDoc = await orderRef.get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const orderData = orderDoc.data();
+
+    // Verify driver is assigned to this order
+    const isDriver = orderData.driver_id === userId ||
+                     req.user.driver_id === orderData.driver_id;
+    if (!isDriver) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Verify PIN matches
+    if (orderData.deliveryPin !== pin) {
+      return res.status(400).json({ error: 'Invalid delivery PIN' });
+    }
+
+    const customerId = orderData.userId;
+
+    // Update order status to completed with proof of delivery
+    await orderRef.update({
+      status: 'completed',
+      deliveryConfirmed: true,
+      deliveryConfirmedAt: admin.firestore.FieldValue.serverTimestamp(),
+      deliveryConfirmedBy: userId,
+      deliveryProof: {
+        pinVerified: true,
+        itemsConfirmed: confirmItems || false,
+        hasProofImage: hasProofImage || false,
+        confirmedAt: new Date().toISOString()
+      },
+      updatedAt: new Date().toISOString(),
+      updatedBy: userId
+    });
+
+    // Send delivery completed notification to customer
+    if (customerId) {
+      await sendOrderStatusMessage(customerId, orderId, 'completed');
+    }
+
+    res.json({ success: true, message: 'Delivery confirmed successfully' });
+  } catch (error) {
+    console.error('Error confirming delivery:', error);
+    res.status(500).json({ error: 'Failed to confirm delivery' });
   }
 });
 

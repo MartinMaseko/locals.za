@@ -105,3 +105,19 @@
 .forgot-password-link:focus {
     color: #FFB803;
 }
+
+
+/* Desktop (large screens) - align with storefront behavior */
+@media (min-width: 992px) {
+    .registerLogin-container {
+        max-width: 600px;
+        height: fit-content;
+        box-shadow: 0 4px 12px rgba(25, 25, 25, 0.15);
+        padding: 1rem 2rem;
+        background-color: #f8f9fa;
+        position: relative;
+        z-index: 1;
+        border-radius: 10px;
+        margin: 0 auto;
+    }
+}
