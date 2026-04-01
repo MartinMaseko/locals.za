@@ -314,14 +314,11 @@
 }
 
 .team-login-link {
-  display: inline-block;
-  margin-bottom: 0.5rem;
-  color: #FFFFFF;
-  text-decoration: none;
-  cursor: pointer;
-  font-style: italic;
-  font-size: 0.75rem;
+  display: flex;
   justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .team-login-link:focus {
