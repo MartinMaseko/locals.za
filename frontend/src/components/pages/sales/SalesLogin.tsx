@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import axios from 'axios';
-import Logo from '../../assets/logos/LZABLKTRP.webp';
 import '../../../components/assets/UI/loginReg.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -61,8 +60,9 @@ const SalesLogin = () => {
 
   return (
     <div className='registerLogin-container'>
-      <img src={Logo} className='reg-logo' alt="Logo" />
-      <h2>Sales Rep Login</h2>
+      <img src='https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FsalesLogo.png?alt=media&token=1b30f1ce-164a-42af-9567-6b1cacba86c7' className='reg-logo' alt="Logo" />
+      <h2>LocalsZA</h2>
+      <p>Sales Representative</p>
       <form className='app-form' onSubmit={handleSubmit}>
         <input
           name="username"

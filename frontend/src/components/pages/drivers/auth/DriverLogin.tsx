@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
 import axios from 'axios';
-import Logo from '../../../assets/logos/LZABLKTRP.webp';
 import '../../../assets/UI/loginReg.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -134,10 +133,10 @@ const DriverLogin: React.FC = () => {
 
   return (
     <div className="registerLogin-container driver-login-container">
-      <img src={Logo} alt="Locals ZA" className="reg-logo" />
+      <img src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FdriverLogo.png?alt=media&token=f9413fdd-7ea8-43d9-a013-8161dd5bd34f" alt="Locals ZA" className="reg-logo" />
       
-      <h1>Driver Login</h1>
-      <p className="driver-login-subtitle">Access your delivery dashboard</p>
+      <h1>LocalsZA</h1>
+      <p className="driver-login-subtitle">Driver Login</p>
       
       {error && <div className="error-message">{error}</div>}
       
