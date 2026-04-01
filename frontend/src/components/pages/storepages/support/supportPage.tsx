@@ -106,8 +106,8 @@ const SupportPage: React.FC = () => {
               <div className="faq-answer">
                 <p>LocalsZA is an exclusive supply chain aggregator and last-mile delivery service built for SMME business owners:</p>
                 <ul>
-                  <li>Spaza Shops</li>
-                  <li>Salons</li>
+                  <li>Retail Outlets</li>
+                  <li>Hair Salons</li>
                   <li>Food Outlets</li>
                 </ul>
                 <p>We focus on helping you consolidate suppliers, secure lower prices on fast-moving stock, and drastically reduce your transport costs.</p>
