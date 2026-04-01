@@ -409,15 +409,15 @@ const SupportPage: React.FC = () => {
             <div className="contact-method">
               <h3>Drivers Login</h3>
               <Link to="/driverlogin" className="team-login-link">
-                <img width="45" height="45" src="https://img.icons8.com/liquid-glass/45/driver.png" alt="driver"/>
+                <img width="45" height="45" src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FdriverLogo.png?alt=media&token=f9413fdd-7ea8-43d9-a013-8161dd5bd34f" alt="driver" className='team-login-button'/>
               </Link>
               <h3>Buyers Login</h3>
               <Link to="/buyerlogin" className="team-login-link">
-                <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/men-age-group-5.png" alt="men-age-group-5"/>
+                <img width="48" height="48" src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FsalesLogo.png?alt=media&token=1b30f1ce-164a-42af-9567-6b1cacba86c7" alt="men-age-group-5" className='team-login-button'/>
               </Link>
               <h3>Sales Rep Login</h3>
               <Link to="/saleslogin" className="team-login-link">
-                <img width="48" height="48" src="https://img.icons8.com/liquid-glass/48/user-male-circle.png" alt="user-male-circle"/>
+                <img width="48" height="48" src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FsalesLogo.png?alt=media&token=1b30f1ce-164a-42af-9567-6b1cacba86c7" alt="user-male-circle" className='team-login-button'/>
               </Link>
             </div>
             
