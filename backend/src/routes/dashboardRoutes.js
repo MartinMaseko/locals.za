@@ -153,9 +153,104 @@ router.get('/drivers/earnings', authenticateToken, async (req, res) => {
   }
 });
 
+// Stats endpoint with period filtering
+router.get('/stats', authenticateToken, async (req, res) => {
+  try {
+    const { period = '30', limit = '10' } = req.query;
+    const limitNum = parseInt(limit);
+    
+    // Calculate date filter
+    const daysToLookBack = period === 'all' ? 36500 : parseInt(period);
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToLookBack);
+    
+    // Get orders within the period
+    const ordersSnapshot = await admin.firestore().collection('orders').get();
+    const allOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    // Filter orders by date and valid status
+    const filteredOrders = allOrders.filter(order => {
+      if (!order.createdAt) return false;
+      
+      // Handle different date formats
+      let orderDate;
+      if (order.createdAt instanceof Date) {
+        orderDate = order.createdAt;
+      } else if (typeof order.createdAt === 'string') {
+        orderDate = new Date(order.createdAt);
+      } else if (order.createdAt?.seconds) {
+        orderDate = new Date(order.createdAt.seconds * 1000);
+      } else if (order.createdAt?._seconds) {
+        orderDate = new Date(order.createdAt._seconds * 1000);
+      } else {
+        return false;
+      }
+      
+      return orderDate >= cutoffDate && 
+             ['confirmed', 'processing', 'dispatched', 'delivered'].includes(order.status);
+    });
+    
+    // Calculate service revenue (R78 per order)
+    const serviceRevenue = filteredOrders.length * 78;
+    
+    // Calculate order revenue (sum of subtotals)
+    const orderRevenue = filteredOrders.reduce((sum, order) => {
+      return sum + (Number(order.subtotal) || Number(order.total_amount) || 0);
+    }, 0);
+    
+    // Calculate top products
+    const productSales = {};
+    
+    filteredOrders.forEach(order => {
+      if (!order.items && !order.order_items) return;
+      
+      const items = order.items || order.order_items || [];
+      items.forEach(item => {
+        const productId = item.productId || item.product_id;
+        if (!productId) return;
+        
+        const productName = item.product?.name || item.name || `Product ${productId}`;
+        const qty = Number(item.qty || item.quantity) || 0;
+        const itemPrice = Number(item.product?.price || item.price || 0);
+        
+        if (!productSales[productId]) {
+          productSales[productId] = { name: productName, count: 0, revenue: 0 };
+        }
+        
+        productSales[productId].count += qty;
+        productSales[productId].revenue += itemPrice * qty;
+      });
+    });
+    
+    // Sort and limit top products
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limitNum);
+    
+    console.log(`Stats calculated for period ${period}:`, {
+      totalOrdersInPeriod: filteredOrders.length,
+      serviceRevenue,
+      orderRevenue,
+      topProductsCount: topProducts.length
+    });
+    
+    res.json({
+      serviceRevenue,
+      orderRevenue, 
+      topProducts
+    });
+  } catch (error) {
+    console.error('Error calculating stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Top selling products (by quantity)
 router.get('/products/top-selling', authenticateToken, async (req, res) => {
   try {
+    const { limit = '10' } = req.query;
+    const limitNum = parseInt(limit);
+    
     const snapshot = await admin.firestore().collection('order_items').get();
     const data = snapshot.docs.map(doc => doc.data());
 
@@ -168,7 +263,8 @@ router.get('/products/top-selling', authenticateToken, async (req, res) => {
     // Convert to array and sort
     const topSelling = Object.entries(productSales)
       .map(([product_id, quantity]) => ({ product_id, quantity }))
-      .sort((a, b) => b.quantity - a.quantity);
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, limitNum);
 
     res.json(topSelling);
   } catch (error) {

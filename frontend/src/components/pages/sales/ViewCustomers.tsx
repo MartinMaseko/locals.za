@@ -39,6 +39,7 @@ const ViewCustomers = () => {
   const [customerOrders, setCustomerOrders] = useState<CustomerOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [ordersError, setOrdersError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchCustomers();
@@ -106,6 +107,11 @@ const ViewCustomers = () => {
     return `R${amount.toFixed(2)}`;
   };
 
+  const filteredCustomers = customers.filter((customer) => {
+    const query = searchQuery.toLowerCase();
+    return customer.name.toLowerCase().includes(query) || customer.email.toLowerCase().includes(query);
+  });
+
   if (loading) {
     return (
       <div className="buyer-dashboard">
@@ -124,15 +130,30 @@ const ViewCustomers = () => {
           Total Customers: {customers.length}
         </p>
 
+        <div className="search-container">
+          <input
+            type="text"
+            className="sales-search-input"
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button className="clear-search" onClick={() => setSearchQuery('')}>
+              &times;
+            </button>
+          )}
+        </div>
+
         {error && <div className="error-message">{error}</div>}
 
-        {customers.length === 0 ? (
+        {filteredCustomers.length === 0 ? (
           <p className="no-customers-message">
-            No customers yet. Add your first customer to get started!
+            {searchQuery ? 'No customers match your search.' : 'No customers yet. Add your first customer to get started!'}
           </p>
         ) : (
           <div className="customers-grid">
-            {customers.map((customer) => (
+            {filteredCustomers.map((customer) => (
               <div key={customer.id} className="customer-card">
                 <div className="customer-header">
                   <h3>{customer.name}</h3>
@@ -146,7 +167,7 @@ const ViewCustomers = () => {
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Phone:</span>
-                    <span className="detail-value">{customer.phone}</span>
+                    <span className="detail-value">{customer.phone || 'N/A'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Total Spent:</span>

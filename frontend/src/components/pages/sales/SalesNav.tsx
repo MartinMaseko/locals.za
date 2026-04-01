@@ -20,19 +20,18 @@ const SalesNav = () => {
       
       console.log('Sales Rep Signed Out');
       setDropdownOpen(false);
-      navigate('/sales/login');
+      navigate('/saleslogin');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
   return (
-    <div className="driver-nav-container">
-      <nav className="navbar drivers-navbar">
-        <div className="driver-navbar-content">
-          <div className="driver-navbar-logo">
+      <nav className="sales-navbar">
+        <div className="sales-navbar-content">
+          <div className="sales-navbar-logo">
             <NavLink to="/sales/revenue">
-              <img src={Logo} alt="LocalsZA" className="driver-logo" />
+              <img src={Logo} alt="LocalsZA" className="sales-logo" />
             </NavLink>
           </div>
 
@@ -111,18 +110,6 @@ const SalesNav = () => {
               />
               Revenue
             </NavLink>
-            <NavLink
-              to="/sales/training"
-              className="navbar-dropdown-item"
-              onClick={() => setDropdownOpen(false)}
-            >
-              <img
-                className="navbar-dropdown-icon"
-                src="https://img.icons8.com/ios-glyphs/35/ffb803/graduation-cap.png"
-                alt="training"
-              />
-              Training
-            </NavLink>
             <button
               className="navbar-logout"
               onClick={handleSignOut}
@@ -137,7 +124,6 @@ const SalesNav = () => {
           </div>
         </div>
       </nav>
-    </div>
   );
 };
 

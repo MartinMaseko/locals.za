@@ -45,7 +45,7 @@ interface SalesRepDetails {
 }
 
 const PromoteAdminSection = () => {
-  const [promoteUid, setPromoteUid] = useState('');
+  const [promoteEmail, setPromoteEmail] = useState('');
   const [promoteMsg, setPromoteMsg] = useState('');
   const [salesRepUsername, setSalesRepUsername] = useState('');
   const [salesRepEmail, setSalesRepEmail] = useState('');
@@ -56,6 +56,7 @@ const PromoteAdminSection = () => {
   const [selectedRep, setSelectedRep] = useState<SalesRepDetails | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [processingCashout, setProcessingCashout] = useState<string | null>(null);
+  const [adminPassword, setAdminPassword] = useState('');
 
   useEffect(() => {
     fetchSalesReps();
@@ -76,9 +77,10 @@ const PromoteAdminSection = () => {
     e.preventDefault();
     setPromoteMsg('');
     try {
-      await adminApi.promoteToAdmin(promoteUid);
+      await adminApi.promoteToAdmin(promoteEmail, adminPassword);
       setPromoteMsg('User promoted to admin!');
-      setPromoteUid('');
+      setPromoteEmail('');
+      setAdminPassword('');
     } catch (err: any) {
       setPromoteMsg(err?.response?.data?.error || 'Promotion failed');
     }
@@ -178,11 +180,21 @@ const PromoteAdminSection = () => {
         <form onSubmit={handlePromoteAdmin} className="admin-form">
           <div className="form-group">
             <input 
-              type="text" 
-              placeholder="Firebase UID" 
-              value={promoteUid} 
-              onChange={e => setPromoteUid(e.target.value)} 
+              type="email" 
+              placeholder="User Email Address" 
+              value={promoteEmail} 
+              onChange={e => setPromoteEmail(e.target.value)} 
               required 
+            />
+          </div>
+          <div className="form-group">
+            <input 
+              type="password" 
+              placeholder="Set Admin Password" 
+              value={adminPassword} 
+              onChange={e => setAdminPassword(e.target.value)} 
+              required 
+              minLength={6}
             />
           </div>
           <button type="submit" className="form-button">Promote to Admin</button>

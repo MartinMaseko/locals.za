@@ -130,9 +130,10 @@ input[type="file"]::-webkit-file-upload-button:focus {
     text-align: start;
 }
 
-.order-total{
+.user-order-total{
     margin-top: 0.5rem;
     font-size:1.25rem;
+    color: #FFB803;
 }
 
 .orders-list {
@@ -171,8 +172,8 @@ input[type="file"]::-webkit-file-upload-button:focus {
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 600;
-  background-color: #f8f9fa;
-  color: #6c757d;
+  background-color: #ffb803;
+  color: #212121;
 }
 
 /* Status-specific colors */
@@ -274,18 +275,7 @@ input[type="file"]::-webkit-file-upload-button:focus {
 
 .order-items-grid {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.order-item-wrapper {
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  padding: 10px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
 }
 
 .has-missing {
@@ -374,6 +364,7 @@ input[type="file"]::-webkit-file-upload-button:focus {
   background-color: #191919;
   border-radius: 10px;
   margin-bottom: 2rem;
+  padding: 1rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
@@ -391,6 +382,27 @@ input[type="file"]::-webkit-file-upload-button:focus {
   color: #ccc;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
+}
+
+.toggle-frequent-products {
+  border: none;
+  border-radius: 8px;
+  background: #FFB803;
+  color: #191919;
+  padding: 0.75rem 1.5rem;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.toggle-frequent-products:hover,
+.toggle-frequent-products:focus {
+  background: #ccc;
+  color: #191919;
+  transform: translateY(-2px);
 }
 
 .frequent-product-stats {
@@ -465,7 +477,6 @@ input[type="file"]::-webkit-file-upload-button:focus {
 
 /* Desktop layout */
 @media (min-width: 992px) {
-  .profile-container,
   .user-orders-page {
     display: flex;
     flex-direction: column;
@@ -483,9 +494,7 @@ input[type="file"]::-webkit-file-upload-button:focus {
   .orders-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
   }
-
 
   .order-card {
     width: 100% ;
@@ -495,5 +504,18 @@ input[type="file"]::-webkit-file-upload-button:focus {
     display: flex;
     flex-wrap: wrap;
     padding: 0.5rem;
+  }
+
+  .profile-container{
+    max-width: 600px;
+    box-shadow: 0 4px 12px rgba(25, 25, 25, 0.15);
+    justify-content: center;
+    max-height: fit-content;
+  }
+
+  .profile-save-button{
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 300px;
   }
 }

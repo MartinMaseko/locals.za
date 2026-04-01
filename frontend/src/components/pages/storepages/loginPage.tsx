@@ -129,91 +129,91 @@ const UserLogin = () => {
   };
 
   return (
-    <div className='registerLogin-container'>
-      <img src={Logo} alt="Logo" className='reg-logo' />
-      
-      {!showResetForm ? (
-        <>
-          <h2>Login</h2>
-          <form className='app-form' onSubmit={handleSubmit}>
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
-            <button className='app-btn' type="submit" disabled={loading} >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
-          <button
-            className='google-btn'
-            type="button"
-            onClick={handleGoogleSignIn}
-          >
-            <img width="35" height="35" src="https://img.icons8.com/fluency/48/google-logo.png" alt="google-logo"/>
-            oogle Sign In
-          </button>
-          
-          {/* Add forgot password link */}
-          <div className="forgot-password">
-            <button 
-              type="button" 
-              onClick={() => setShowResetForm(true)}
-              className="forgot-password-link"
+      <div className='registerLogin-container'>
+        <img src={Logo} alt="Logo" className='reg-logo' />
+        
+        {!showResetForm ? (
+          <>
+            <h2>Login</h2>
+            <form className='app-form' onSubmit={handleSubmit}>
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+              <button className='app-btn' type="submit" disabled={loading} >
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+            <button
+              className='google-btn'
+              type="button"
+              onClick={handleGoogleSignIn}
             >
-              Forgot password?
+              <img width="35" height="35" src="https://img.icons8.com/fluency/48/google-logo.png" alt="google-logo"/>
+              oogle Sign In
             </button>
+            
+            {/* Add forgot password link */}
+            <div className="forgot-password">
+              <button 
+                type="button" 
+                onClick={() => setShowResetForm(true)}
+                className="forgot-password-link"
+              >
+                Forgot password?
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2>Reset Password</h2>
+            <form className='app-form' onSubmit={handlePasswordReset}>
+              <input
+                name="resetEmail"
+                type="email"
+                placeholder="Enter your email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                required
+              />
+              <button className='app-btn' type="submit" disabled={loading}>
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+              <button 
+                type="button" 
+                className="cancel-btn"
+                onClick={() => setShowResetForm(false)}
+              >
+                Back to Login
+              </button>
+            </form>
+          </>
+        )}
+        
+        {resetEmailSent && (
+          <div className="success-message">
+            Password reset email sent! Check your inbox.
           </div>
-        </>
-      ) : (
-        <>
-          <h2>Reset Password</h2>
-          <form className='app-form' onSubmit={handlePasswordReset}>
-            <input
-              name="resetEmail"
-              type="email"
-              placeholder="Enter your email"
-              value={resetEmail}
-              onChange={(e) => setResetEmail(e.target.value)}
-              required
-            />
-            <button className='app-btn' type="submit" disabled={loading}>
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-            <button 
-              type="button" 
-              className="cancel-btn"
-              onClick={() => setShowResetForm(false)}
-            >
-              Back to Login
-            </button>
-          </form>
-        </>
-      )}
-      
-      {resetEmailSent && (
-        <div className="success-message">
-          Password reset email sent! Check your inbox.
+        )}
+        
+        {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
+        
+        <div className='register-user'>
+          New user? <a href="/register">Register here</a>
         </div>
-      )}
-      
-      {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
-      
-      <div className='register-user'>
-        New user? <a href="/register">Register here</a>
       </div>
-    </div>
   );
 };
 

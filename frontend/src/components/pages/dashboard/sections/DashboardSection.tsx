@@ -18,11 +18,11 @@ const DashboardSection = ({
   driversState
 }: DashboardSectionProps) => {
   const [statsPeriod, setStatsPeriod] = useState<'30'|'60'|'90'|'all'>('30');
-  const [_dashboardStats, setDashboardStats] = useState({
+  const [dashboardStats, setDashboardStats] = useState({
     serviceRevenue: 0,
     orderRevenue: 0,
     topProducts: [] as {name: string, count: number, revenue: number}[]
-  }); // refactor dashboardStat but unused for now
+  });
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -130,6 +130,23 @@ const DashboardSection = ({
     }
   };
 
+  // Calculate filtered order count from service revenue (R78 per order)
+  const filteredOrderCount = Math.floor(dashboardStats.serviceRevenue / 78);
+  
+  // Calculate Average Order Value (AOV)
+  const averageOrderValue = filteredOrderCount > 0 ? dashboardStats.orderRevenue / filteredOrderCount : 0;
+  
+  // Get period label
+  const getPeriodLabel = () => {
+    switch(statsPeriod) {
+      case '30': return 'Last 30 days';
+      case '60': return 'Last 60 days';
+      case '90': return 'Last 90 days';
+      case 'all': return 'All time';
+      default: return 'Last 30 days';
+    }
+  };
+
   return (
     <div className="dashboard-overview">
       <div className='dashboard-overview-header'>
@@ -168,24 +185,64 @@ const DashboardSection = ({
       {loading ? (
         <div className="loading-indicator">Loading dashboard data...</div>
       ) : (
-        <div className="dashboard-stats">
-          <div className="dash-stat-card"><h3>Products</h3><p className="stat-number">{productsState.products.length}</p></div>
-          <div className="dash-stat-card"><h3>Drivers</h3><p className="stat-number">{driversState.drivers.length}</p></div>
-          <div className="dash-stat-card"><h3>Orders</h3>
-            <p className="dash-stat-number">
-              {filterOrdersForCalculations(ordersState.allOrders || ordersState.orders).length}
-            </p>
+        <>
+          <div className="dashboard-stats">
+            <div className="dash-stat-card">
+              <h3>Products</h3>
+              <p className="stat-number">{productsState.products.length}</p>
+              <p className="stat-period">Total products</p>
+            </div>
+            
+            <div className="dash-stat-card">
+              <h3>Orders</h3>
+              <p className="dash-stat-number">{filteredOrderCount}</p>
+              <p className="stat-period">{getPeriodLabel()}</p>
+            </div>
+            
+            <div className="dash-stat-card">
+              <h3>Service Revenue</h3>
+              <p className="dash-stat-number">R{dashboardStats.serviceRevenue.toFixed(2)}</p>
+              <p className="stat-period">{getPeriodLabel()}</p>
+            </div>
+            
+            <div className="dash-stat-card">
+              <h3>Order Revenue</h3>
+              <p className="dash-stat-number">R{dashboardStats.orderRevenue.toFixed(2)}</p>
+              <p className="stat-period">{getPeriodLabel()}</p>
+            </div>
+            
+            <div className="dash-stat-card">
+              <h3>Users</h3>
+              <p className="dash-stat-number">{users.length}</p>
+              <p className="stat-period">Total registered users</p>
+            </div>
+            
+            <div className="dash-stat-card">
+              <h3>AOV</h3>
+              <p className="dash-stat-number">R{averageOrderValue.toFixed(2)}</p>
+              <p className="stat-period">Average Order Value</p>
+            </div>
           </div>
-          <div className="dash-stat-card">
-            <h3>Service Revenue</h3>
-            <p className="dash-stat-number">R{((ordersState.allOrders || ordersState.orders).length * 78).toFixed(2)}</p>
-          </div>
-          <div className="dash-stat-card">
-            <h3>Users</h3>
-            <p className="dash-stat-number">{users.length}</p>
-            <p className="stat-period">Total registered users</p>
-          </div>
-        </div>
+
+          {/* Top Products Section */}
+          {dashboardStats.topProducts.length > 0 && (
+            <div className="top-selling-section">
+              <h3>Top 10 Selling Products - {getPeriodLabel()}</h3>
+              <div className="top-products">
+                {dashboardStats.topProducts.slice(0, 10).map((product, index) => (
+                  <div key={index} className="stat-product">
+                    <div className="top-product-rank">{index + 1}</div>
+                    <div className="product-name">{product.name}</div>
+                    <div className="top-product-stats">
+                      <div className="product-count">{product.count} sold</div>
+                      <div className="top-product-revenue">R{product.revenue.toFixed(2)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -68,6 +68,7 @@ const UserOrders: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [frequentProducts, setFrequentProducts] = useState<FrequentProduct[]>([]);
+  const [showFrequentProducts, setShowFrequentProducts] = useState(false);
   const auth = getAuth(app);
   const { addToCart } = useCart();
   const navigate = useNavigate(); 
@@ -258,40 +259,49 @@ const UserOrders: React.FC = () => {
           <p className="frequent-products-description">
             These are items you've purchased before. Add them to your cart with just one click.
           </p>
-          <div className="frequent-products-grid">
-            {frequentProducts.slice(0, 10).map(product => {
-              // Convert FrequentProduct to Product format for ProductCard
-              const productCardData = {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                image_url: product.image_url
-              };
-              
-              return (
-                <div key={product.id} className="frequent-product-item">
-                  <ProductCard 
-                    product={productCardData}
-                    onClick={handleProductClick}
-                  />
-                  <div className="frequent-product-stats">
-                    <span className="purchase-count">
-                      Purchased {product.purchaseCount} {product.purchaseCount === 1 ? 'time' : 'times'}
-                    </span>
-                    <button 
-                      className="reorder-add-to-cart"
-                      onClick={() => addToCart({
-                        ...productCardData,
-                        quantity: 1
-                      })}
-                    >
-                      Add to Cart
-                    </button>
+          <button 
+            className="toggle-frequent-products"
+            onClick={() => setShowFrequentProducts(!showFrequentProducts)}
+          >
+            {showFrequentProducts ? 'Hide Items' : 'View Items'}
+          </button>
+          
+          {showFrequentProducts && (
+            <div className="frequent-products-grid">
+              {frequentProducts.slice(0, 10).map(product => {
+                // Convert FrequentProduct to Product format for ProductCard
+                const productCardData = {
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  image_url: product.image_url
+                };
+                
+                return (
+                  <div key={product.id} className="frequent-product-item">
+                    <ProductCard 
+                      product={productCardData}
+                      onClick={handleProductClick}
+                    />
+                    <div className="frequent-product-stats">
+                      <span className="purchase-count">
+                        Purchased {product.purchaseCount} {product.purchaseCount === 1 ? 'time' : 'times'}
+                      </span>
+                      <button 
+                        className="reorder-add-to-cart"
+                        onClick={() => addToCart({
+                          ...productCardData,
+                          quantity: 1
+                        })}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
       
@@ -396,7 +406,7 @@ const UserOrders: React.FC = () => {
                       </>
                     )}
                   </div>
-                  <div className="order-total">
+                  <div className="user-order-total">
                     Total: R {
                       o.adjustedTotal 
                         ? Number(o.adjustedTotal).toFixed(2)
