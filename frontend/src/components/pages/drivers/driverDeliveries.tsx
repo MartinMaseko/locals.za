@@ -4,8 +4,6 @@ import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
 import axios from 'axios';
 import './driverStyles.css';
-import Navigation from './Navigation';
-import { useWazeRoute } from '../../../components/contexts/WazeRouteContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -55,21 +53,32 @@ interface Order {
 }
 
 const DriverDeliveries = () => {
-  const { addAddress, hasAddress } = useWazeRoute();
-  
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showNavigation, setShowNavigation] = useState<boolean>(false);
-  const [estimatedETA] = useState<string | null>(null);
-  const [addressAdded, setAddressAdded] = useState(false);
+  const [addressCopied, setAddressCopied] = useState(false);
   
   // State variables for item verification
   const [verifyingItems, setVerifyingItems] = useState(false);
   const [missingItems, setMissingItems] = useState<MissingItem[]>([]);
   const [submittingMissingItems, setSubmittingMissingItems] = useState(false);
   const [missingItemSuccess, setMissingItemSuccess] = useState('');
+  
+  // State for alert customer
+  const [alertSent, setAlertSent] = useState(false);
+  const [alerting, setAlerting] = useState(false);
+
+  // State for proof of delivery modal
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryPin, setDeliveryPin] = useState('');
+  const [confirmItemsChecked, setConfirmItemsChecked] = useState(false);
+  const [proofImage, setProofImage] = useState<File | null>(null);
+  const [proofImagePreview, setProofImagePreview] = useState<string | null>(null);
+  const [pinSent, setPinSent] = useState(false);
+  const [sendingPin, setSendingPin] = useState(false);
+  const [confirmingDelivery, setConfirmingDelivery] = useState(false);
+  const [deliveryError, setDeliveryError] = useState('');
   
   const navigate = useNavigate();
   const auth = getAuth(app);
@@ -242,54 +251,35 @@ const DriverDeliveries = () => {
     }
   };
 
-  const handleUpdateStatus = async (newStatus: string) => {
-    try {
-      setLoading(true);
-      const token = await auth.currentUser?.getIdToken();
-      
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-      
-      await axios.put(`${API_URL}/api/orders/${orderId}/status`, 
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      
-      // Update local state
-      setOrder(prev => prev ? { ...prev, status: newStatus } : null);
-      
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      setError('Failed to update order status');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleBackToOrders = () => {
     navigate('/driversdashboard');
   };
 
-  const handleAddAddress = () => {
+  const handleCopyAddress = async () => {
     if (!order) return;
-
-    const formattedAddress = 
-      `${order.deliveryAddress.street || ''}, ${order.deliveryAddress.city || ''}, ${order.deliveryAddress.postalCode || ''}, South Africa`.trim();
-    
-    addAddress({
-      id: order.id,
-      name: order.customer_name || 'Customer',
-      address: formattedAddress,
-      coordinates: order.deliveryAddress.coordinates || undefined
-    });
-
-    // Set local state to update UI
-    setAddressAdded(true);
-  };
-
-  const handleShowRoutePlanner = () => {
-    setShowNavigation(true);
+    const parts = [
+      order.deliveryAddress.street,
+      order.deliveryAddress.suburb,
+      order.deliveryAddress.city,
+      order.deliveryAddress.province,
+      order.deliveryAddress.postalCode,
+    ].filter(Boolean);
+    const formatted = parts.length ? parts.join(', ') : 'No address available';
+    try {
+      await navigator.clipboard.writeText(formatted);
+      setAddressCopied(true);
+      setTimeout(() => setAddressCopied(false), 3000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = formatted;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setAddressCopied(true);
+      setTimeout(() => setAddressCopied(false), 3000);
+    }
   };
 
 
@@ -338,15 +328,6 @@ const DriverDeliveries = () => {
     }
   };
 
-  const handleReasonChange = (productId: string, reason: string) => {
-    setMissingItems(prev => 
-      prev.map(item => 
-        item.productId === productId 
-          ? { ...item, reason } 
-          : item
-      )
-    );
-  };
 
   const handleCompleteVerification = async () => {
     try {
@@ -429,12 +410,118 @@ const DriverDeliveries = () => {
     setMissingItems([]);
   };
 
-  // Check if this order's address is already added when component mounts
-  useEffect(() => {
-    if (orderId) {
-      setAddressAdded(hasAddress(orderId));
+  // Alert customer that driver is heading to their address
+  const handleAlertCustomer = async () => {
+    try {
+      setAlerting(true);
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Authentication required');
+
+      await axios.post(
+        `${API_URL}/api/orders/${orderId}/alert-customer`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setAlertSent(true);
+    } catch (error) {
+      console.error('Error alerting customer:', error);
+      setError('Failed to alert customer');
+    } finally {
+      setAlerting(false);
     }
-  }, [orderId, hasAddress]);
+  };
+
+  // Open the delivery confirmation modal and send PIN to customer
+  const handleDeliveryComplete = async () => {
+    setShowDeliveryModal(true);
+    setDeliveryError('');
+    setDeliveryPin('');
+    setConfirmItemsChecked(false);
+    setProofImage(null);
+    setProofImagePreview(null);
+
+    // Automatically generate and send PIN to customer
+    if (!pinSent) {
+      try {
+        setSendingPin(true);
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) throw new Error('Authentication required');
+
+        await axios.post(
+          `${API_URL}/api/orders/${orderId}/generate-delivery-pin`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setPinSent(true);
+      } catch (error) {
+        console.error('Error sending delivery PIN:', error);
+        setDeliveryError('Failed to send PIN to customer. Please try again.');
+      } finally {
+        setSendingPin(false);
+      }
+    }
+  };
+
+  // Handle proof image selection
+  const handleProofImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProofImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProofImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Confirm delivery with PIN verification
+  const handleConfirmDelivery = async () => {
+    if (!deliveryPin || deliveryPin.length !== 4) {
+      setDeliveryError('Please enter the 4-digit PIN from the customer');
+      return;
+    }
+
+    if (!confirmItemsChecked) {
+      setDeliveryError('Please confirm that all items have been delivered');
+      return;
+    }
+
+    try {
+      setConfirmingDelivery(true);
+      setDeliveryError('');
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Authentication required');
+
+      await axios.post(
+        `${API_URL}/api/orders/${orderId}/confirm-delivery`,
+        {
+          pin: deliveryPin,
+          confirmItems: confirmItemsChecked,
+          hasProofImage: !!proofImage
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update local state
+      setOrder(prev => prev ? { ...prev, status: 'completed' } : null);
+      setShowDeliveryModal(false);
+      setPinSent(false);
+    } catch (error: any) {
+      console.error('Error confirming delivery:', error);
+      if (error.response?.data?.error === 'Invalid delivery PIN') {
+        setDeliveryError('Incorrect PIN. Please ask the customer for the correct PIN.');
+      } else {
+        setDeliveryError('Failed to confirm delivery. Please try again.');
+      }
+    } finally {
+      setConfirmingDelivery(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -461,7 +548,7 @@ const DriverDeliveries = () => {
     <div className="driver-delivery-page">
       <div className="delivery-header">
         <button className="back-btn" onClick={handleBackToOrders}>
-          <img width="30" height="30" src="https://img.icons8.com/ios-filled/35/ffb803/back.png" alt="back"/> 
+          <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffb803/back.png" alt="back"/> 
            Back to orders
         </button>
         <h1>Order #{order?.id?.slice(-6)}</h1>
@@ -497,35 +584,25 @@ const DriverDeliveries = () => {
             <div className="info-row">
               <span className="info-label">Order Date: </span>
               <span className="info-value">{order ? getFormattedDate(order.createdAt) : ''}</span>
-              <br/>{estimatedETA && <span className="info-value">ETA: {estimatedETA}</span>}
             </div>
           </div>
           
           <div className="address-buttons">
             <button 
-              className={`add-address-btn ${addressAdded ? 'added' : ''}`}
-              onClick={handleAddAddress}
-              disabled={addressAdded}
+              className={`add-address-btn ${addressCopied ? 'added' : ''}`}
+              onClick={handleCopyAddress}
             >
-              {addressAdded ? (
+              {addressCopied ? (
                 <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="added"/>
-                  Address Added
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="copied"/>
+                  Address Copied!
                 </>
               ) : (
                 <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/plus.png" alt="add"/>
-                  Add to Route
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/copy.png" alt="copy"/>
+                  Copy Address
                 </>
               )}
-            </button>
-            
-            <button 
-              className='show-route-btn'
-              onClick={handleShowRoutePlanner}
-            >
-              <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/map.png" alt="route"/>
-              Show Route Planner
             </button>
           </div>
         </div>
@@ -547,9 +624,6 @@ const DriverDeliveries = () => {
               <div className="verification-items-list">
                 {order?.products && order.products.map((product, index) => {
                   const missingItem = missingItems.find(item => item.productId === product.id);
-                  const isPartiallyMissing = missingItem && missingItem.missingQuantity < product.quantity;
-                  const isFullyMissing = missingItem && missingItem.missingQuantity === product.quantity;
-                  const availableQty = product.quantity - (missingItem?.missingQuantity || 0);
                   
                   return (
                     <div key={product.id || index} className="verification-item">
@@ -583,85 +657,9 @@ const DriverDeliveries = () => {
                             className={`status-btn ${!missingItem ? 'active' : ''}`}
                             onClick={() => handleItemCheck(product.id, true, product.quantity, product.quantity)}
                           >
-                            Available
-                          </button>
-                          <button 
-                            className={`status-btn ${isFullyMissing ? 'active' : ''}`}
-                            onClick={() => handleItemCheck(product.id, false, 0, product.quantity)}
-                          >
-                            Not Available
-                          </button>
-                          {/* Add this button to enable partial quantity selection */}
-                          <button 
-                            className={`status-btn ${isPartiallyMissing ? 'active' : ''}`}
-                            onClick={() => {
-                              // If not already in partial mode, set to half the quantity as default
-                              if (!isPartiallyMissing) {
-                                const halfQty = Math.ceil(product.quantity / 2);
-                                handleItemCheck(product.id, false, halfQty, product.quantity);
-                              }
-                            }}
-                          >
-                            Partial
+                            Collect
                           </button>
                         </div>
-                        
-                        {/* Show quantity adjustment controls when in partial mode */}
-                        {isPartiallyMissing && (
-                          <div className="partial-quantity-controls">
-                            <p className="available-qty-label">Available Quantity:</p>
-                            <div className="quantity-adjuster">
-                              <button 
-                                className="qty-btn"
-                                onClick={() => {
-                                  // Decrease available quantity (minimum 1)
-                                  const newQty = Math.max(1, availableQty - 1);
-                                  handleItemCheck(product.id, false, newQty, product.quantity);
-                                }}
-                                disabled={availableQty <= 1}
-                              >
-                                −
-                              </button>
-                              <span className="qty-value">{availableQty}</span>
-                              <button 
-                                className="qty-btn"
-                                onClick={() => {
-                                  // Increase available quantity (maximum ordered quantity - 1)
-                                  const newQty = Math.min(product.quantity - 1, availableQty + 1);
-                                  handleItemCheck(product.id, false, newQty, product.quantity);
-                                }}
-                                disabled={availableQty >= product.quantity - 1}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <p className="missing-qty-display">
-                              Missing: <span className="missing-qty-value">{product.quantity - availableQty}</span>
-                            </p>
-                          </div>
-                        )}
-                        
-                        {/* Show reason selector for any missing items */}
-                        {missingItem && (
-                          <div className="missing-item-details">
-                            <p className="missing-quantity">
-                              {isPartiallyMissing
-                                ? `${product.quantity - availableQty} of ${product.quantity} missing`
-                                : `All ${product.quantity} units missing`}
-                            </p>
-                            <div className="reason-select">
-                              <label htmlFor={`reason-select-${product.id}`}>Reason:</label>
-                              <select 
-                                id={`reason-select-${product.id}`}
-                                value={missingItem.reason}
-                                onChange={(e) => handleReasonChange(product.id, e.target.value)}
-                              >
-                                <option value="Out of stock">Out of stock</option>
-                                <option value="Damaged">Damaged</option>
-                              </select>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   );
@@ -732,9 +730,30 @@ const DriverDeliveries = () => {
                 Collect Order
               </button>
             )}
+
+            <button 
+              className={`alert-customer-btn ${alertSent ? 'sent' : ''}`}
+              onClick={handleAlertCustomer}
+              disabled={alerting || alertSent || order.status === 'completed'}
+            >
+              {alertSent ? (
+                <>
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="sent"/>
+                  Customer Alerted
+                </>
+              ) : alerting ? (
+                'Alerting...'
+              ) : (
+                <>
+                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/alarm.png" alt="alert"/>
+                  Alert Customer
+                </>
+              )}
+            </button>
+
             <button 
               className={`complete-order-btn ${order.status === 'completed' ? 'delivered' : ''}`}
-              onClick={() => handleUpdateStatus('completed')} 
+              onClick={handleDeliveryComplete} 
               disabled={loading || order.status === 'completed'}
             >
               {order.status === 'completed' ? (
@@ -749,11 +768,128 @@ const DriverDeliveries = () => {
           </div>
         </div>
       </div>
-      {showNavigation && (
-        <Navigation
-          onClose={() => setShowNavigation(false)}
-        />
+
+      {/* Proof of Delivery Modal */}
+      {showDeliveryModal && (
+        <div className="delivery-modal-overlay" onClick={() => setShowDeliveryModal(false)}>
+          <div className="delivery-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delivery-modal-header">
+              <h2>Confirm Delivery</h2>
+              <button className="modal-close-btn" onClick={() => setShowDeliveryModal(false)}>&times;</button>
+            </div>
+
+            <div className="delivery-modal-body">
+              {sendingPin && (
+                <div className="pin-sending-status">
+                  <div className="loading-spinner"></div>
+                  <p>Sending delivery PIN to customer...</p>
+                </div>
+              )}
+
+              {pinSent && (
+                <div className="pin-sent-status">
+                  <img width="24" height="24" src="https://img.icons8.com/ios-filled/24/4CAF50/checkmark.png" alt="sent"/>
+                  <p>PIN sent to customer's inbox. Ask the customer for their 4-digit PIN.</p>
+                </div>
+              )}
+
+              {/* 1. Confirm delivery items checkbox */}
+              <div className="modal-field">
+                <label className="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    checked={confirmItemsChecked}
+                    onChange={(e) => setConfirmItemsChecked(e.target.checked)}
+                  />
+                  <span>I confirm all delivery items have been handed to the customer</span>
+                </label>
+              </div>
+
+              {/* 2. Upload delivery proof image */}
+              <div className="modal-field">
+                <label className="field-label">Upload Delivery Proof (optional)</label>
+                <div className="proof-image-upload">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment"
+                    onChange={handleProofImageChange}
+                    id="proof-image-input"
+                    className="file-input-hidden"
+                  />
+                  <label htmlFor="proof-image-input" className="upload-btn">
+                    <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/camera.png" alt="camera"/>
+                    {proofImage ? 'Change Photo' : 'Take Photo'}
+                  </label>
+                  {proofImagePreview && (
+                    <div className="proof-image-preview">
+                      <img src={proofImagePreview} alt="Delivery proof" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 3. Customer PIN input */}
+              <div className="modal-field">
+                <label className="field-label">Customer Delivery PIN</label>
+                <p className="field-hint">Ask the customer for the 4-digit PIN sent to their messages</p>
+                <div className="pin-input-container">
+                  {[0, 1, 2, 3].map((index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      className="pin-digit-input"
+                      value={deliveryPin[index] || ''}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        const newPin = deliveryPin.split('');
+                        newPin[index] = val;
+                        setDeliveryPin(newPin.join(''));
+                        // Auto-focus next input
+                        if (val && index < 3) {
+                          const next = e.target.nextElementSibling as HTMLInputElement;
+                          if (next) next.focus();
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Backspace' && !deliveryPin[index] && index > 0) {
+                          const prev = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                          if (prev) prev.focus();
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {deliveryError && (
+                <div className="delivery-error-message">
+                  {deliveryError}
+                </div>
+              )}
+            </div>
+
+            <div className="delivery-modal-footer">
+              <button 
+                className="cancel-delivery-btn"
+                onClick={() => setShowDeliveryModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="confirm-delivery-btn"
+                onClick={handleConfirmDelivery}
+                disabled={confirmingDelivery || !pinSent}
+              >
+                {confirmingDelivery ? 'Confirming...' : 'Confirm Delivery'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
+
     </div>
   );
 };
