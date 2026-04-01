@@ -159,8 +159,60 @@ const sendOrderStatusMessage = async (userId, orderId, status) => {
   }
 };
 
+/**
+ * Send alert to customer that driver is heading to their address
+ */
+const sendDriverAlertMessage = async (userId, orderId) => {
+  const shortOrderId = orderId.slice(-6);
+  
+  const inboxMessage = {
+    title: `Driver On The Way - Order #${shortOrderId}`,
+    body: `Your driver is heading to your address! Please watch out for your delivery. Make sure someone is available to receive the package.`,
+    fromRole: "LocalsZA Delivery",
+    type: "driver_alert",
+    orderId: orderId
+  };
+  
+  const notificationMessage = {
+    title: `Driver Approaching`,
+    body: `Your driver for order #${shortOrderId} is heading to your address. Watch out for your delivery!`,
+    type: "driver_alert",
+    orderId: orderId
+  };
+  
+  return await sendUserMessages(userId, inboxMessage, notificationMessage);
+};
+
+/**
+ * Send delivery PIN to customer for proof of delivery
+ */
+const sendDeliveryPinMessage = async (userId, orderId, pin) => {
+  const shortOrderId = orderId.slice(-6);
+  
+  const inboxMessage = {
+    title: `Delivery PIN for Order #${shortOrderId}`,
+    body: `Your delivery PIN is: ${pin}. Please give this PIN to your driver to confirm delivery of your order. Do not share this PIN with anyone else.`,
+    fromRole: "LocalsZA Delivery",
+    type: "delivery_pin",
+    orderId: orderId,
+    pin: pin
+  };
+  
+  const notificationMessage = {
+    title: `Delivery PIN: ${pin}`,
+    body: `Your delivery PIN for order #${shortOrderId} is ${pin}. Give this to your driver to confirm delivery.`,
+    type: "delivery_pin",
+    orderId: orderId,
+    pin: pin
+  };
+  
+  return await sendUserMessages(userId, inboxMessage, notificationMessage);
+};
+
 module.exports = {
   sendUserMessages,
   sendOrderConfirmationMessage,
-  sendOrderStatusMessage
+  sendOrderStatusMessage,
+  sendDriverAlertMessage,
+  sendDeliveryPinMessage
 };

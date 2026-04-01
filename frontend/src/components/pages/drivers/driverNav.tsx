@@ -4,7 +4,6 @@ import { app } from '../../../Auth/firebaseClient';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../../assets/logos/LZA ICON.png';
-import '../storepages/navbar/navstyle.css';
 import './driverStyles.css';
 
 const DriversNav = () => {
@@ -24,8 +23,7 @@ const DriversNav = () => {
   };
 
   return (
-    <div className="driver-nav-container">
-      <nav className="navbar drivers-navbar">
+      <nav className="drivers-navbar">
         <div className="driver-navbar-content">
           <div className="driver-navbar-logo">
             <Link to="/driversdashboard">
@@ -72,7 +70,6 @@ const DriversNav = () => {
           </div>
         </div>
       </nav>
-    </div>
   );
 };
 

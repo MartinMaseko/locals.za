@@ -35,8 +35,30 @@ const DriversDash = () => {
   const [assignedOrders, setAssignedOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const auth = getAuth(app);
   const navigate = useNavigate();
+
+  const STATUS_PRIORITY: Record<string, number> = {
+    processing: 0,
+    'in_transit': 1,
+    completed: 2,
+    delivered: 2,
+  };
+
+  const sortedAndFilteredOrders = assignedOrders
+    .filter(order => {
+      const matchesSearch = searchQuery === '' ||
+        order.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const priorityA = STATUS_PRIORITY[a.status] ?? 1;
+      const priorityB = STATUS_PRIORITY[b.status] ?? 1;
+      return priorityA - priorityB;
+    });
 
   useEffect(() => {
     const fetchDriverData = async () => {
@@ -132,28 +154,21 @@ const DriversDash = () => {
     if (!address) return 'No address provided';
     
     const parts = [];
-    if (address.street) parts.push(address.street);
-    if (address.city) parts.push(address.city);
-    if (address.postalCode) parts.push(address.postalCode);
+    const street = address.addressLine || address.street || address.address_line1;
+    const suburb = address.suburb || address.address_line2;
+    const city = address.city || address.town;
+    const province = address.province || address.state;
+    const postalCode = address.postal || address.postalCode || address.postal_code || address.zip;
+    
+    if (street) parts.push(street);
+    if (suburb) parts.push(suburb);
+    if (city) parts.push(city);
+    if (province) parts.push(province);
+    if (postalCode) parts.push(postalCode);
     
     return parts.length ? parts.join(', ') : 'No address details';
   };
-  
-  const getFormattedDate = (dateString: string) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString('en-ZA', { 
-        day: 'numeric', 
-        month: 'short',
-        hour: '2-digit', 
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return dateString;
-    }
-  };
+
 
   const handleViewOrder = (orderId: string) => {
     // Navigate to the driver deliveries page with the order ID
@@ -170,11 +185,31 @@ const DriversDash = () => {
   }
 
   return (
-    <div className="driver-dashboard">
       <div className="driver-stats-cards">
         <div className="driver-section">
           <h2>Assigned Orders</h2>
-          
+
+          <div className="driver-orders-toolbar">
+            <input
+              type="text"
+              className="driver-order-search"
+              placeholder="Search by order ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="driver-status-filters">
+              {['all', 'processing', 'in transit', 'completed'].map(status => (
+                <button
+                  key={status}
+                  className={`driver-status-filter-btn ${statusFilter === status ? 'active' : ''}`}
+                  onClick={() => setStatusFilter(status)}
+                >
+                  {status === 'all' ? 'All' : status === 'in transit' ? 'In Transit' : status.charAt(0).toUpperCase() + status.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loadingOrders ? (
             <div className="loading-orders">
               <div className="loading-spinner"></div>
@@ -190,19 +225,19 @@ const DriversDash = () => {
                 Try Again
               </button>
             </div>
-          ) : assignedOrders.length === 0 ? (
+          ) : sortedAndFilteredOrders.length === 0 ? (
             <div className="no-orders-message">
               <img 
                 src="https://img.icons8.com/ios-filled/100/999999/delivery.png" 
                 alt="No orders"
                 className="no-orders-icon"
               />
-              <p>No orders assigned yet</p>
-              <p className="no-orders-subtext">New deliveries will appear here</p>
+              <p>{assignedOrders.length === 0 ? 'No orders assigned yet' : 'No orders match your filters'}</p>
+              <p className="no-orders-subtext">{assignedOrders.length === 0 ? 'New deliveries will appear here' : 'Try a different search or status filter'}</p>
             </div>
           ) : (
             <div className="driver-orders-list">
-              {assignedOrders.map(order => (
+              {sortedAndFilteredOrders.map(order => (
                 <div key={order.id} className={`driver-order-card status-${order.status}`}>
                   <div className="driver-order-header">
                     <div className="driver-order-id">Order #{order.id.slice(-6)}</div>
@@ -215,11 +250,6 @@ const DriversDash = () => {
                     <div className="driver-order-address">
                       <strong>Delivery Address:</strong>
                       <p>{getFormattedAddress(order.deliveryAddress)}</p>
-                    </div>
-                    
-                    <div className="driver-order-time">
-                      <strong>Order Time:</strong>
-                      <p>{getFormattedDate(order.createdAt)}</p>
                     </div>
                   </div>
                   
@@ -253,7 +283,6 @@ const DriversDash = () => {
           </p>
         </div>
       </div>
-    </div>
   );
 };
 
