@@ -1,6 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import Logo from '../../assets/logos/LZA ICON.png';
 import '../storepages/navbar/navstyle.css';
 import '../drivers/driverStyles.css';
 
@@ -31,7 +30,7 @@ const SalesNav = () => {
         <div className="sales-navbar-content">
           <div className="sales-navbar-logo">
             <NavLink to="/sales/revenue">
-              <img src={Logo} alt="LocalsZA" className="sales-logo" />
+              <img src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FsalesLogo.png?alt=media&token=1b30f1ce-164a-42af-9567-6b1cacba86c7" alt="LocalsZA" className="sales-logo" />
             </NavLink>
           </div>
 

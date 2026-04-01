@@ -3,7 +3,6 @@ import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Logo from '../../assets/logos/LZA ICON.png';
 import './driverStyles.css';
 
 const DriversNav = () => {
@@ -16,7 +15,7 @@ const DriversNav = () => {
       await signOut(auth);
       console.log('Driver Signed Out');
       setDropdownOpen(false);
-      navigate('/driver-login');
+      navigate('/driverlogin');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -27,7 +26,7 @@ const DriversNav = () => {
         <div className="driver-navbar-content">
           <div className="driver-navbar-logo">
             <Link to="/driversdashboard">
-              <img src={Logo} alt="Logo" className='driver-logo'/>
+              <img src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FdriverLogo.png?alt=media&token=f9413fdd-7ea8-43d9-a013-8161dd5bd34f" alt="Logo" className='driver-logo'/>
             </Link>
           </div>
           <div className="navbar-menu">
