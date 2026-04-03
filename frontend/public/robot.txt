@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Disallow: /admindashboard
+Disallow: /adminlogin
+Disallow: /driverlogin
+Disallow: /driver/
+Disallow: /buyerlogin
+Disallow: /buyer/
+Disallow: /saleslogin
+Disallow: /sales/
+Disallow: /useraccount
+Disallow: /userprofile
+Disallow: /userorders
+Disallow: /messages
+Disallow: /checkout
+Disallow: /order-confirmation/
+Disallow: /payment-cancelled/
+
+Sitemap: https://locals-za.co.za/sitemap.xml
