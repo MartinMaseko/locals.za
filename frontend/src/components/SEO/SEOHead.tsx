@@ -11,9 +11,9 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({
-  title = 'LocalsZA - Buyer Service & Online Wholesaler',
-  description = 'Spaza shop, Salon and Fast Food Online Cash and Carry supply chain aggregator for SMMEs',
-  keywords = 'spaza shop, online wholesaler, online cash and carry, Buyer Service, SMME supplier, Ekhuruleni, Gauteng, LocalsZA',
+  title = 'LocalsZA - Online Cash & Carry| Wholesaler buyer & delivery service for Retail & SMMEs | Ekhuruleni',
+  description = 'Retail shop, Hair Salon and Fast Food Outlet Online Cash and Carry, buyer service and delivery for SMMEs in Ekhuruleni. Order wholesale supplies online.',
+  keywords = 'retail shop, online wholesaler, online cash and carry, Buyer Service, SMME supplier, Ekhuruleni, Gauteng, LocalsZA',
   image = 'https://locals-za.co.za/assets/logos/LZA ICON.png',
   url,
   type = 'website'
@@ -46,10 +46,6 @@ const SEOHead = ({
     updateMetaTag('og:image', image, true);
     updateMetaTag('og:url', currentUrl, true);
     updateMetaTag('og:type', type, true);
-    updateMetaTag('twitter:card', 'summary_large_image', true);
-    updateMetaTag('twitter:title', title, true);
-    updateMetaTag('twitter:description', description, true);
-    updateMetaTag('twitter:image', image, true);
   }, [title, description, keywords, image, currentUrl, type]);
 
   return null;
