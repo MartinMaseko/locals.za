@@ -301,6 +301,24 @@
   gap: 20px;  
 }
 
+.category-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.category-group {
+  width: 100%;
+}
+
+.category-heading {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffb803;
+  border-radius: 4px;
+  margin: 0 0 16px 0;
+}
+
 .price-update-card {
   background: #fff;
   border-radius: 8px;
@@ -521,6 +539,27 @@
   outline: none;
   border-color: #ffb803;
   box-shadow: 0 0 0 2px rgba(255, 184, 3, 0.2);
+}
+
+select.search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #212121;
+  max-width: 450px;
+}
+
+select.search-input option {
+  font-family: inherit;
+  font-size: 1rem;
+  color: #212121;
+  padding: 8px 12px;
 }
 
 /* Mobile responsiveness */
