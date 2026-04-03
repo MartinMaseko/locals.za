@@ -25,6 +25,7 @@ const BuyerPriceUpdates = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [updatingProductId, setUpdatingProductId] = useState<string | null>(null);
   const [newPrices, setNewPrices] = useState<{ [key: string]: string }>({});
   const auth = getAuth(app);
@@ -81,10 +82,15 @@ const BuyerPriceUpdates = () => {
     }
   };
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.brand?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get unique categories from products
+  const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort();
+
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.brand?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = !selectedCategory || p.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const handlePriceChange = (productId: string, newPrice: string) => {
     setNewPrices(prev => ({ ...prev, [productId]: newPrice }));
@@ -230,77 +236,112 @@ const BuyerPriceUpdates = () => {
           )}
         </div>
 
+        <div className="search-container">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="search-input"
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          {selectedCategory && (
+            <button 
+              className="clear-search"
+              onClick={() => setSelectedCategory('')}
+              aria-label="Clear category filter"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
 
         {filteredProducts.length === 0 ? (
           <div className="no-orders-message">
-            <p>{searchQuery ? `No products match "${searchQuery}"` : 'No products found.'}</p>
+            <p>{searchQuery || selectedCategory ? `No products match your filters` : 'No products found.'}</p>
           </div>
         ) : (
-          <div className="price-updates-grid">
-            {filteredProducts.map((product) => {
-              const productId = product.id || product.product_id;
-              if (!productId) return null; // Guard against undefined productId
+          <div className="category-groups">
+            {Array.from(new Set(filteredProducts.map(p => p.category || 'Uncategorized')))
+              .sort()
+              .map(category => (
+                <div key={category} className="category-group">
+                  <h3 className="category-heading">{category}</h3>
+                  <div className="price-updates-grid">
+                    {filteredProducts
+                      .filter(p => (p.category || 'Uncategorized') === category)
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((product) => {
+                        const productId = product.id || product.product_id;
+                        if (!productId) return null;
 
-              const currentPrice = getPrice(product.price);
-              const priceValue = newPrices[productId] || '';
-              const inputValue = priceValue ? parseFloat(priceValue) : null;
-              const previewPrice = inputValue ? calculatePriceWithMarkup(inputValue) : null;
-              
-              return (
-                <div key={productId} className="price-update-card">
-                  {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="product-image"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <div className="product-info">
-                    <h4>{product.name}</h4>
-                    {product.brand && <p className="product-brand">{product.brand}</p>}
-                    {product.category && <p className="product-category">{product.category}</p>}
-                    <p className="current-price">Current: R{currentPrice.toFixed(2)}</p>
-                  </div>
+                        const currentPrice = getPrice(product.price);
+                        const priceValue = newPrices[productId] || '';
+                        const inputValue = priceValue ? parseFloat(priceValue) : null;
+                        const previewPrice = inputValue ? calculatePriceWithMarkup(inputValue) : null;
+                        
+                        return (
+                          <div key={productId} className="price-update-card">
+                            {product.image_url && (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="product-image"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <div className="product-info">
+                              <h4>{product.name}</h4>
+                              {product.brand && <p className="product-brand">{product.brand}</p>}
+                              <p className="current-price">Current: R{currentPrice.toFixed(2)}</p>
+                            </div>
 
-                  <div className="price-input-group">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      placeholder="New price (base)"
-                      value={priceValue}
-                      onChange={(e) => handlePriceChange(productId, e.target.value)}
-                      className="price-input"
-                    />
-                    {previewPrice && (
-                      <div style={{
-                        padding: '8px',
-                        backgroundColor: '#e8f5e9',
-                        borderRadius: '4px',
-                        fontSize: '0.9rem',
-                        color: '#2e7d32',
-                        textAlign: 'center'
-                      }}>
-                        <strong>With 2.5% markup:</strong><br />
-                        R{previewPrice.toFixed(2)}
-                      </div>
-                    )}
-                    <button
-                      onClick={() => handleUpdatePrice(productId)}
-                      disabled={updatingProductId === productId || !priceValue}
-                      className="update-btn"
-                    >
-                      {updatingProductId === productId ? 'Updating...' : 'Update'}
-                    </button>
+                            <div className="price-input-group">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                placeholder="New price (base)"
+                                value={priceValue}
+                                onChange={(e) => handlePriceChange(productId, e.target.value)}
+                                className="price-input"
+                              />
+                              {previewPrice && (
+                                <div style={{
+                                  padding: '8px',
+                                  backgroundColor: '#e8f5e9',
+                                  borderRadius: '4px',
+                                  fontSize: '0.9rem',
+                                  color: '#2e7d32',
+                                  textAlign: 'center'
+                                }}>
+                                  <strong>With 2.5% markup:</strong><br />
+                                  R{previewPrice.toFixed(2)}
+                                </div>
+                              )}
+                              <button
+                                onClick={() => handleUpdatePrice(productId)}
+                                disabled={updatingProductId === productId || !priceValue}
+                                className="update-btn"
+                              >
+                                {updatingProductId === productId ? 'Updating...' : 'Update'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         )}
       </div>
