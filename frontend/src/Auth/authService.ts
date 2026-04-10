@@ -60,7 +60,6 @@ export const getAuthToken = async (): Promise<string | null> => {
     sessionStorage.setItem('authToken', token);
     return token;
   } catch (error) {
-    console.error("Error refreshing token:", error);
     return null;
   }
 };

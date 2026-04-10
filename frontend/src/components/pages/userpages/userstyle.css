@@ -458,6 +458,107 @@ input[type="file"]::-webkit-file-upload-button:focus {
   color: #ffb803;
   margin-top: 0.5rem;
 }
+
+/* Pending Payment Banner */
+.pending-payment-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #191919;
+  border-left: 4px solid #ffb803;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pending-payment-icon {
+  flex-shrink: 0;
+}
+
+.pending-payment-content {
+  text-align: left;
+}
+
+.pending-payment-content h3 {
+  margin: 0 0 4px;
+  color: #ffb803;
+  font-size: 1rem;
+}
+
+.pending-payment-content p {
+  margin: 0;
+  color: #ccc;
+  font-size: 0.875rem;
+}
+
+/* Retry / Cancel actions inside order card */
+.pending-payment-actions {
+  margin-top: 12px;
+  border-top: 1px dashed #dee2e6;
+  padding-top: 12px;
+}
+
+.pending-payment-hint {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: #856404;
+}
+
+.pending-payment-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.retry-payment-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ffb803;
+  color: #191919;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.retry-payment-btn:hover:not(:disabled) {
+  background-color: #191919;
+  color: #ffb803;
+}
+
+.cancel-order-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #721c24;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancel-order-btn:hover:not(:disabled) {
+  background-color: #f8d7da;
+}
+
+.retry-payment-btn:disabled,
+.cancel-order-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Pending payment status color */
+.order-status-pending_payment {
+  background-color: #fff3cd;
+  color: #856404;
+}
 /* Mobile responsiveness improvements */
 @media (max-width: 480px) {
   .order-header {

@@ -44,7 +44,6 @@ const ManageDriversSection = ({
           setDriverOrders(orders);
         }
       } catch (error) {
-        console.error('Error fetching initial driver data:', error);
       } finally {
         setLoading(false);
       }
@@ -62,9 +61,7 @@ const ManageDriversSection = ({
           const driverId = selectedDriver.driver_id || selectedDriver.id;
           const orders = await driversService.fetchDriverOrders(token, driverId);
           setSelectedDriverOrders(orders);
-          console.log(`Fetched ${orders.length} orders for driver ${driverId}`);
         } catch (error) {
-          console.error('Error fetching selected driver orders:', error);
           setSelectedDriverOrders([]);
         }
       };

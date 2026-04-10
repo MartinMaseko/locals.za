@@ -52,7 +52,6 @@ const Navigation = ({ onClose }: NavigationProps) => {
       }
       
       // First try to open Waze app
-      console.log("Attempting to open Waze app with URL:", wazeAppUrl);
       
       // Create a hidden iframe to try opening the app URL
       const iframe = document.createElement('iframe');
@@ -65,12 +64,10 @@ const Navigation = ({ onClose }: NavigationProps) => {
         document.body.removeChild(iframe);
         
         // Open the web version in a new tab
-        console.log("Opening Waze web version:", wazeWebUrl);
         window.open(wazeWebUrl, '_blank');
       }, 1000); // 1 second should be enough to see if the app opens
       
     } catch (error) {
-      console.error('Error opening Waze:', error);
       setError('Failed to open Waze. Please try again or open Waze manually.');
       
       // Always try web version as a fallback
@@ -78,7 +75,7 @@ const Navigation = ({ onClose }: NavigationProps) => {
         const address = encodeURIComponent(addresses[0].address);
         window.open(`https://www.waze.com/ul?q=${address}&navigate=yes`, '_blank');
       } catch (e) {
-        console.error('Failed to open web fallback:', e);
+        // Fallback also failed
       }
     }
   };

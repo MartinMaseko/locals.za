@@ -113,7 +113,6 @@ const SalesShop = () => {
       setProducts(data);
       setFilteredProducts(data);
     } catch (error) {
-      console.error('Error fetching products:', error);
       // Add error state handling
       setProducts([]);
       setFilteredProducts([]);

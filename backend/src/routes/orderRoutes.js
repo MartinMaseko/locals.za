@@ -1139,4 +1139,45 @@ router.post('/:id/confirm-delivery', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @route   PUT /api/orders/:id/cancel
+ * @desc    Allow a user to cancel their own pending_payment order
+ * @access  Private (order owner only)
+ */
+router.put('/:id/cancel', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+
+    const orderRef = admin.firestore().collection('orders').doc(id);
+    const orderDoc = await orderRef.get();
+
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const orderData = orderDoc.data();
+
+    if (orderData.userId !== userId) {
+      return res.status(403).json({ error: 'Not authorized to cancel this order' });
+    }
+
+    if (orderData.status !== 'pending_payment') {
+      return res.status(400).json({ error: 'Only pending payment orders can be cancelled' });
+    }
+
+    await orderRef.update({
+      status: 'cancelled',
+      cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+      cancelledBy: userId,
+      updatedAt: new Date().toISOString(),
+    });
+
+    res.json({ success: true, message: 'Order cancelled' });
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({ error: 'Failed to cancel order' });
+  }
+});
+
 module.exports = router;

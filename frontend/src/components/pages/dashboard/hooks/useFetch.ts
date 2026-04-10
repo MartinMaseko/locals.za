@@ -51,7 +51,6 @@ export const useFetchDriversList = () => {
       const drivers = await driversService.fetchAllDrivers(token);
       setDriversList(drivers);
     } catch (err: any) {
-      console.error('Error fetching drivers:', err);
     }
   }, []);
 
@@ -70,7 +69,6 @@ export const useFetchDriverOrders = () => {
       const orders = await ordersService.fetchDriverOrders(token, driverId);
       setDriverOrders(orders);
     } catch (err) {
-      console.error('Error fetching driver orders:', err);
       setDriverOrders([]);
     }
   }, []);
@@ -94,7 +92,6 @@ export const useFetchPaymentHistory = () => {
       const history = await driversService.fetchPaymentHistory(token, driverId);
       setDriverPaymentHistory(history);
     } catch (err) {
-      console.error('Error fetching driver payment history:', err);
       setDriverPaymentHistory([]);
     } finally {
       setPaymentHistoryLoading(false);

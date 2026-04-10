@@ -31,8 +31,6 @@ export const openWazeNavigation = (stops: Coordinates[]): void => {
       wazeAppUrl += `&stops=${additionalStops}&z=10&from=locals-za-app`;
     }
     
-    console.log('Opening Waze with URL:', wazeAppUrl);
-    
     // Try to open the Waze app first using a hidden iframe
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
@@ -45,8 +43,6 @@ export const openWazeNavigation = (stops: Coordinates[]): void => {
       window.open(wazeWebUrl, '_blank');
     }, 1000);
   } catch (error) {
-    console.error('Error opening Waze:', error);
-    
     // Fallback to opening the web version
     const firstStop = stops[0];
     window.open(`https://www.waze.com/ul?ll=${firstStop.lat},${firstStop.lng}&navigate=yes`, '_blank');
@@ -66,7 +62,6 @@ export const convertAddressesToCoordinates = async (addresses: string[]): Promis
   const apiKey = import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY;
   
   if (!apiKey) {
-    console.error('Google Maps API key is missing');
     return [];
   }
   
@@ -94,7 +89,6 @@ export const convertAddressesToCoordinates = async (addresses: string[]): Promis
     // Filter out any failed geocoding results
     return results.filter((result): result is NonNullable<typeof result> => result !== null);
   } catch (error) {
-    console.error('Error converting addresses to coordinates:', error);
     return [];
   }
 };

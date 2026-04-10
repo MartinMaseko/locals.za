@@ -203,15 +203,8 @@ const DriverDeliveries = () => {
           throw new Error('Invalid order data received');
         }
       } catch (error: any) {
-        console.error('Error fetching order details:', error);
-        
         // More detailed error information
         if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error('Server response:', error.response.data);
-          console.error('Status code:', error.response.status);
-          
           if (error.response.status === 403) {
             setError('You do not have permission to view this order. Please contact support.');
           } else if (error.response.status === 404) {
@@ -378,7 +371,6 @@ const DriverDeliveries = () => {
       }, 1500);
       
     } catch (error) {
-      console.error('Error reporting missing items:', error);
       setError('Failed to update order with missing items');
       
       // Fallback approach - try to update just the status without missing items
@@ -397,7 +389,7 @@ const DriverDeliveries = () => {
         // Show limited success but note the missing items weren't reported
         setMissingItemSuccess("Order marked as in transit, but couldn't report missing items.");
       } catch (fallbackError) {
-        console.error('Fallback status update also failed:', fallbackError);
+        // Fallback status update also failed
       }
     } finally {
       setSubmittingMissingItems(false);
@@ -425,7 +417,6 @@ const DriverDeliveries = () => {
 
       setAlertSent(true);
     } catch (error) {
-      console.error('Error alerting customer:', error);
       setError('Failed to alert customer');
     } finally {
       setAlerting(false);
@@ -456,7 +447,6 @@ const DriverDeliveries = () => {
 
         setPinSent(true);
       } catch (error) {
-        console.error('Error sending delivery PIN:', error);
         setDeliveryError('Failed to send PIN to customer. Please try again.');
       } finally {
         setSendingPin(false);
@@ -510,7 +500,6 @@ const DriverDeliveries = () => {
       setShowDeliveryModal(false);
       setPinSent(false);
     } catch (error: any) {
-      console.error('Error confirming delivery:', error);
       if (error.response?.data?.error === 'Invalid delivery PIN') {
         setDeliveryError('Incorrect PIN. Please ask the customer for the correct PIN.');
       } else {

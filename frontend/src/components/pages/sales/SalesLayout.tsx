@@ -25,7 +25,6 @@ const SalesLayout = () => {
 
   // Not authenticated - redirect to login
   if (!isAuthenticated) {
-    console.log('SalesLayout - Redirecting to login');
     return <Navigate to="/sales/login" replace />;
   }
 

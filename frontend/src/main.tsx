@@ -8,27 +8,21 @@ import './index.css'
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    // Automatically reload to show new version
-    // Silent auto-reload (recommended for frequent updates)
-    console.log('New version available, reloading...')
     updateSW(true)
   },
   onOfflineReady() {
-    console.log('App ready to work offline')
+    // App ready for offline use
   },
   onRegistered(registration) {
-    console.log('Service Worker registered')
-    
     // Check for updates every 60 seconds
     if (registration) {
       setInterval(() => {
-        console.log('Checking for updates...')
         registration.update()
       }, 60 * 1000)
     }
   },
-  onRegisterError(error: Error) {
-    console.error('SW registration failed:', error)
+  onRegisterError(_error: Error) {
+    // SW registration failed
   }
 })
 

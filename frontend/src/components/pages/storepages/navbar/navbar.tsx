@@ -19,11 +19,10 @@ const Navbar = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      console.log('Signed Out');
       setDropdownOpen(false);
       navigate('/login');
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Sign out failed
     }
   };
 

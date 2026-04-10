@@ -26,7 +26,6 @@ export const discountService = {
       );
       return response.data;
     } catch (error: any) {
-      console.error('Error saving paid price:', error.response?.data || error.message);
       throw error;
     }
   },

@@ -126,7 +126,7 @@ const HomePage = () => {
       
       setLoadedCategories(prev => new Set([...prev, category]));
     } catch (error) {
-      console.error('Error fetching products:', error);
+      // Error fetching products
     } finally {
       setProductsLoading(false);
     }

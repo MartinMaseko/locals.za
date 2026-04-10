@@ -244,8 +244,6 @@ const CheckoutPage: React.FC = () => {
         throw new Error('Failed to create order - no order ID returned');
       }
 
-      console.log(`Order created with ID: ${orderId}`);
-
       // Step 2: Get payment form data from backend
       const paymentRes = await axios.post(
         `${API_URL}/api/payment/process/${orderId}`,
@@ -264,8 +262,6 @@ const CheckoutPage: React.FC = () => {
       
       // Step 3: Redirect to Ozow via form POST
       if (paymentData.formData && paymentData.url) {
-        console.log('Processing Ozow payment...', paymentData.formData);
-        
         // Create a hidden form and submit it (Ozow requires POST)
         const form = document.createElement('form');
         form.method = 'POST';
@@ -286,7 +282,6 @@ const CheckoutPage: React.FC = () => {
         throw new Error('Payment data not received from backend');
       }
     } catch (err: any) {
-      console.error('Order placement error:', err);
       setError(err?.response?.data?.message || 'Failed to place order');
       setLoading(false);
     }
@@ -309,7 +304,13 @@ const CheckoutPage: React.FC = () => {
         <>
           <section className="checkout-items">
             <h2>Order details</h2>
-            {cart.length === 0 ? <p>Your cart is empty.</p> : (
+            {cart.length === 0 ? (
+              <div className='empty-cart-wrapper'>
+                <img width="100" height="100" src="https://img.icons8.com/bubbles/100/shopping-cart.png" alt="shopping-cart"/>
+                <p>Your cart is empty.</p>
+                <button className='checkout-btn' type="button" onClick={() => navigate('/')}>Go to Store</button>
+              </div>
+            ) : (
           <>
             <ul className='checkout-list'>
               {cart.map(it => (

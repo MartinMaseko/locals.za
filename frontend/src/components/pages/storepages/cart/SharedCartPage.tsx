@@ -74,7 +74,6 @@ const SharedCartPage: React.FC = () => {
       // Navigate to cart after updates
       navigate('/cart');
     } catch (err) {
-      console.error('Failed to add to cart', err);
       setError('Failed to add items to cart');
     }
   };

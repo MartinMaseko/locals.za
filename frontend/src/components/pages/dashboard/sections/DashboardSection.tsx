@@ -54,7 +54,6 @@ const DashboardSection = ({
       // Calculate initial stats
       await fetchDashboardStats();
     } catch (error) {
-      console.error('Error initializing dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -86,13 +85,10 @@ const DashboardSection = ({
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users || []);
-        console.log('Users fetched:', data.users?.length || 0);
       } else {
-        console.error('Failed to fetch user count:', response.status, response.statusText);
         setUsers([]);
       }
     } catch (error) {
-      console.error('Error fetching user count:', error);
       setUsers([]);
     }
   };
@@ -114,14 +110,12 @@ const DashboardSection = ({
         return;
       }
       
-      console.log('Calculating stats locally');
       // Use the same filtering as everywhere else - only include valid business orders
       const allOrders = ordersState.allOrders || ordersState.orders;
       const validOrders = Array.isArray(allOrders) ? filterOrdersForCalculations(allOrders) : [];
       const calculatedStats = dashboardStatsService.calculateStatsLocally(validOrders, statsPeriod);
       setDashboardStats(calculatedStats);
     } catch (err) {
-      console.error('Error fetching dashboard stats:', err);
       setDashboardStats({
         serviceRevenue: 0,
         orderRevenue: 0,

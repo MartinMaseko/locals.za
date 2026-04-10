@@ -73,8 +73,8 @@ const Messages: React.FC = () => {
             });
           });
           setMessages(inboxMessages);
-        }, (error) => {
-          console.error("Error fetching inbox:", error);
+        }, (_error) => {
+          // Error fetching inbox
         });
 
         // Listen for notifications
@@ -94,8 +94,8 @@ const Messages: React.FC = () => {
             });
           });
           setNotifications(notificationItems);
-        }, (error) => {
-          console.error("Error fetching notifications:", error);
+        }, (_error) => {
+          // Error fetching notifications
         });
 
         return () => {
@@ -116,7 +116,7 @@ const Messages: React.FC = () => {
       const messageRef = doc(db, 'users', auth.currentUser.uid, collectionName, messageId);
       await updateDoc(messageRef, { read: true });
     } catch (error) {
-      console.error("Error marking message as read:", error);
+      // Error marking message as read
     }
   };
 
@@ -154,8 +154,7 @@ const Messages: React.FC = () => {
               {message.orderId && (
                 <OrderRating 
                   orderId={message.orderId} 
-                  onRatingSubmit={(rating, comment) => {
-                    console.log(`Order ${message.orderId} rated: ${rating}, comment: ${comment}`);
+                  onRatingSubmit={() => {
                     markAsRead('inbox', message.id);
                   }}
                 />
