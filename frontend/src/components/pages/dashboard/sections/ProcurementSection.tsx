@@ -113,7 +113,6 @@ const ProcurementSection = ({ ordersState }: ProcurementSectionProps) => {
         })
         .catch(() => {
           // Silently handle error - just means no existing discounts for this date
-          console.warn('No existing discounts found for date:', expandedDate);
         });
     }
   }, [expandedDate, fetchDiscountsByDate]);
@@ -161,7 +160,6 @@ const ProcurementSection = ({ ordersState }: ProcurementSectionProps) => {
       await savePaidPrice(date, product.productId, paidPrice, product.price, product.totalQty);
       alert(`Discount saved! Customers will receive 75% of the savings on their next order.`);
     } catch (err: any) {
-      console.error('Error saving discount:', err);
       alert(`Failed to save discount: ${err.message}`);
     } finally {
       setSavingDiscounts(prev => ({ ...prev, [key]: false }));

@@ -68,7 +68,6 @@ export const handleProductImageUpload = async (
     await uploadBytes(imageRef, file);
     return await getDownloadURL(imageRef);
   } catch (uploadErr: any) {
-    console.error('Image upload failed:', uploadErr);
     throw new Error(`Image upload failed: ${uploadErr.message}`);
   }
 };

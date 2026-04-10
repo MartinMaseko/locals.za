@@ -84,8 +84,7 @@ const DriverRevenue = () => {
         }
         
       } catch (error) {
-        console.error('Error fetching driver data:', error);
-      } finally {
+        // Continue with what we have - don't block the UI
         setLoading(false);
       }
     };
@@ -127,7 +126,6 @@ const DriverRevenue = () => {
       }
       
     } catch (error) {
-      console.error('Failed to load driver info:', error);
       // Continue with what we have - don't block the UI
     }
   };
@@ -161,7 +159,6 @@ const DriverRevenue = () => {
       }
       
     } catch (error) {
-      console.error('Failed to load orders:', error);
       // Show empty state but don't block UI
       setCompletedOrders([]);
       setPendingOrders([]);
@@ -216,7 +213,6 @@ const DriverRevenue = () => {
       }, 5000);
       
     } catch (error) {
-      console.error('Cashout failed:', error);
       setCashoutError('Failed to process cashout. Please try again.');
     } finally {
       setIsCashingOut(false);

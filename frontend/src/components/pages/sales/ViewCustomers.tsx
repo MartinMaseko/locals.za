@@ -59,7 +59,6 @@ const ViewCustomers = () => {
 
       setCustomers(data);
     } catch (err: any) {
-      console.error('Error fetching customers:', err);
       setError(err?.response?.data?.error || 'Failed to load customers');
     }
     setLoading(false);
@@ -84,7 +83,6 @@ const ViewCustomers = () => {
       
       setCustomerOrders(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      console.error('Error fetching customer orders:', err);
       setOrdersError(err?.response?.data?.error || 'Failed to load customer orders');
       setCustomerOrders([]);
     }

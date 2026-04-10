@@ -27,7 +27,6 @@ const OrderRating: React.FC<OrderRatingProps> = ({ orderId, onRatingSubmit }) =>
         // Get current user's token
         const user = auth.currentUser;
         if (!user) {
-          console.log('User not authenticated');
           return;
         }
         
@@ -50,8 +49,7 @@ const OrderRating: React.FC<OrderRatingProps> = ({ orderId, onRatingSubmit }) =>
           setSubmitted(true);
         }
       } catch (err) {
-        // Just ignore errors - we'll assume no rating
-        console.log('Error checking existing rating:', err);
+        // Assume no existing rating
       }
     };
     

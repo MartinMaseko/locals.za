@@ -69,6 +69,8 @@ const UserOrders: React.FC = () => {
   const [error, setError] = useState('');
   const [frequentProducts, setFrequentProducts] = useState<FrequentProduct[]>([]);
   const [showFrequentProducts, setShowFrequentProducts] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null);
   const auth = getAuth(app);
   const { addToCart } = useCart();
   const navigate = useNavigate(); 
@@ -156,7 +158,6 @@ const UserOrders: React.FC = () => {
           }
         }
       } catch (err: any) {
-        console.error('Fetch orders error:', err?.response?.data || err);
         if (mounted) setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
       } finally {
         if (mounted) setLoading(false);
@@ -221,6 +222,56 @@ const UserOrders: React.FC = () => {
   const handleProductClick = (product: any) => {
     // You can navigate to product detail or do nothing
     navigate(`/product/${product.id}`, { state: { product } });
+  };
+
+  // Retry payment: add items back to cart and navigate to checkout
+  const handleRetryPayment = async (order: Order) => {
+    setRetryingOrderId(order.id);
+    try {
+      for (const item of order.items) {
+        if (item.product) {
+          addToCart({
+            id: item.productId || item.product.id || '',
+            name: item.product.name || '',
+            price: typeof item.product.price === 'number' ? item.product.price : Number(item.product.price || 0),
+            image_url: item.product.image_url || '',
+            quantity: item.qty,
+          });
+        }
+      }
+      // Cancel the old unpaid order so it doesn't linger
+      const user = auth.currentUser;
+      if (user) {
+        const token = await user.getIdToken();
+        await axios.put(`${API_URL}/api/orders/${order.id}/cancel`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
+      }
+      navigate('/checkout');
+    } catch (err) {
+      // Retry payment failed
+    } finally {
+      setRetryingOrderId(null);
+    }
+  };
+
+  // Cancel a pending_payment order
+  const handleCancelOrder = async (orderId: string) => {
+    setCancellingOrderId(orderId);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const token = await user.getIdToken();
+      await axios.put(`${API_URL}/api/orders/${orderId}/cancel`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+    } catch (err: any) {
+      // Cancel order failed
+    } finally {
+      setCancellingOrderId(null);
+    }
   };
 
   // Loading state and UI
@@ -302,6 +353,19 @@ const UserOrders: React.FC = () => {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Pending Payment Banner */}
+      {orders.some(o => o.status === 'pending_payment') && (
+        <div className="pending-payment-banner">
+          <div className="pending-payment-icon">
+            <img width="32" height="32" src="https://img.icons8.com/ios-filled/50/ffb803/shopping-basket-2.png" alt="basket" />
+          </div>
+          <div className="pending-payment-content">
+            <h3>Left your basket?</h3>
+            <p>You have unpaid orders. Want to try again or cancel?</p>
+          </div>
         </div>
       )}
       
@@ -425,6 +489,29 @@ const UserOrders: React.FC = () => {
                   {(o.refundAmount ?? 0) > 0 && (
                     <div className="refund-credit-note">
                       A credit of R{Number(o.refundAmount).toFixed(2)} has been added to your account for your next order.
+                    </div>
+                  )}
+
+                  {/* Retry / Cancel actions for unpaid orders */}
+                  {o.status === 'pending_payment' && (
+                    <div className="pending-payment-actions">
+                      <p className="pending-payment-hint">Payment was not completed for this order.</p>
+                      <div className="pending-payment-buttons">
+                        <button
+                          className="retry-payment-btn"
+                          disabled={retryingOrderId === o.id || cancellingOrderId === o.id}
+                          onClick={() => handleRetryPayment(o)}
+                        >
+                          {retryingOrderId === o.id ? 'Loading...' : 'Try Again'}
+                        </button>
+                        <button
+                          className="cancel-order-btn"
+                          disabled={retryingOrderId === o.id || cancellingOrderId === o.id}
+                          onClick={() => handleCancelOrder(o.id)}
+                        >
+                          {cancellingOrderId === o.id ? 'Cancelling...' : 'Cancel Order'}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

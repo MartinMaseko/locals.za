@@ -95,7 +95,6 @@ const BuyerOrders = () => {
       }
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
-      console.error('Error fetching orders:', err);
     } finally {
       setLoading(false);
     }
@@ -154,7 +153,7 @@ const BuyerOrders = () => {
           dayTotals[date] = (dayTotals[date] || 0) + itemLineTotal;
         });
       } catch (e) {
-        console.error('Error processing order:', e);
+        // Error processing order
       }
     });
 

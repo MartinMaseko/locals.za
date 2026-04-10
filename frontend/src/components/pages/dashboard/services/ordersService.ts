@@ -17,7 +17,6 @@ export const ordersService = {
       });
       return Array.isArray(data) ? data : [];
     } catch (err) {
-      console.error('Error fetching all orders:', err);
       return [];
     }
   },
@@ -35,8 +34,6 @@ export const ordersService = {
         });
         return Array.isArray(data) ? data : [];
       } catch (err: any) {
-        console.error('Error fetching driver orders:', err);
-
         if (err?.response?.status === 403 || err?.response?.status === 404) {
           const { data } = await axios.get<Order[]>(`${API_URL}/api/orders/all`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -49,7 +46,6 @@ export const ordersService = {
         return [];
       }
     } catch (err) {
-      console.error('Error fetching driver orders:', err);
       return [];
     }
   },

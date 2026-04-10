@@ -59,8 +59,6 @@ const AddCustomer = () => {
         setError(response.data.message || 'Failed to link customer');
       }
     } catch (err: any) {
-      console.error('Error linking customer:', err);
-      console.error('Response data:', err?.response?.data);
       const errorMessage = err?.response?.data?.error || err.message || 'Failed to link customer';
       setError(errorMessage);
     } finally {

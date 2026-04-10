@@ -17,7 +17,7 @@ const SalesCart: React.FC = () => {
       try {
         setCart(JSON.parse(savedCart));
       } catch (err) {
-        console.error('Failed to parse cart:', err);
+        // Failed to parse cart
       }
     }
   }, []);
@@ -71,7 +71,6 @@ const SalesCart: React.FC = () => {
       setShowModal(true);
       setCopied(false);
     } catch (err) {
-      console.error('Failed to generate share link:', err);
       alert('Failed to generate share link. Please try again.');
     }
   };
@@ -89,7 +88,7 @@ const SalesCart: React.FC = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Copy failed:', err);
+      // Copy failed
     }
   };
 

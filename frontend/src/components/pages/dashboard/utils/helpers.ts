@@ -18,7 +18,6 @@ export const formatDate = (dateValue: any): string => {
 
     return String(dateValue);
   } catch (error) {
-    console.log('Date formatting error:', error, 'Value:', dateValue);
     return 'Invalid Date';
   }
 };

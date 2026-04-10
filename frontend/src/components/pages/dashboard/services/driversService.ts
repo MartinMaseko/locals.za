@@ -16,7 +16,6 @@ export const driversService = {
       });
       return Array.isArray(data) ? data : [];
     } catch (err: any) {
-      console.error('Error fetching drivers:', err);
       return [];
     }
   },
@@ -33,7 +32,6 @@ export const driversService = {
       });
       return Array.isArray(data) ? data : [];
     } catch (err) {
-      console.error('Error fetching driver payment history:', err);
       return [];
     }
   },
@@ -48,7 +46,6 @@ export const driversService = {
       });
       return Array.isArray(data) ? data : [];
     } catch (err: any) {
-      console.error('Error fetching all driver orders:', err);
       return [];
     }
   },
@@ -65,7 +62,6 @@ export const driversService = {
       });
       return Array.isArray(data) ? data : [];
     } catch (err: any) {
-      console.error('Error fetching driver orders:', err);
       return [];
     }
   },

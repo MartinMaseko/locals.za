@@ -68,7 +68,6 @@ const PromoteAdminSection = () => {
       const data = await adminApi.getSalesReps();
       setSalesReps(data);
     } catch (err: any) {
-      console.error('Error fetching sales reps:', err);
     }
     setLoading(false);
   };
@@ -108,7 +107,6 @@ const PromoteAdminSection = () => {
       const response = await axios.get(`${API_URL}/api/sales/admin/${repId}/details`);
       setSelectedRep(response.data as SalesRepDetails);
     } catch (err: any) {
-      console.error('Error fetching rep details:', err);
       setSalesRepMsg('Failed to load sales rep details. Please try again.');
     }
     setModalLoading(false);
@@ -124,7 +122,6 @@ const PromoteAdminSection = () => {
         await viewRepDetails(selectedRep.id);
       }
     } catch (err: any) {
-      console.error('Error marking cashout as paid:', err);
       setSalesRepMsg('Failed to mark cashout as paid. Please try again.');
     }
     setProcessingCashout(null);
