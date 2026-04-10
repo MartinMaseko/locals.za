@@ -84,6 +84,7 @@ const SupportPage: React.FC = () => {
         </p>
         <p className='locals-info-text'>
           <span className='info-highlight'>Contact us at:</span><br/>
+          Company Profile: <a href="https://localsza.co.za/" className="contact-link"> LocalsZA Company Profile </a><br/> 
           Email: <a href="mailto:admin@locals-za.co.za" className="contact-link"> admin@locals-za.co.za </a><br/> 
           Call: <a href="tel:+27682858930" className="contact-link">+27 68 285 8930</a>
         </p>

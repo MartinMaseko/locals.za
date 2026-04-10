@@ -77,10 +77,6 @@ export const useDiscounts = () => {
       setCustomerDiscount(discount);
       return discount;
     } catch (err: any) {
-      console.error('Failed to fetch customer discount:', err);
-      console.error('Error response:', err?.response);
-      console.error('Error status:', err?.response?.status);
-      console.error('Error data:', err?.response?.data);
       // Set default values if fetch fails
       setCustomerDiscount({
         availableDiscount: 0,

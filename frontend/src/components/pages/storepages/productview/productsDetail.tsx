@@ -82,7 +82,6 @@ const ProductDetailPage: React.FC = () => {
            setSuggestedProducts(recommendations);
          }
        } catch (err: any) {
-         console.error('Failed to load product or suggestions:', err);
          Analytics.trackApiError(
            `${API_URL}/api/products/${id}`,
            err.response?.status || 500,

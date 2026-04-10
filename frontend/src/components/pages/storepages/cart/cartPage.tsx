@@ -48,7 +48,7 @@ const CartPage: React.FC = () => {
       setShareLink(link);
       setCopied(false);
     } catch (err) {
-      console.error('Failed to generate share link', err);
+      // share link generation failed
     } finally {
       setGeneratingShare(false);
     }
@@ -66,7 +66,7 @@ const CartPage: React.FC = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Copy failed', err);
+      // copy failed
     }
   };
 

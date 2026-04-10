@@ -148,7 +148,7 @@ const StoreCategories: React.FC = () => {
       
       setLoadedCategories(prev => new Set([...prev, category]));
     } catch (error) {
-      console.error('Error fetching products:', error);
+      // Error fetching products
     } finally {
       setLoading(false);
     }

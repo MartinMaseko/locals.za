@@ -35,7 +35,6 @@ const RouteOptimizer: React.FC = () => {
           setToken(idToken);
           localStorage.setItem('token', idToken); // Update localStorage token
         } catch (error) {
-          console.error("Error getting ID token:", error);
           // Fall back to localStorage
           const storedToken = localStorage.getItem('token');
           if (storedToken) {
@@ -74,7 +73,6 @@ const RouteOptimizer: React.FC = () => {
         
         if (basicResponse.ok) {
           const data = await basicResponse.json();
-          console.log('Fetched basic deliveries:', data);
           
           // Filter out delivered/cancelled orders
           const activeDeliveries = data.filter((delivery: Delivery) => 
@@ -96,7 +94,6 @@ const RouteOptimizer: React.FC = () => {
         await fetchDeliveriesWithCoordinates();
         
       } catch (error) {
-        console.error('Error fetching deliveries:', error);
         setError('Failed to fetch deliveries. Please try again later.');
         setIsLoading(false);
       }
@@ -115,7 +112,7 @@ const RouteOptimizer: React.FC = () => {
           if (response.status === 403) {
             setError('You are not authorized to access this data. Please login again.');
           } else if (response.status === 400 || response.status === 500) {
-            console.error(`Coordinates endpoint failed: ${response.status}. This is likely due to a missing Firestore index.`);
+            // Coordinates endpoint failed, likely due to missing Firestore index
             // Don't set error here as we'll try the fallback
           } else {
             setError(`Failed to fetch deliveries: ${response.status}`);
@@ -124,7 +121,6 @@ const RouteOptimizer: React.FC = () => {
         }
         
         const data = await response.json();
-        console.log('Fetched deliveries with coordinates:', data);
         
         setDeliveries(data); // This endpoint already filters out delivered/cancelled
         setError(null);
@@ -133,9 +129,9 @@ const RouteOptimizer: React.FC = () => {
         if (error.message?.includes('FAILED_PRECONDITION') || 
             error.message?.includes('requires an index') || 
             error.message?.includes('index.html?create_composite')) {
-          console.error('Missing Firestore index. Please create the required index:', error);
+          // Missing Firestore index
         } else {
-          console.error('Error fetching deliveries with coordinates:', error);
+          // Error fetching deliveries with coordinates
         }
         // Don't set error state here as we've already tried the basic endpoint
       } finally {
@@ -244,7 +240,6 @@ const RouteOptimizer: React.FC = () => {
         try { window.open(wazeWebUrlGeo, '_blank'); } catch (err) { /* ignore */ }
       }, 1200);
     } catch (error) {
-      console.error('Failed to start navigation:', error);
       alert('Failed to start navigation. Please try again.');
     }
     setIsLoading(false);

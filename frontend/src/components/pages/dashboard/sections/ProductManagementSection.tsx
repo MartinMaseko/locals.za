@@ -70,7 +70,6 @@ const ProductManagementSection = ({ getToken, productsState }: ProductManagement
       closeEditProduct();
       productsState.setSuccess('Product updated successfully!');
     } catch (err: any) {
-      console.error('handleUpdateProduct error', err);
       const errorMessage = err.message || 'Failed to update product';
       productsState.setError(errorMessage);
     } finally {
@@ -110,7 +109,6 @@ const ProductManagementSection = ({ getToken, productsState }: ProductManagement
       closeEditProduct();
       productsState.setSuccess('Product deleted successfully!');
     } catch (err: any) {
-      console.error('Delete product error', err);
       productsState.setError(err?.message || 'Failed to delete product');
     } finally {
       setDeletingProductId(null);

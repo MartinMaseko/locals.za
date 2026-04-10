@@ -67,7 +67,6 @@ const AddProductSection = ({ getToken, productsState }: AddProductSectionProps) 
       productsState.setSuccess('Product added successfully!');
       setProductForm({ product_id: generateProductId(), name: '', description: '', price: '', brand: '', category: '', image: null });
     } catch (err: any) {
-      console.error('Product creation error:', err);
       productsState.setError(err?.message || 'Product creation failed');
     }
   };

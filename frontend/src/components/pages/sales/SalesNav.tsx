@@ -17,11 +17,10 @@ const SalesNav = () => {
       localStorage.removeItem('salesRepCart');
       localStorage.removeItem('salesRepCartInfo');
       
-      console.log('Sales Rep Signed Out');
       setDropdownOpen(false);
       navigate('/saleslogin');
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Sign out failed
     }
   };
 

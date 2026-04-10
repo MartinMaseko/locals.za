@@ -16,7 +16,6 @@ export const cashoutService = {
       });
       return Array.isArray(data) ? data : [];
     } catch (err: any) {
-      console.error('Error fetching cashout requests:', err);
       throw new Error(err?.response?.data?.error || err?.message || 'Failed to load cashout requests');
     }
   },

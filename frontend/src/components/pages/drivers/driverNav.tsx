@@ -13,11 +13,10 @@ const DriversNav = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      console.log('Driver Signed Out');
       setDropdownOpen(false);
       navigate('/driverlogin');
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Sign out failed
     }
   };
 
