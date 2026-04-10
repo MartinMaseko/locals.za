@@ -89,7 +89,6 @@ const SupportPage: React.FC = () => {
           Call: <a href="tel:+27682858930" className="contact-link">+27 68 285 8930</a>
         </p>
       </div>
-
       <div className="support-content">
         {/* About LocalsZA Section */}
         <div className="faq-section">
