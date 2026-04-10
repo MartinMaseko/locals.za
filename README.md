@@ -1,6 +1,6 @@
 # LocalsZA
 
-https://locals-za.co.za/ - Website
+https://locals-za.co.za
 
 LocalsZA is a supply-chain aggregator platform built for South African SMEs -- spaza shops, salons, fast-food outlets, and other informal traders. The system connects product suppliers, field sales representatives, delivery drivers, and business buyers through a single coordinated platform, handling everything from catalogue browsing and checkout to payment processing, route-optimised delivery, and discount distribution.
 
