@@ -52,7 +52,6 @@ const SalesLogin = () => {
       window.location.href = '/sales/add-customer';
       
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err?.response?.data?.error || err.message || 'Login failed');
     }
     setLoading(false);

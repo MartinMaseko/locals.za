@@ -76,7 +76,6 @@ const BuyerPriceUpdates = () => {
       }
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Failed to load products');
-      console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
     }
@@ -145,11 +144,6 @@ const BuyerPriceUpdates = () => {
         image_url: productToUpdate.image_url || ''
       };
 
-      console.log('Input price:', inputPrice);
-      console.log('Price with 2.5% markup:', newPrice);
-      console.log('Sending payload:', payload);
-      console.log('To endpoint:', `${API_URL}/api/products/${docId}`);
-
       // Send request with proper headers (same as admin dashboard)
       await axios.put(
         `${API_URL}/api/products/${docId}`,
@@ -180,9 +174,6 @@ const BuyerPriceUpdates = () => {
       setSuccess(`Price updated successfully! (R${inputPrice.toFixed(2)} + 2.5% = R${newPrice.toFixed(2)})`);
       setTimeout(() => setSuccess(''), 4000);
     } catch (err: any) {
-      console.error('Error updating price:', err);
-      console.error('Error response:', err?.response?.data);
-      
       let errorMessage = 'Failed to update price';
       if (typeof err?.response?.data === 'string') {
         errorMessage = err.response.data;

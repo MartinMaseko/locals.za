@@ -22,7 +22,6 @@ const DriverLayout: React.FC = () => {
             navigate('/login');
           }
         } catch (error) {
-          console.error('Error verifying driver status:', error);
           setIsDriverAuthenticated(false);
         }
       } else {

@@ -26,9 +26,8 @@ export const db = getFirestore(app);
 
 // Set persistence to LOCAL - this keeps the user logged in even after browser close
 setPersistence(auth, browserLocalPersistence)
-  .catch((error) => {
-    console.log((error))
-    // Handle persistence errors silently or log to an error tracking service
+  .catch((_error) => {
+    // Handle persistence errors silently
   });
 
 // Token refresh functionality can be added here if needed

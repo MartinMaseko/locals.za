@@ -37,7 +37,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       localStorage.setItem('authTokenTimestamp', Date.now().toString());
       return newToken;
     } catch (error) {
-      console.error("Failed to refresh token:", error);
       return null;
     }
   };
@@ -68,7 +67,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
           sessionStorage.setItem('authToken', token);
           localStorage.setItem('authTokenTimestamp', Date.now().toString());
         } catch (error) {
-          console.error("Error getting token:", error);
           sessionStorage.removeItem('authToken');
           localStorage.removeItem('authTokenTimestamp');
         }

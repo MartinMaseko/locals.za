@@ -16,7 +16,6 @@ export const dashboardStatsService = {
       }
       return data;
     } catch (apiError) {
-      console.warn('Stats API not available, calculating locally', apiError);
       return null;
     }
   },
@@ -72,14 +71,6 @@ export const dashboardStatsService = {
     const topProducts = Object.values(productSales)
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
-
-    console.log(`Stats calculation for ${period}:`, {
-      totalOrdersReceived: orders.length,
-      dateFilteredOrders: filteredOrders.length,
-      serviceRevenue,
-      orderRevenue,
-      topProductsCount: topProducts.length
-    });
 
     return { serviceRevenue, orderRevenue, topProducts };
   },

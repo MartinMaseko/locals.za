@@ -153,14 +153,6 @@ const ManageOrdersSection = ({
                       className="view-profile-button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('=== MANAGE ORDERS - CLICKING VIEW PROFILE ===');
-                        console.log('Setting selectedCustomerProfile to:', selectedOrder.userId);
-                        console.log('Current order details:', {
-                          orderId: selectedOrder.id,
-                          userId: selectedOrder.userId,
-                          total: selectedOrder.total
-                        });
-                        console.log('=== END ===');
                         setSelectedCustomerProfile(selectedOrder.userId);
                       }}
                     >

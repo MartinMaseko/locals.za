@@ -141,7 +141,6 @@ const AdminDashboard: React.FC = () => {
       await signOut(auth);
       navigate('/adminlogin');
     } catch (err) { 
-      console.error('Sign out error', err); 
     }
   };
 

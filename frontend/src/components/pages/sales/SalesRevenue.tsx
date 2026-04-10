@@ -81,7 +81,6 @@ const SalesRevenue = () => {
         setLastCashout(data.lastCashoutDate);
       }
     } catch (error: any) {
-      console.error('Error fetching sales rep info:', error);
       // Set default empty data instead of failing completely
       setSalesRepInfo({
         name: undefined,
@@ -161,7 +160,6 @@ const SalesRevenue = () => {
 
           allOrders.push(...validOrders);
         } catch (orderError) {
-          console.error(`Error fetching orders for ${customer.email}:`, orderError);
           // Continue with other customers even if one fails
         }
       }
@@ -196,7 +194,6 @@ const SalesRevenue = () => {
       });
 
     } catch (err: any) {
-      console.error('Error fetching revenue data:', err);
       setError(err?.response?.data?.error || 'Failed to load revenue data');
     }
     
@@ -255,7 +252,6 @@ const SalesRevenue = () => {
       }, 5000);
       
     } catch (error: any) {
-      console.error('Cashout failed:', error);
       setCashoutError(error?.response?.data?.error || 'Failed to process cashout. Please try again.');
     } finally {
       setIsCashingOut(false);

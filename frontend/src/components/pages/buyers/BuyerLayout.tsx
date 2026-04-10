@@ -19,7 +19,6 @@ const BuyerLayout: React.FC = () => {
           // If user is authenticated, they passed BuyerLogin, so allow access
           setIsBuyerAuthenticated(true);
         } catch (error) {
-          console.error('Error verifying buyer status:', error);
           setIsBuyerAuthenticated(false);
           navigate('/buyer-login');
         }

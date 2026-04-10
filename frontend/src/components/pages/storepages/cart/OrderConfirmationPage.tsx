@@ -55,8 +55,7 @@ const OrderConfirmationPage: React.FC = () => {
   useEffect(() => {
     const auth = getAuth(app);
     
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed:", user ? "User logged in" : "No user");
+    const unsubscribe = onAuthStateChanged(auth, (__user) => {
       setAuthChecked(true);
     });
     
@@ -78,9 +77,6 @@ const OrderConfirmationPage: React.FC = () => {
         const auth = getAuth(app);
         const user = auth.currentUser;
         
-        console.log("Fetching order:", id);
-        console.log("Current user:", user ? "Logged in" : "Not logged in");
-        
         // For orders coming from PayFast, we may need to fetch without auth first
         const isFromPaymentProvider = location.search.includes('TransactionReference') || 
                               location.search.includes('Status') ||
@@ -92,7 +88,6 @@ const OrderConfirmationPage: React.FC = () => {
           // First try with authentication if user is logged in
           if (user) {
             const token = await user.getIdToken();
-            console.log("Token obtained, trying authenticated request");
 
             const response = await axios.get<Order>(`${API_URL}/api/orders/${id}`, {
               headers: { Authorization: `Bearer ${token}` }
@@ -101,26 +96,20 @@ const OrderConfirmationPage: React.FC = () => {
             orderData = response.data;
           } else if (isFromPaymentProvider) {
             // If coming from PayFast and no user is logged in, try a special endpoint
-            console.log("No user logged in, but coming from PayFast. Trying public endpoint");
             const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
             orderData = response.data;
           } else {
             throw new Error('Authentication required');
           }
         } catch (authError) {
-          console.error("Error with initial fetch:", authError);
-          
           // As a last resort for PayFast returns, try the public endpoint
           if (isFromPaymentProvider) {
-            console.log("Trying public endpoint as fallback");
             const response = await axios.get<Order>(`${API_URL}/api/orders/public/${id}`);
             orderData = response.data;
           } else {
             throw authError;
           }
         }
-        
-        console.log("Order data fetched:", orderData);
         
         if (!orderData) {
           throw new Error('No order data received');
@@ -133,7 +122,6 @@ const OrderConfirmationPage: React.FC = () => {
           // Process status updates if needed
           if (!statusUpdatedRef.current && orderData.status === 'pending_payment') {
             try {
-              console.log("Updating order status to 'pending'");
               statusUpdatedRef.current = true;
               
               const token = await user.getIdToken();
@@ -147,14 +135,12 @@ const OrderConfirmationPage: React.FC = () => {
               
               setOrder(prevOrder => prevOrder ? { ...prevOrder, status: 'pending' } : orderData);
             } catch (err) {
-              console.error('Error updating order status:', err);
               statusUpdatedRef.current = false;
             }
           }
           // If the order is already in pending status but confirmation hasn't been sent
           else if (!confirmationSentRef.current && !orderData.confirmationSent && orderData.status !== 'pending_payment') {
             try {
-              console.log("Sending order confirmation");
               confirmationSentRef.current = true;
               
               const token = await user.getIdToken();
@@ -162,14 +148,11 @@ const OrderConfirmationPage: React.FC = () => {
                 headers: { Authorization: `Bearer ${token}` }
               });
             } catch (err) {
-              console.error('Error sending order confirmation:', err);
               confirmationSentRef.current = false;
             }
           }
         }
       } catch (err: any) {
-        console.error('Error fetching order:', err);
-        
         // Provide user-friendly error messages
         if (err.response?.status === 401) {
           setError('Please log in to view your order details');

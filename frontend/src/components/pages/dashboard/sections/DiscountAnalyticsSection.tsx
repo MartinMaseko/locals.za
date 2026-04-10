@@ -68,7 +68,6 @@ const DiscountAnalyticsSection = () => {
         dateRange.startDate || undefined,
         dateRange.endDate || undefined
       );
-      console.log('Analytics data received:', data); // Debug log
       setAnalytics(data as DiscountAnalytics);
     } catch (err: any) {
       setError(err.message || 'Failed to load analytics');
