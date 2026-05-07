@@ -11,6 +11,7 @@ import LoginPage from './components/pages/storepages/loginPage';
 import AdminLogin from './components/pages/dashboard/adminLogin'
 import UserRegistration from './components/pages/userpages/userReg'; 
 import HomePage from './components/pages/storepages/homepage';
+import LandingPage from './components/pages/storepages/landingPage';
 import ProductDetailPage from './components/pages/storepages/productview/productsDetail';
 import CartPage from './components/pages/storepages/cart/cartPage';
 import MessagesPage from './components/pages/storepages/messages/messagesPage';
@@ -78,6 +79,7 @@ function App() {
                     <Route path="/register" element={<UserRegistration />} /> 
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/adminlogin" element={<AdminLogin />} />
+                    <Route path="/mock-up" element={<LandingPage />} />
                     
                     <Route path="/admindashboard" element={
                       <ProtectedRoute redirectTo="/adminlogin">
