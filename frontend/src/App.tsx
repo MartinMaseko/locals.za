@@ -8,45 +8,25 @@ import UserAccount from './components/pages/userpages/userAccount';
 import UserProfile from './components/pages/userpages/userProfile';
 import UserOrders from './components/pages/userpages/userOrders';
 import LoginPage from './components/pages/storepages/loginPage';
-import AdminLogin from './components/pages/dashboard/adminLogin'
 import UserRegistration from './components/pages/userpages/userReg'; 
-import HomePage from './components/pages/storepages/homepage';
-import LandingPage from './components/pages/storepages/landingPage';
-import ProductDetailPage from './components/pages/storepages/productview/productsDetail';
-import CartPage from './components/pages/storepages/cart/cartPage';
 import MessagesPage from './components/pages/storepages/messages/messagesPage';
-import StoreCategories from './components/pages/storepages/store/storeCategories';
 import SupportPage from './components/pages/storepages/support/supportPage';
 import ScrollToTop from './components/ScrollToTop';
-import { FavoritesProvider } from './components/contexts/FavoritesContext';
-import { CartProvider } from './components/contexts/CartContext';
 import { WazeRouteProvider } from './components/contexts/WazeRouteContext';
-import CheckoutPage from './components/pages/storepages/cart/CheckoutPage';
-import OrderConfirmationPage from './components/pages/storepages/cart/OrderConfirmationPage';
 import DriverLayout from './components/pages/drivers/layout/DriverLayout';
 import DriverLogin from './components/pages/drivers/auth/DriverLogin';
 import DriverDeliveries from './components/pages/drivers/driverDeliveries';
 import DriverRevenue from './components/pages/drivers/driverRevenue';
-import PaymentCancelledPage from './components/pages/storepages/cart/PaymentCancelledPage';
-import SharedCartPage from './components/pages/storepages/cart/SharedCartPage';
-import BuyerPriceUpdates from './components/pages/buyers/BuyerPriceUpdates';
-import BuyerLogin from './components/pages/buyers/BuyerLogin';
-import BuyerOrders from './components/pages/buyers/BuyerOrders';
-import SalesLogin from './components/pages/sales/SalesLogin';
-import AddCustomer from './components/pages/sales/AddCustomer';
-import ViewCustomers from './components/pages/sales/ViewCustomers';
-import SalesRevenue from './components/pages/sales/SalesRevenue';
-import SalesShop from './components/pages/sales/SalesShop';
-import SalesCart from './components/pages/sales/SalesCart';
-import SalesProtectedRoute from './Auth/SalesProtectedRoute';
 import SEOHead from './components/SEO/SEOHead';
 import StructuredData from './components/SEO/StructuredData';
+import WholesaleLayout from './components/pages/storepages/userjourney/WholesaleLayout';
+import SelectStore from './components/pages/storepages/userjourney/SelectStore';
+import UploadReceipt from './components/pages/storepages/userjourney/UploadReceipt';
+import DeliveryPage from './components/pages/storepages/userjourney/DeliveryPage';
+import PaymentPage from './components/pages/storepages/userjourney/PaymentPage';
 
 // Lazy load heavy pages
-const AdminDashboard = lazy(() => import('./components/pages/dashboard/adminDashboard'));
 const DriversDash = lazy(() => import('./components/pages/drivers/driversDash'));
-const BuyerLayout = lazy(() => import('./components/pages/buyers/BuyerLayout'));
-const SalesLayout = lazy(() => import('./components/pages/sales/SalesLayout'));
 
 // Create a simple Loading component
 const PageLoader = () => (
@@ -70,104 +50,61 @@ function App() {
           }} 
         />
         <AuthProvider>
-          <FavoritesProvider>
-            <CartProvider>
-              <WazeRouteProvider>
-                <ScrollToTop />
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/register" element={<UserRegistration />} /> 
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/adminlogin" element={<AdminLogin />} />
-                    <Route path="/mock-up" element={<LandingPage />} />
-                    
-                    <Route path="/admindashboard" element={
-                      <ProtectedRoute redirectTo="/adminlogin">
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/driverlogin" element={<DriverLogin />} />
-                    
-                    <Route path="/driver" element={
-                      <ProtectedRoute redirectTo="/driverlogin">
-                        <DriverLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="dashboard" element={<DriversDash />} />
-                      <Route path="deliveries/:orderId" element={<DriverDeliveries />} />
-                      <Route path="revenue" element={<DriverRevenue />} />
-                    </Route>
-                    
-                    <Route path="/buyerlogin" element={<BuyerLogin/>} />
-                    <Route path="/buyer" element={
-                      <ProtectedRoute redirectTo="/buyerlogin">
-                        <BuyerLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="orders" element={<BuyerOrders />} />
-                      <Route path="price-updates" element={<BuyerPriceUpdates />} />
-                      <Route index element={<Navigate to="orders" replace />} />
-                    </Route>
-                    
-                    <Route path="/saleslogin" element={<SalesLogin />} />
-                    <Route path="/sales" element={
-                      <SalesProtectedRoute redirectTo="/saleslogin">
-                        <SalesLayout />
-                      </SalesProtectedRoute>
-                    }>
-                      <Route path="add-customer" element={<AddCustomer />} />
-                      <Route path="customers" element={<ViewCustomers />} />
-                      <Route path="shop" element={<SalesShop />} />
-                      <Route path="cart" element={<SalesCart />} />
-                      <Route path="revenue" element={<SalesRevenue />} />
-                      <Route index element={<Navigate to="add-customer" replace />} />
-                    </Route>
-                    
-                    <Route path="/driversdashboard" element={<Navigate to="/driver/dashboard" replace />} />
-                    
-                    <Route path="/" element={<LayOut />}>
-                      <Route index element={<HomePage />} /> 
-                      
-                      <Route path="/useraccount" element={
-                        <ProtectedRoute>
-                          <UserAccount />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/userprofile" element={
-                        <ProtectedRoute>
-                          <UserProfile />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/messages" element={
-                        <ProtectedRoute>
-                          <MessagesPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/userorders" element={
-                        <ProtectedRoute>
-                          <UserOrders />
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="product/:id" element={<ProductDetailPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/shared-cart" element={<SharedCartPage />} />
-                      
-                      <Route path="/checkout" element={
-                        <ProtectedRoute>
-                          <CheckoutPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/order-confirmation/:id" element={<OrderConfirmationPage />} />
-                      <Route path="/payment-cancelled/:id" element={<PaymentCancelledPage />} />
-                      <Route path="/shop" element={<StoreCategories />} />
-                      <Route path="/support" element={<SupportPage />} />
-                    </Route>
-                  </Routes>
-                </Suspense>
-              </WazeRouteProvider>
-            </CartProvider>
-          </FavoritesProvider>
+          <WazeRouteProvider>
+            <ScrollToTop />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/register" element={<UserRegistration />} /> 
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/driverlogin" element={<DriverLogin />} />
+                
+                <Route path="/driver" element={
+                  <ProtectedRoute redirectTo="/driverlogin">
+                    <DriverLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<DriversDash />} />
+                  <Route path="deliveries/:orderId" element={<DriverDeliveries />} />
+                  <Route path="revenue" element={<DriverRevenue />} />
+                </Route>
+                
+                <Route path="/driversdashboard" element={<Navigate to="/driver/dashboard" replace />} />
+                
+                <Route path="/order" element={<WholesaleLayout />}>
+                  <Route index element={<Navigate to="select-store" replace />} />
+                  <Route path="select-store" element={<SelectStore />} />
+                  <Route path="upload-receipt" element={<UploadReceipt />} />
+                  <Route path="delivery" element={<DeliveryPage />} />
+                  <Route path="payment" element={<PaymentPage />} />
+                </Route>
+
+                <Route path="/" element={<LayOut />}>
+                  <Route index element={<Navigate to="/order/select-store" replace />} />
+                  <Route path="/useraccount" element={
+                    <ProtectedRoute>
+                      <UserAccount />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/userprofile" element={
+                    <ProtectedRoute>
+                      <UserProfile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/messages" element={
+                    <ProtectedRoute>
+                      <MessagesPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/userorders" element={
+                    <ProtectedRoute>
+                      <UserOrders />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/support" element={<SupportPage />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </WazeRouteProvider>
         </AuthProvider>
       </Router>
     </>
