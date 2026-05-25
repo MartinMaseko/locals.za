@@ -707,6 +707,63 @@
   height: 100%;
   display: block;
 }
+
+/* Azure Maps live container */
+.delivery-map-azure {
+  width: 100%;
+  height: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Map key not configured fallback */
+.delivery-map-placeholder {
+  width: 100%;
+  height: 240px;
+  border-radius: 12px;
+  background: var(--lz-card);
+  border: 1px dashed rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lz-muted);
+  font-size: 13px;
+}
+
+/* Address autocomplete dropdown */
+.receipt-field--autocomplete {
+  position: relative;
+}
+
+.address-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--lz-card);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.address-suggestion-item {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--lz-text);
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.12s;
+}
+
+.address-suggestion-item:hover {
+  background: rgba(255, 224, 0, 0.08);
+}
 .delivery-map-svg {
   width: 100%;
   height: 100%;
@@ -956,6 +1013,203 @@
   from { opacity: 0; transform: translate(-50%, 12px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* ---------- Step 2: secondary button (re-upload) ---------- */
+.btn-secondary {
+  flex: 1;
+  background: transparent;
+  color: var(--lz-ink);
+  border: 2px solid var(--lz-border);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.btn-secondary:hover { border-color: var(--lz-gold); background: rgba(255,184,3,0.06); }
+
+/* ---------- Step 2: scan feedback ---------- */
+.receipt-scan-error {
+  background: #fff1f0;
+  border: 1px solid #ffccc7;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #a8071a;
+  margin: 0;
+}
+.receipt-scan-hint {
+  font-size: 12px;
+  color: var(--lz-muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* ---------- Step 2: Photo clarity note ---------- */
+.receipt-clarity-note {
+  margin-top: 30px;
+  background: rgba(255, 224, 0, 0.08);
+  border: 1px solid rgba(255, 224, 0, 0.25);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.receipt-clarity-heading {
+  font-size: 8px;
+  padding-left: 4px;
+  font-weight: 600;
+  color: var(--lz-text);
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.receipt-clarity-list {
+  margin: 0;
+  padding: 0 0 0 16px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.receipt-clarity-list li {
+  font-size: 8px;
+  color: var(--lz-muted);
+  padding-left: 4px;
+}
+
+/* ---------- Step 2: OCR review panel ---------- */
+.receipt-review-panel {
+  background: var(--lz-card);
+  border: 1px solid var(--lz-border);
+  border-radius: 16px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.receipt-review-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--lz-ink);
+}
+.receipt-review-subtitle {
+  font-size: 13px;
+  color: var(--lz-muted);
+  margin: 0;
+}
+.receipt-review-warning {
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #7c4d00;
+  line-height: 1.5;
+}
+.receipt-review-warnings-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--lz-muted);
+}
+.receipt-review-section {
+  border-top: 1px solid var(--lz-border);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.receipt-review-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--lz-muted);
+  margin: 0 0 4px;
+}
+.receipt-review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.receipt-review-row--total {
+  border-top: 1px solid var(--lz-border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.receipt-review-label {
+  font-size: 13px;
+  color: var(--lz-muted);
+}
+.receipt-review-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lz-ink);
+  text-align: right;
+}
+.receipt-review-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.receipt-review-item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.receipt-review-item-desc {
+  font-size: 13px;
+  color: var(--lz-ink);
+  flex: 1;
+}
+.receipt-review-item-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lz-ink);
+  flex-shrink: 0;
+}
+.receipt-review-totals {
+  background: var(--lz-bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-top: none !important;
+}
+.receipt-review-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.receipt-review-thumb-link {
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--lz-border);
+  flex-shrink: 0;
+}
+.receipt-review-thumb-img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+}
+.receipt-review-actions {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--lz-border);
+  padding-top: 14px;
+}
+.receipt-review-actions .btn-primary { flex: 2; margin-top: 0; }
 
 /* ---------- Tablet+ ---------- */
 @media (min-width: 640px) {

@@ -1,0 +1,187 @@
+====================================================
+  LocalsZA API — Azure App Service Deploy Notes
+====================================================
+
+App Service : localsza-api
+Hostname    : https://localsza-api.azurewebsites.net
+Unique URL  : https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net
+Runtime     : .NET 10 (linuxFxVersion: DOTNETCORE|10.0, Linux)
+Project     : LocalsZaApi.csproj
+Resource Grp: localsza-rg
+App Plan    : localsza (F1, region South Africa North)
+Cosmos DB   : localsza-cosmos
+Storage     : localszastorage
+
+----------------------------------------------------
+PROVEN DEPLOY RECIPE (use this — works first time)
+----------------------------------------------------
+Run from c:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api
+
+  $az = "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd"
+
+  # 1. Clean
+  if (Test-Path .\publish)    { Remove-Item .\publish    -Recurse -Force }
+  if (Test-Path .\deploy.zip) { Remove-Item .\deploy.zip -Force          }
+
+  # 2. Publish SELF-CONTAINED for Linux (bundles .NET 10 runtime)
+  dotnet publish -c Release -r linux-x64 --self-contained true -o ./publish --nologo
+
+  # 3. Pack with tar (NOT Compress-Archive — see WHY below)
+  Push-Location .\publish
+  tar -a -cf ..\deploy.zip *
+  Pop-Location
+
+  # 4. Deploy (async returns immediately; Kudu finishes in background)
+  & $az webapp deploy `
+      --resource-group localsza-rg `
+      --name localsza-api `
+      --src-path .\deploy.zip `
+      --type zip `
+      --async true
+
+  # 5. Wait ~45s then verify
+  Start-Sleep -Seconds 45
+  Invoke-WebRequest "https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores" -UseBasicParsing
+
+Expected response: HTTP 200 with JSON body (e.g. [] if no stores).
+
+----------------------------------------------------
+WHY THIS RECIPE (lessons learned the hard way)
+----------------------------------------------------
+1. SELF-CONTAINED publish (--self-contained true -r linux-x64)
+     Bundles the .NET 10 runtime. Linux App Service doesn't always have
+     the latest .NET 10 pre-installed; self-contained removes that risk.
+
+2. tar -a -cf  (NOT Compress-Archive)
+     PowerShell's Compress-Archive writes zip entries with Windows
+     backslashes ("\") as path separators. Linux App Service's rsync
+     can't extract those and returns HTTP 400 from Kudu.
+     tar writes proper "/" separators.
+
+3. --async true
+     Linux Kudu deploys can take 60-120s. Sync mode often times out
+     the Azure CLI client even though the deploy succeeds. Async lets
+     the CLI return immediately while Kudu finishes.
+
+4. App Settings (already configured — DO NOT change):
+       SCM_DO_BUILD_DURING_DEPLOYMENT = false
+       (We ship a pre-built self-contained bundle. If true, Kudu tries
+        to rebuild on the server and fails because the SDK isn't installed.)
+       Startup file = "dotnet LocalsZaApi.dll"
+       ASPNETCORE_ENVIRONMENT = Production
+
+----------------------------------------------------
+FIRST-TIME SETUP (already done — for reference)
+----------------------------------------------------
+1. Created Resource Group `localsza-rg` (South Africa North)
+2. Created App Service Plan `localsza` (F1 Linux) + Web App `localsza-api`
+3. Added all Environment Variables (App Settings) in Azure Portal:
+     Cosmos__EndpointUri
+     Cosmos__PrimaryKey
+     Cosmos__DatabaseName
+     Firebase__ProjectId
+     Firebase__ServiceAccountPath  (= "firebase-service-account.json")
+     Ozow__SiteCode / PrivateKey / ApiKey / IsTest / PaymentUrl / ApiUrl
+     AzureMaps__SubscriptionKey   ← replaces Maps__ApiKey
+     AzureBlob__ConnectionString / ContainerName
+     OcrService__BaseUrl / SharedSecret
+     Email__SmtpHost / Port / Username / Password / From
+     AppBaseUrl
+     SCM_DO_BUILD_DURING_DEPLOYMENT = false
+     ASPNETCORE_ENVIRONMENT = Production
+
+4. Cosmos DB firewall:
+   Set ip-range-filter to "0.0.0.0" (= "Accept connections from within
+   public Azure datacenters"). Without this, App Service gets 403 from
+   Cosmos when it tries to query.
+
+     az cosmosdb update -g localsza-rg -n localsza-cosmos --ip-range-filter "0.0.0.0"
+
+5. firebase-service-account.json is gitignored but IS included in
+   the publish output when deploying from local machine.
+
+----------------------------------------------------
+INSTALLING AZURE CLI (if not present)
+----------------------------------------------------
+  winget install Microsoft.AzureCLI --silent --accept-package-agreements --accept-source-agreements
+
+After install, open a NEW shell or invoke directly:
+  $az = "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd"
+
+----------------------------------------------------
+LOGIN (token expires ~30 days)
+----------------------------------------------------
+  & $az login --use-device-code
+  # Follow the URL + code shown, sign in, pick "Azure subscription 1"
+
+----------------------------------------------------
+TROUBLESHOOTING
+----------------------------------------------------
+- HTTP 400 from `az webapp deploy`
+      → Used Compress-Archive. Re-pack with `tar -a -cf` instead.
+
+- HTTP 500 from /api/stores with "Cosmos... Forbidden"
+      → Cosmos firewall blocking App Service IP.
+        Fix: az cosmosdb update -g localsza-rg -n localsza-cosmos --ip-range-filter "0.0.0.0"
+
+- HTTP 500 with no body
+      → Temporarily set ASPNETCORE_ENVIRONMENT=Development for stack trace
+        in response body. SET BACK TO Production after debugging.
+
+- "Starting the site..." HTML page from Azure
+      → Cold start. Wait 30-60s and retry.
+
+- Azure default welcome page (not our app)
+      → Deploy didn't finish or zip was rejected. Re-run with proven recipe.
+
+- ERR_NAME_NOT_RESOLVED on localsza-api.azurewebsites.net
+      → DNS not propagated to your network yet. Use the unique hostname
+        (localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net)
+
+- 401 Unauthorized              → Firebase token not sent or wrong project ID
+- 403 Forbidden on admin route  → Admin endpoint hit without admin role claim
+
+----------------------------------------------------
+VIEW LIVE LOGS
+----------------------------------------------------
+  & $az webapp log tail -g localsza-rg -n localsza-api
+
+Download zip of logs:
+  & $az webapp log download -g localsza-rg -n localsza-api --log-file logs.zip
+
+Enable verbose logging first (only needed once):
+  & $az webapp log config -g localsza-rg -n localsza-api `
+      --docker-container-logging filesystem `
+      --application-logging filesystem `
+      --level verbose `
+      --web-server-logging filesystem
+
+----------------------------------------------------
+CORS / FRONTEND CSP
+----------------------------------------------------
+AllowedOrigins in appsettings.json:
+    https://locals-za.co.za
+    https://www.locals-za.co.za
+    https://localsza.netlify.app
+
+Frontend CSP (index.html, _headers, netlify.toml, vite.config.ts)
+must include in connect-src:
+    https://localsza-api.azurewebsites.net
+
+----------------------------------------------------
+CLEAN UP (optional, after successful deploy)
+----------------------------------------------------
+  Remove-Item -Recurse -Force .\publish, .\deploy.zip
+
+----------------------------------------------------
+LAST DEPLOYED
+----------------------------------------------------
+  Date    : 2026-05-22
+  By      : kmmas
+  Version : Slice 8 (Profile picture upload + PATCH /api/auth/me)
+  Notes   : Added ProfilePictureUrl field to User model. Updated UserPatch
+            record and PATCH endpoint to handle profile_picture_url.
+            Frontend changed from PUT to PATCH. Users can now upload and
+            save profile pictures to Cosmos DB.
+  Build   : Self-contained linux-x64, 54.26 MB
+  Status  : ✓ Deployed to Azure (async)

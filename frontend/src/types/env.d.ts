@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   VITE_FIREBASE_APP_ID: string
   VITE_FIREBASE_MEASUREMENT_ID: string
   VITE_APP_GOOGLE_MAPS_API_KEY: string
+  VITE_AZURE_MAPS_KEY: string
   DEV: boolean
 }
 

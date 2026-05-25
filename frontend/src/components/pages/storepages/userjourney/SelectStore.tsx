@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import type { WholesaleOutletContext } from './wholesale.types';
+import type { Store, WholesaleOutletContext } from './wholesale.types';
 import { STORES } from './wholesale.types';
+import { api } from '../../../../utils/api';
 import mapBanner from '../../../assets/images/mapDark.png';
 
 const MIN_SCALE = 1;     // zoomed-out 
@@ -12,16 +13,37 @@ const SelectStore = () => {
     useOutletContext<WholesaleOutletContext>();
 
   const [query, setQuery] = useState('');
+  // Start with the local fallback array — replaced if the API responds
+  const [stores, setStores] = useState<Store[]>(STORES);
+  const [storeError, setStoreError] = useState<string | null>(null);
   const bgRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
 
+  // Fetch live store list from the API, fall back to local STORES on failure
+  useEffect(() => {
+    api.get<Array<Store & { logo_url?: string }>>('/api/stores')
+      .then(res => {
+        // Normalise logo_url → logo so the UI works the same for both sources
+        const normalised: Store[] = res.data.map(s => ({
+          ...s,
+          logo: s.logo_url ?? s.logo,
+        }));
+        setStores(normalised.length > 0 ? normalised : STORES);
+        setStoreError(null);
+      })
+      .catch(() => {
+        // API unavailable — silently use the local list
+        setStoreError('Using local store list — connect to update');
+      });
+  }, []);
+
   const isSearching = query.trim().length > 0;
   const filtered = isSearching
-    ? STORES.filter(s =>
+    ? stores.filter(s =>
         s.name.toLowerCase().includes(query.toLowerCase()) ||
         s.tagline.toLowerCase().includes(query.toLowerCase()),
       )
-    : STORES.slice(0, 10);
+    : stores.slice(0, 10);
 
   useEffect(() => {
     const update = () => {
@@ -69,6 +91,10 @@ const SelectStore = () => {
       <p className="step-subtitle">
         Select where you bought from. We'll fetch your receipt and arrange delivery.
       </p>
+
+      {storeError && (
+        <p className="store-api-notice">{storeError}</p>
+      )}
 
       <div className="store-search-wrap">
         <span className="store-search-icon" aria-hidden="true">
@@ -131,9 +157,9 @@ const SelectStore = () => {
         })}
       </div>
 
-      {!isSearching && STORES.length > 10 && (
+      {!isSearching && stores.length > 10 && (
         <p className="store-search-hint">
-          Showing 10 of {STORES.length} stores — search to find others
+          Showing 10 of {stores.length} stores — search to find others
         </p>
       )}
 

@@ -1,0 +1,16 @@
+# Don't send the venv to the Docker build context — it's 300 MB and gets
+# rebuilt from requirements.txt inside the image anyway.
+venv/
+
+# Python bytecode and cache — regenerated inside the container.
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor and type-checker config — not needed at runtime.
+.vscode/
+pyrightconfig.json
+
+# Git metadata
+.git/
+.gitignore

@@ -1,0 +1,6 @@
+@LocalsZaApi_HostAddress = http://localhost:5034
+
+GET {{LocalsZaApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

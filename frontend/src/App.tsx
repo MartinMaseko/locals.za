@@ -24,9 +24,22 @@ import SelectStore from './components/pages/storepages/userjourney/SelectStore';
 import UploadReceipt from './components/pages/storepages/userjourney/UploadReceipt';
 import DeliveryPage from './components/pages/storepages/userjourney/DeliveryPage';
 import PaymentPage from './components/pages/storepages/userjourney/PaymentPage';
+import PaymentResult from './components/pages/storepages/userjourney/PaymentResult';
+import CommandLayout from './components/pages/commandcentre/CommandLayout';
+import CommandLogin from './components/pages/commandcentre/commandLogin';
 
 // Lazy load heavy pages
 const DriversDash = lazy(() => import('./components/pages/drivers/driversDash'));
+
+// Command Centre pages — lazy loaded (admin-only, not in critical path)
+const CCDashboard    = lazy(() => import('./components/pages/commandcentre/pages/Dashboard'));
+const CCStores       = lazy(() => import('./components/pages/commandcentre/pages/Stores'));
+const CCPayments     = lazy(() => import('./components/pages/commandcentre/pages/Payments'));
+const CCReceipts     = lazy(() => import('./components/pages/commandcentre/pages/Receipts'));
+const CCDeliveries   = lazy(() => import('./components/pages/commandcentre/pages/Deliveries'));
+const CCDriverRev    = lazy(() => import('./components/pages/commandcentre/pages/DriverRevenue'));
+const CCMetrics      = lazy(() => import('./components/pages/commandcentre/pages/Metrics'));
+const CCPricing      = lazy(() => import('./components/pages/commandcentre/pages/PricingConfig'));
 
 // Create a simple Loading component
 const PageLoader = () => (
@@ -56,6 +69,7 @@ function App() {
               <Routes>
                 <Route path="/register" element={<UserRegistration />} /> 
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/commandlogin" element={<CommandLogin />} />
                 <Route path="/driverlogin" element={<DriverLogin />} />
                 
                 <Route path="/driver" element={
@@ -76,6 +90,9 @@ function App() {
                   <Route path="upload-receipt" element={<UploadReceipt />} />
                   <Route path="delivery" element={<DeliveryPage />} />
                   <Route path="payment" element={<PaymentPage />} />
+                  <Route path="payment/success/:orderId" element={<PaymentResult status="success" />} />
+                  <Route path="payment/cancelled/:orderId" element={<PaymentResult status="cancelled" />} />
+                  <Route path="payment/error/:orderId" element={<PaymentResult status="error" />} />
                 </Route>
 
                 <Route path="/" element={<LayOut />}>
@@ -101,6 +118,23 @@ function App() {
                     </ProtectedRoute>
                   } />
                   <Route path="/support" element={<SupportPage />} />
+                </Route>
+
+                {/* ── Command Centre (admin-only) ── */}
+                <Route path="/commandcentre" element={
+                  <ProtectedRoute redirectTo="/login">
+                    <CommandLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                  <Route path="dashboard"      element={<CCDashboard />} />
+                  <Route path="stores"         element={<CCStores />} />
+                  <Route path="payments"       element={<CCPayments />} />
+                  <Route path="receipts"       element={<CCReceipts />} />
+                  <Route path="deliveries"     element={<CCDeliveries />} />
+                  <Route path="driver-revenue" element={<CCDriverRev />} />
+                  <Route path="metrics"        element={<CCMetrics />} />
+                  <Route path="pricing"        element={<CCPricing />} />
                 </Route>
               </Routes>
             </Suspense>

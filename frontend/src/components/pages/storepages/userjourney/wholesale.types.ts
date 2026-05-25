@@ -1,22 +1,116 @@
 import ShopriteLogo from '../../../assets/images/shopriteCash&CarryLogo.jpg';
 import SACashCarryLogo from '../../../assets/images/sacc.png';
 
+// ─── Store ────────────────────────────────────────────────────────────────────
+
 export interface Store {
   id: string;
   name: string;
   tagline: string;
   initials: string;
   color: string;
-  logo?: string;
+  logo?: string;      // local module asset (fallback STORES array)
+  logo_url?: string;  // Azure Blob URL (API-fetched stores)
+  address?: string;   // used by Maps / Quote API as pickup origin
+  lat?: number;
+  lng?: number;
 }
+
+// ─── OCR result (matches /api/receipts/parse response) ───────────────────────
+
+export interface OcrResultItem {
+  description: string;
+  qty: number;
+  unitPrice: number;
+  lineTotal: number;
+  estimatedKg: number;
+}
+
+export interface OcrResult {
+  blobUrl: string;
+  orderNumber?: string;
+  storeName?: string;
+  date?: string;
+  subtotal?: number;
+  total?: number;
+  items: OcrResultItem[];
+  estimatedWeightKg: number;
+  /** "light" | "medium" | "heavy" | "bulk" */
+  weightClass: string;
+  /** 0–1 confidence score — warn user to re-upload if below 0.6 */
+  qualityScore: number;
+  warnings: string[];
+}
+
+// ─── Delivery quote (matches /api/quotes/delivery response) ──────────────────
+
+export interface DeliveryQuote {
+  baseFare: number;
+  distanceKm: number;
+  ratePerKm: number;
+  weightFee: number;
+  weightClass: string;
+  isRush: boolean;
+  isPool: boolean;
+  rushMultiplier: number;
+  poolDiscount: number;
+  totalFee: number;
+  estimatedMinutes: number;
+  // Azure Maps route data — used by the frontend map component
+  originLat: number;
+  originLng: number;
+  destLat: number;
+  destLng: number;
+  /** Route polyline as [longitude, latitude] pairs (GeoJSON order). */
+  routePoints: [number, number][];
+}
+
+// ─── Order state (travels through the WholesaleLayout funnel) ─────────────────
 
 export interface OrderState {
   store: Store | null;
+  // Step 2 — receipt upload & customer info
+  customerName: string;
+  contactNumber: string;
+  address: string;           // delivery address
+  receiptBlobUrls: string[]; // client-side preview URLs (object URLs) from uploaded images
+  // Step 3 — delivery quote from API
+  deliveryQuote: DeliveryQuote | null;
+  // Step 4 — payment
+  orderId: string | null;
   orderNumber: string;
-  itemCount: number;
-  weightLabel: 'Light' | 'Medium' | 'Heavy';
-  address: string;
 }
+
+// ─── Data shape UploadReceipt passes up to WholesaleLayout ───────────────────
+
+export interface ReceiptFormData {
+  customerName: string;
+  contactNumber: string;
+  address: string;
+  receiptBlobUrls: string[];
+}
+
+// ─── Context provided by WholesaleLayout to all child pages ──────────────────
+
+export interface WholesaleOutletContext {
+  order: OrderState;
+  paymentSuccess: boolean;
+  paying: boolean;
+  payError: string | null;
+  onSelectStore: (store: Store) => void;
+  onConfirmStore: () => void;
+  /** Called by UploadReceipt after the user confirms the review panel. */
+  onSetReceiptData: (data: ReceiptFormData) => void;
+  onProceedToDelivery: () => void;
+  onAddressChange: (addr: string) => void;
+  /** Called by DeliveryPage when the quote API returns successfully. */
+  onSetDeliveryQuote: (quote: DeliveryQuote) => void;
+  onProceedToPayment: () => void;
+  onPay: () => Promise<void>;
+  onRestart: () => void;
+}
+
+// ─── Fallback store list (shown while API loads or if API is unavailable) ─────
 
 export const STORES: Store[] = [
   {
@@ -108,27 +202,8 @@ export const STORES: Store[] = [
   },
 ];
 
-export const BASE_FARE = 40;
-export const DISTANCE_KM = 12;
-export const DISTANCE_RATE = 6;
-export const WEIGHT_SURCHARGE = 20;
-export const TOTAL_FEE = BASE_FARE + DISTANCE_KM * DISTANCE_RATE + WEIGHT_SURCHARGE;
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const formatRand = (n: number) => `R${n.toFixed(2)}`;
+export const formatRand = (n: number): string => `R${n.toFixed(2)}`;
 
 export const STEP_PATHS = ['select-store', 'upload-receipt', 'delivery', 'payment'] as const;
-
-export interface WholesaleOutletContext {
-  order: OrderState;
-  scanning: boolean;
-  scanComplete: boolean;
-  paymentSuccess: boolean;
-  onSelectStore: (store: Store) => void;
-  onConfirmStore: () => void;
-  onStartScan: () => void;
-  onProceedToDelivery: () => void;
-  onAddressChange: (addr: string) => void;
-  onProceedToPayment: () => void;
-  onPay: () => void;
-  onRestart: () => void;
-}

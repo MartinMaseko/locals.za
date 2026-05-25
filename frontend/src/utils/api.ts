@@ -25,7 +25,7 @@ api.interceptors.request.use(
     if (token) {
       // Make sure headers object exists
       if (!config.headers) {
-        config.headers = {};
+        config.headers = new axios.AxiosHeaders();
       }
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -64,7 +64,7 @@ api.interceptors.response.use(
         if (token) {
           // Retry with new token
           if (!originalRequest.headers) {
-            originalRequest.headers = {};
+            originalRequest.headers = new axios.AxiosHeaders();
           }
           originalRequest.headers.Authorization = `Bearer ${token}`;
           return api(originalRequest);
