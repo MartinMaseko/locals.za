@@ -1,5 +1,6 @@
 using LocalsZaApi.Models;
 using LocalsZaApi.Services;
+using Azure.Storage.Blobs.Models;
 
 namespace LocalsZaApi.Endpoints;
 
@@ -197,6 +198,25 @@ public static class AdminEndpoints
                 cancellationRate = total > 0 ? Math.Round((double)cancelled / total * 100, 1) : 0,
             });
         });
+
+        // ── Upload store logo ────────────────────────────────────────────────
+        app.MapPost("/api/admin/upload-logo", async (HttpContext ctx, IFormFile file, BlobService blobs) =>
+        {
+            if (!AuthHelpers.IsAdmin(ctx)) return Forbidden();
+
+            if (file is null || file.Length == 0)
+                return Results.BadRequest(new { error = "No file uploaded" });
+
+            if (!file.ContentType.StartsWith("image/"))
+                return Results.BadRequest(new { error = "File must be an image" });
+
+            if (file.Length > 5 * 1024 * 1024)
+                return Results.BadRequest(new { error = "Image too large — max 5 MB" });
+
+            using var stream = file.OpenReadStream();
+            var url = await blobs.UploadPublicAsync(stream, file.FileName, file.ContentType, "store-logos");
+            return Results.Ok(new { url });
+        }).DisableAntiforgery();
 
         // ── Get pricing config ───────────────────────────────────────────────
         app.MapGet("/api/admin/pricing", async (HttpContext ctx, PricingService pricing) =>

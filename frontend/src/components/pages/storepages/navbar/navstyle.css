@@ -166,6 +166,7 @@
 @media (min-width: 992px) {
   .navbar {
     padding: 0;
+    background: #090909;
     height: 85px;
   }
 

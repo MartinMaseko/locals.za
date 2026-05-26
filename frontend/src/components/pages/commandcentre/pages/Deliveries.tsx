@@ -74,14 +74,14 @@ const Deliveries = () => {
             <tbody>
               {visible.map(d => (
                 <tr key={d.id}>
-                  <td>{d.orderNumber || d.id.slice(0, 8)}</td>
+                  <td>{d.order_number || d.id.slice(0, 8)}</td>
                   <td><StatusBadge status={d.status} /></td>
                   <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                    {d.driverId ?? <span style={{ color: '#555' }}>Unassigned</span>}
+                    {d.driver_id ?? <span style={{ color: '#555' }}>Unassigned</span>}
                   </td>
-                  <td>{formatRand(d.deliveryFee)}</td>
+                  <td>{formatRand(d.delivery_fee)}</td>
                   <td>{formatRand(d.total)}</td>
-                  <td>{formatDate(d.updatedAt)}</td>
+                  <td>{formatDate(d.updated_at)}</td>
                   <td>
                     <button
                       className="cc-btn cc-btn--ghost"

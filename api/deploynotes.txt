@@ -176,12 +176,13 @@ CLEAN UP (optional, after successful deploy)
 ----------------------------------------------------
 LAST DEPLOYED
 ----------------------------------------------------
-  Date    : 2026-05-22
+  Date    : 2026-05-25
   By      : kmmas
-  Version : Slice 8 (Profile picture upload + PATCH /api/auth/me)
-  Notes   : Added ProfilePictureUrl field to User model. Updated UserPatch
-            record and PATCH endpoint to handle profile_picture_url.
-            Frontend changed from PUT to PATCH. Users can now upload and
-            save profile pictures to Cosmos DB.
-  Build   : Self-contained linux-x64, 54.26 MB
-  Status  : ✓ Deployed to Azure (async)
+  Version : Slice 9 (Command Centre admin auth token flow)
+  Notes   : FirebaseAuthMiddleware now validates signed commandadmin: HMAC
+            tokens issued by /api/admin/auth. Login endpoint added to
+            _alwaysAnonymous bypass list. Auth endpoint now returns a
+            signed token so all admin API calls (stores, deliveries,
+            receipts, pricing, etc.) authenticate correctly.
+  Build   : Self-contained linux-x64, 54 MB
+  Status  : ✓ Deployed to Azure — /health 200 confirmed 19:36 UTC

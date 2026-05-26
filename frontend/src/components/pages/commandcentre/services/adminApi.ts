@@ -21,28 +21,28 @@ export type StoreForm = Omit<AdminStore, 'id'> & { id?: string };
 
 export interface AdminOrder {
   id: string;
-  orderNumber: string;
-  userId?: string;
-  storeId: string;
+  order_number: string;
+  user_id?: string;
+  store_id: string;
   status: string;
-  deliveryFee: number;
+  delivery_fee: number;
   total: number;
-  driverId?: string;
-  createdAt: string;
-  updatedAt: string;
+  driver_id?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // ─── Payments ────────────────────────────────────────────────────────────────
 
 export interface AdminPayment {
   id: string;
-  orderId: string;
-  userId?: string;
+  order_id: string;
+  user_id?: string;
   amount: number;
   status: string;
-  ozowTransactionId?: string;
-  createdAt: string;
-  updatedAt: string;
+  ozow_transaction_id?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // ─── Receipts ────────────────────────────────────────────────────────────────
@@ -136,6 +136,14 @@ export const adminApi = {
   // ── Stores ──────────────────────────────────────────────────────────────────
   getStores: () =>
     api.get<AdminStore[]>('/api/admin/stores').then(r => r.data),
+
+  uploadStoreLogo: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post<{ url: string }>('/api/admin/upload-logo', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data.url);
+  },
 
   createStore: (store: StoreForm) =>
     api.post<AdminStore>('/api/stores', store).then(r => r.data),

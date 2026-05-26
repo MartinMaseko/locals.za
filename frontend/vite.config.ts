@@ -119,6 +119,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 800
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
     headers: {
       'Content-Security-Policy': `
         default-src 'self';

@@ -58,14 +58,14 @@ const Payments = () => {
             <tbody>
               {visible.map(p => (
                 <tr key={p.id}>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{p.orderId.slice(0, 12)}…</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{p.order_id.slice(0, 12)}…</td>
                   <td>{formatRand(p.amount)}</td>
                   <td><StatusBadge status={p.status} /></td>
                   <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                    {p.ozowTransactionId ?? '—'}
+                    {p.ozow_transaction_id ?? '—'}
                   </td>
-                  <td>{formatDate(p.createdAt)}</td>
-                  <td>{formatDate(p.updatedAt)}</td>
+                  <td>{formatDate(p.created_at)}</td>
+                  <td>{formatDate(p.updated_at)}</td>
                 </tr>
               ))}
               {visible.length === 0 && (

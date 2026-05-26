@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using LocalsZaApi.Services;
 
 namespace LocalsZaApi.Middleware;
@@ -9,10 +11,11 @@ public class FirebaseAuthMiddleware(RequestDelegate next)
     [
         "/health",
         "/api/payment/notify",   // Ozow webhook — verified by SHA-512, not token
+        "/api/admin/auth",       // Command Centre login — validates email+password itself
         "/swagger",
     ];
 
-    public async Task InvokeAsync(HttpContext context, FirebaseAuthService authService)
+    public async Task InvokeAsync(HttpContext context, FirebaseAuthService authService, IConfiguration config)
     {
         var path = context.Request.Path.Value?.ToLower() ?? "";
 
@@ -24,6 +27,37 @@ public class FirebaseAuthMiddleware(RequestDelegate next)
         }
 
         var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+
+        if (authHeader != null && authHeader.StartsWith("Bearer commandadmin:"))
+        {
+            // Command Centre simple auth token — validate HMAC signature
+            try
+            {
+                var parts = authHeader["Bearer commandadmin:".Length..].Split(':');
+                if (parts.Length == 2)
+                {
+                    var email    = Encoding.UTF8.GetString(Convert.FromBase64String(parts[0]));
+                    var provided = Convert.FromBase64String(parts[1]);
+                    var password = config["CommandCenter:UniversalPassword"] ?? "";
+                    using var hmac     = new HMACSHA256(Encoding.UTF8.GetBytes(password));
+                    var expected = hmac.ComputeHash(Encoding.UTF8.GetBytes(email));
+
+                    if (CryptographicOperations.FixedTimeEquals(provided, expected))
+                    {
+                        context.User = new ClaimsPrincipal(new ClaimsIdentity(
+                        [
+                            new Claim("uid",             email),
+                            new Claim(ClaimTypes.Email,  email),
+                            new Claim("role",            "admin"),
+                        ], "CommandAdmin"));
+                    }
+                }
+            }
+            catch { /* malformed token — remain anonymous */ }
+
+            await next(context);
+            return;
+        }
 
         if (authHeader != null && authHeader.StartsWith("Bearer "))
         {

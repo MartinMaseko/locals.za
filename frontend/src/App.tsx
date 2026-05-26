@@ -126,7 +126,7 @@ function App() {
                     <CommandLayout />
                   </ProtectedRoute>
                 }>
-                  <Route index element={<Navigate to="dashboard" replace />} />
+                  <Route index element={<Navigate to="deliveries" replace />} />
                   <Route path="dashboard"      element={<CCDashboard />} />
                   <Route path="stores"         element={<CCStores />} />
                   <Route path="payments"       element={<CCPayments />} />

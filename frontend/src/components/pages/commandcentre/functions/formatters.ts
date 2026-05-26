@@ -1,6 +1,8 @@
 /** Format a number as South African Rand */
-export const formatRand = (amount: number): string =>
-  `R ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
+export const formatRand = (amount: number | null | undefined): string => {
+  if (amount == null) return 'R —';
+  return `R ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`;
+};
 
 /** Format an ISO date string to a readable local time */
 export const formatDate = (iso: string): string => {

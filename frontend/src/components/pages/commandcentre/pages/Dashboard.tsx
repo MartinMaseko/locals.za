@@ -52,11 +52,11 @@ const Dashboard = () => {
               <tbody>
                 {data.recentOrders.map(o => (
                   <tr key={o.id}>
-                    <td>{o.orderNumber || o.id.slice(0, 8)}</td>
-                    <td>{o.storeId}</td>
+                    <td>{o.order_number || o.id.slice(0, 8)}</td>
+                    <td>{o.store_id}</td>
                     <td><StatusBadge status={o.status} /></td>
                     <td>{formatRand(o.total)}</td>
-                    <td>{formatDate(o.createdAt)}</td>
+                    <td>{formatDate(o.created_at)}</td>
                   </tr>
                 ))}
                 {data.recentOrders.length === 0 && (

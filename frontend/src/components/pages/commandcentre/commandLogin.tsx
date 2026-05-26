@@ -29,11 +29,14 @@ const CommandLogin = () => {
         password: form.password,
       });
 
-      if (response.data.isAdmin) {
-        // Admin confirmed — store auth state and redirect to Command Centre
+      if (response.data.isAdmin && response.data.token) {
+        // Admin confirmed — store auth state and the signed token for API calls
         sessionStorage.setItem('commandCentreAuth', 'true');
         sessionStorage.setItem('commandCentreEmail', form.email);
+        sessionStorage.setItem('authToken', response.data.token);
         navigate('/commandcentre', { replace: true });
+      } else if (response.data.isAdmin && !response.data.token) {
+        setError('Server did not return an auth token. Please redeploy the API.');
       } else {
         setError('Access denied. Only admin staff can log in here.');
       }

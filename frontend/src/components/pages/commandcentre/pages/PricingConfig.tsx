@@ -42,10 +42,6 @@ const PricingConfig = () => {
   const [error, setError]     = useState<string | null>(null);
   const [saved, setSaved]     = useState(false);
 
-  // Weight override editor state
-  const [newKey, setNewKey]     = useState('');
-  const [newKg, setNewKg]       = useState('');
-
   useEffect(() => {
     adminApi.getPricing()
       .then(c => setConfig({ ...DEFAULT, ...c, weightOverrides: c.weightOverrides ?? {} }))
@@ -55,22 +51,6 @@ const PricingConfig = () => {
 
   const setField = (key: keyof PricingConfigForm, val: string) =>
     setConfig(prev => ({ ...prev, [key]: key === 'petrolNote' ? val : parseFloat(val) || 0 }));
-
-  const addOverride = () => {
-    const k = newKey.trim().toLowerCase();
-    const v = parseFloat(newKg);
-    if (!k || isNaN(v) || v <= 0) return;
-    setConfig(prev => ({ ...prev, weightOverrides: { ...prev.weightOverrides, [k]: v } }));
-    setNewKey('');
-    setNewKg('');
-  };
-
-  const removeOverride = (key: string) =>
-    setConfig(prev => {
-      const overrides = { ...prev.weightOverrides };
-      delete overrides[key];
-      return { ...prev, weightOverrides: overrides };
-    });
 
   const handleSave = async () => {
     setSaving(true);
@@ -126,80 +106,6 @@ const PricingConfig = () => {
                 value={config.petrolNote ?? ''}
                 onChange={e => setField('petrolNote', e.target.value)}
               />
-            </div>
-          </div>
-
-          {/* ── Weight overrides ── */}
-          <div style={{ marginTop: '2rem' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Weight Overrides
-            </h2>
-            <p style={{ color: '#666', fontSize: '0.78rem', marginBottom: '1rem' }}>
-              Override or add product keyword → kg/unit values used by the OCR service to classify order weight. Entries here take priority over the built-in lookup table.
-            </p>
-
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #eee', textAlign: 'left' }}>
-                  <th style={{ padding: '0.5rem 0.75rem' }}>Keyword</th>
-                  <th style={{ padding: '0.5rem 0.75rem' }}>kg / unit</th>
-                  <th style={{ padding: '0.5rem 0.75rem' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(config.weightOverrides).length === 0 && (
-                  <tr>
-                    <td colSpan={3} style={{ padding: '0.75rem', color: '#999', fontStyle: 'italic' }}>
-                      No overrides configured — OCR service defaults apply.
-                    </td>
-                  </tr>
-                )}
-                {Object.entries(config.weightOverrides).map(([k, v]) => (
-                  <tr key={k} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={{ padding: '0.5rem 0.75rem', fontFamily: 'monospace' }}>{k}</td>
-                    <td style={{ padding: '0.5rem 0.75rem' }}>{v} kg</td>
-                    <td style={{ padding: '0.5rem 0.75rem' }}>
-                      <button
-                        className="cc-btn cc-btn--sm cc-btn--danger"
-                        onClick={() => removeOverride(k)}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Add new override */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'flex-end' }}>
-              <div className="cc-form-field" style={{ flex: 2, margin: 0 }}>
-                <label className="cc-form-label">Keyword (lowercase)</label>
-                <input
-                  type="text"
-                  className="cc-form-input"
-                  placeholder="e.g. energy drink"
-                  value={newKey}
-                  onChange={e => setNewKey(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addOverride()}
-                />
-              </div>
-              <div className="cc-form-field" style={{ flex: 1, margin: 0 }}>
-                <label className="cc-form-label">kg / unit</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  className="cc-form-input"
-                  placeholder="0.5"
-                  value={newKg}
-                  onChange={e => setNewKg(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addOverride()}
-                />
-              </div>
-              <button className="cc-btn cc-btn--secondary" onClick={addOverride} style={{ height: 38 }}>
-                + Add
-              </button>
             </div>
           </div>
 

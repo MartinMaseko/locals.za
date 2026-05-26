@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using LocalsZaApi.Models;
 using LocalsZaApi.Services;
 
@@ -87,12 +89,18 @@ public static class AuthEndpoints
                 return;
             }
 
-            // Success — return allowed message
+            // Generate a signed admin session token: commandadmin:<b64_email>:<b64_hmac>
+            var emailBytes = Encoding.UTF8.GetBytes(body.Email);
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(universalPassword!));
+            var sig = hmac.ComputeHash(emailBytes);
+            var token = $"commandadmin:{Convert.ToBase64String(emailBytes)}:{Convert.ToBase64String(sig)}";
+
             await ctx.Response.WriteAsJsonAsync(new
             {
                 message = "Admin authenticated",
                 email = body.Email,
-                isAdmin = true
+                isAdmin = true,
+                token,
             });
         });
 
