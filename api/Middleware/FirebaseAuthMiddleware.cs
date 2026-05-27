@@ -10,8 +10,10 @@ public class FirebaseAuthMiddleware(RequestDelegate next)
     private static readonly HashSet<string> _alwaysAnonymous =
     [
         "/health",
-        "/api/payment/notify",   // Ozow webhook — verified by SHA-512, not token
-        "/api/admin/auth",       // Command Centre login — validates email+password itself
+        "/api/payment/notify",              // Ozow webhook — verified by SHA-512, not token
+        "/api/admin/auth",                  // Command Centre login — validates email+password itself
+        "/api/drivers/verify-credentials",  // Driver login step 1 — no token yet
+        "/api/drivers/login-link",          // Driver login step 2 — issues custom token
         "/swagger",
     ];
 

@@ -47,6 +47,14 @@ export interface AdminPayment {
 
 // ─── Receipts ────────────────────────────────────────────────────────────────
 
+export interface AdminReceiptItem {
+  description: string;
+  qty: number;
+  unitPrice: number;
+  lineTotal: number;
+  estimatedKg: number;
+}
+
 export interface AdminReceipt {
   id: string;
   orderId: string;
@@ -60,6 +68,7 @@ export interface AdminReceipt {
   adminNote?: string;
   reviewedAt?: string;
   parsedAt: string;
+  items?: AdminReceiptItem[];
 }
 
 // ─── Drivers ─────────────────────────────────────────────────────────────────
@@ -70,6 +79,20 @@ export interface AdminDriver {
   phone: string;
   completedTrips: number;
   estimatedPayout: number;
+}
+
+/** Full driver record as returned by GET /api/drivers (uses snake_case from explicit [JsonPropertyName] attrs) */
+export interface AdminDriverFull {
+  id: string;
+  driver_id: string;
+  firebase_uid?: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  vehicle_type: string;
+  vehicle_model: string;
+  status: string;
+  created_at: string;
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
@@ -179,8 +202,13 @@ export const adminApi = {
     api.get<{ receipts: AdminReceipt[] }>('/api/admin/receipts', { params: { status } })
       .then(r => r.data.receipts),
 
-  reviewReceipt: (id: string, status: 'confirmed' | 'rejected', note?: string) =>
-    api.patch<AdminReceipt>(`/api/admin/receipts/${id}`, { status, note }).then(r => r.data),
+  reviewReceipt: (id: string, status: string, opts?: { note?: string; items?: AdminReceiptItem[]; weightClass?: string }) =>
+    api.patch<AdminReceipt>(`/api/admin/receipts/${id}`, {
+      status,
+      note:        opts?.note,
+      items:       opts?.items,
+      weightClass: opts?.weightClass,
+    }).then(r => r.data),
 
   // ── Deliveries ───────────────────────────────────────────────────────────────
   getDeliveries: () =>
@@ -188,6 +216,19 @@ export const adminApi = {
 
   assignDriver: (orderId: string, driverId: string) =>
     api.patch<AdminOrder>(`/api/admin/deliveries/${orderId}/assign`, { driverId }).then(r => r.data),
+
+  // ── Drivers ──────────────────────────────────────────────────────────────────
+  getDrivers: () =>
+    api.get<AdminDriverFull[]>('/api/drivers').then(r => r.data),
+
+  createDriver: (data: {
+    fullName: string;
+    driverId?: string;
+    email?: string;
+    phoneNumber?: string;
+    vehicleType?: string;
+    vehicleModel?: string;
+  }) => api.post<AdminDriverFull>('/api/admin/drivers', data).then(r => r.data),
 
   // ── Driver revenue ───────────────────────────────────────────────────────────
   getDriverRevenue: () =>

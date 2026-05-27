@@ -123,10 +123,10 @@ const Stores = () => {
         <div className="cc-stores-grid">
           {stores.map(store => (
             <div key={store.id} className={`cc-store-card${store.active ? '' : ' cc-store-card--inactive'}`}>
-              <div className="cc-store-card__badge" style={{ background: store.color, overflow: 'hidden', padding: store.logoUrl ? 0 : undefined }}>
+              <div className="cc-store-card__badge" style={{ background: store.color, overflow: 'hidden', padding: 0 }}>
                 {store.logoUrl
                   ? <img src={store.logoUrl} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : (store.initials || store.name.slice(0, 2).toUpperCase())
+                  : <div style={{ width: '100%', height: '100%', background: store.color }} />
                 }
               </div>
               <div className="cc-store-card__info">

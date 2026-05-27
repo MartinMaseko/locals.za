@@ -37,6 +37,7 @@ const CCStores       = lazy(() => import('./components/pages/commandcentre/pages
 const CCPayments     = lazy(() => import('./components/pages/commandcentre/pages/Payments'));
 const CCReceipts     = lazy(() => import('./components/pages/commandcentre/pages/Receipts'));
 const CCDeliveries   = lazy(() => import('./components/pages/commandcentre/pages/Deliveries'));
+const CCDrivers      = lazy(() => import('./components/pages/commandcentre/pages/Drivers'));
 const CCDriverRev    = lazy(() => import('./components/pages/commandcentre/pages/DriverRevenue'));
 const CCMetrics      = lazy(() => import('./components/pages/commandcentre/pages/Metrics'));
 const CCPricing      = lazy(() => import('./components/pages/commandcentre/pages/PricingConfig'));
@@ -132,6 +133,7 @@ function App() {
                   <Route path="payments"       element={<CCPayments />} />
                   <Route path="receipts"       element={<CCReceipts />} />
                   <Route path="deliveries"     element={<CCDeliveries />} />
+                  <Route path="drivers"         element={<CCDrivers />} />
                   <Route path="driver-revenue" element={<CCDriverRev />} />
                   <Route path="metrics"        element={<CCMetrics />} />
                   <Route path="pricing"        element={<CCPricing />} />

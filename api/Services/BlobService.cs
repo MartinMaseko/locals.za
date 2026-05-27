@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 
 namespace LocalsZaApi.Services;
 
@@ -32,11 +33,26 @@ public class BlobService
     public async Task<string> UploadPublicAsync(Stream content, string filename, string contentType, string containerName)
     {
         var container = _serviceClient.GetBlobContainerClient(containerName);
-        await container.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        try
+        {
+            await container.CreateIfNotExistsAsync(PublicAccessType.Blob);
+        }
+        catch (Azure.RequestFailedException ex) when (ex.ErrorCode == "PublicAccessNotPermitted")
+        {
+            // Storage account has "Allow Blob anonymous access" disabled at account level.
+            // Go to Azure Portal → Storage Account → Settings → Configuration →
+            // enable "Allow Blob anonymous access", then the container will be made public.
+            // For now we create the container private so the upload doesn't fail.
+            await container.CreateIfNotExistsAsync(PublicAccessType.None);
+        }
 
         var blobName = $"{Guid.NewGuid()}-{filename}";
         var blob = container.GetBlobClient(blobName);
         await blob.UploadAsync(content, new BlobHttpHeaders { ContentType = contentType });
-        return blob.Uri.ToString();
+
+        // Return a SAS URL valid for 10 years — works whether the container is public or private.
+        var sasUri = blob.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddYears(10));
+        return sasUri.ToString();
     }
 }

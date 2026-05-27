@@ -54,6 +54,28 @@ try
 
     app.UseHttpsRedirection();
     app.UseCors();
+
+    // Global exception handler — placed after UseCors() so CORS headers written
+    // by the CORS middleware survive when an endpoint throws an unhandled exception.
+    // Without this, the runtime's default error response discards those headers.
+    app.Use(async (ctx, next) =>
+    {
+        try
+        {
+            await next();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Unhandled exception on {Method} {Path}", ctx.Request.Method, ctx.Request.Path);
+            if (!ctx.Response.HasStarted)
+            {
+                ctx.Response.StatusCode = 500;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.WriteAsJsonAsync(new { error = "Internal server error" });
+            }
+        }
+    });
+
     app.UseMiddleware<FirebaseAuthMiddleware>();
 
     app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))

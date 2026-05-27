@@ -9,8 +9,8 @@ export interface Store {
   tagline: string;
   initials: string;
   color: string;
-  logo?: string;      // local module asset (fallback STORES array)
-  logo_url?: string;  // Azure Blob URL (API-fetched stores)
+  logo?: string;     // local module asset (fallback STORES array)
+  logoUrl?: string;  // Azure Blob URL (API-fetched stores)
   address?: string;   // used by Maps / Quote API as pickup origin
   lat?: number;
   lng?: number;

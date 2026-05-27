@@ -21,12 +21,12 @@ const SelectStore = () => {
 
   // Fetch live store list from the API, fall back to local STORES on failure
   useEffect(() => {
-    api.get<Array<Store & { logo_url?: string }>>('/api/stores')
+    api.get<Store[]>('/api/stores')
       .then(res => {
-        // Normalise logo_url → logo so the UI works the same for both sources
+        // Normalise logoUrl → logo so the UI works the same for both sources
         const normalised: Store[] = res.data.map(s => ({
           ...s,
-          logo: s.logo_url ?? s.logo,
+          logo: s.logoUrl ?? s.logo,
         }));
         setStores(normalised.length > 0 ? normalised : STORES);
         setStoreError(null);

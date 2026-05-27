@@ -142,10 +142,63 @@ public static class DriverEndpoints
                 return;
             }
             var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c ORDER BY c.fullName");
+                "SELECT * FROM c ORDER BY c.full_name");
             await ctx.Response.WriteAsJsonAsync(drivers);
         });
+
+        // Driver login step 1 — verify full_name + driver_id, return firebase_uid
+        app.MapPost("/api/drivers/verify-credentials", async (HttpContext ctx, CosmosService cosmos) =>
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<VerifyCredBody>();
+            if (body is null || string.IsNullOrWhiteSpace(body.FullName) || string.IsNullOrWhiteSpace(body.DriverId))
+                return Results.BadRequest(new { error = "full_name and driver_id are required" });
+
+            var drivers = await cosmos.QueryAsync<Driver>("drivers",
+                "SELECT * FROM c WHERE c.full_name = @name AND c.driver_id = @id",
+                new() { ["@name"] = body.FullName, ["@id"] = body.DriverId });
+
+            var driver = drivers.FirstOrDefault();
+            if (driver is null)
+                return Results.Json(new { error = "Invalid credentials" }, statusCode: 401);
+
+            return Results.Ok(new
+            {
+                firebase_uid = driver.FirebaseUid ?? driver.DriverId,
+                driver_id    = driver.DriverId,
+            });
+        }).AllowAnonymous();
+
+        // Driver login step 2 — issue Firebase custom token
+        app.MapPost("/api/drivers/login-link", async (HttpContext ctx, CosmosService cosmos,
+            FirebaseAuthService firebase) =>
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<LoginLinkBody>();
+            if (body is null || string.IsNullOrWhiteSpace(body.DriverId))
+                return Results.BadRequest(new { error = "driver_id is required" });
+
+            var drivers = await cosmos.QueryAsync<Driver>("drivers",
+                "SELECT * FROM c WHERE c.driver_id = @id",
+                new() { ["@id"] = body.DriverId });
+
+            var driver = drivers.FirstOrDefault();
+            if (driver is null)
+                return Results.Json(new { error = "Driver not found" }, statusCode: 401);
+
+            var uid = driver.FirebaseUid ?? driver.DriverId;
+            var claims = new Dictionary<string, object> { ["role"] = "driver" };
+            var customToken = await firebase.CreateCustomTokenAsync(uid, claims);
+
+            return Results.Ok(new { customToken, success = true });
+        }).AllowAnonymous();
     }
 }
 
 record LocationPing(double Lat, double Lng, string? Status);
+record VerifyCredBody(
+    [property: System.Text.Json.Serialization.JsonPropertyName("full_name")] string FullName,
+    [property: System.Text.Json.Serialization.JsonPropertyName("driver_id")] string DriverId
+);
+record LoginLinkBody(
+    [property: System.Text.Json.Serialization.JsonPropertyName("driver_id")] string DriverId,
+    [property: System.Text.Json.Serialization.JsonPropertyName("firebase_uid")] string? FirebaseUid
+);

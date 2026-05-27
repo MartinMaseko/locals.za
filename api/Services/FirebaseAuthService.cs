@@ -46,4 +46,7 @@ public class FirebaseAuthService
 
     public async Task<FirebaseToken> VerifyTokenAsync(string idToken)
         => await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(idToken);
+
+    public async Task<string> CreateCustomTokenAsync(string uid, Dictionary<string, object>? claims = null)
+        => await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(uid, claims);
 }

@@ -176,6 +176,66 @@ CLEAN UP (optional, after successful deploy)
 ----------------------------------------------------
 LAST DEPLOYED
 ----------------------------------------------------
+  Date    : 2026-05-26
+  By      : kmmas
+  Version : Slice 12 (Receipt review workflow + Driver management)
+  Notes   : 1. AdminEndpoints — receipt PATCH now accepts `items` + `weightClass`
+               so command staff can manually type collection items from the receipt
+               image. Items are stored on the Receipt Cosmos document.
+               New POST /api/admin/drivers — creates driver account in Cosmos
+               (no Firebase required at creation time).
+            2. DriverEndpoints — added POST /api/drivers/verify-credentials and
+               POST /api/drivers/login-link (both anonymous). These back the
+               DriverLogin.tsx flow: verify name+id → issue Firebase custom token.
+            3. FirebaseAuthService — added CreateCustomTokenAsync using the
+               Firebase Admin SDK (service account already initialised).
+            4. FirebaseAuthMiddleware — added driver login paths to _alwaysAnonymous.
+            Frontend: Receipts CC page redesigned (review modal with image viewer,
+               manual items table, weight class selector, driver assign dropdown).
+               New Drivers CC page (create + list + 80/20 revenue stats).
+  Build   : Self-contained linux-x64
+  Status  : ✓ Deployed to Azure — RuntimeSuccessful 11:03 UTC
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
+  Date    : 2026-05-26
+  By      : kmmas
+  Version : Slice 11 (Store logo SAS URLs + camelCase fix)
+  Notes   : Three store-logo bugs fixed:
+            1. Store.cs — removed [JsonPropertyName("logo_url")]; global
+               CamelCase policy now applies so API accepts/returns "logoUrl".
+            2. BlobService.UploadPublicAsync — generates a 10-year SAS URL
+               after upload so browser can load images even from private
+               containers (no Azure Portal "Allow Blob anonymous access" change
+               required).
+            3. wholesale.types.ts + SelectStore.tsx — renamed logo_url →
+               logoUrl to match the API response shape.
+            Re-upload store logos in Command Centre after this deploy; any
+            previously uploaded logos had their URL silently dropped due to
+            bug 1 and are stored as null in Cosmos.
+  Build   : Self-contained linux-x64
+  Status  : ✓ Deployed to Azure — RuntimeSuccessful 10:05 UTC
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
+  Date    : 2026-05-26
+  By      : kmmas
+  Version : Slice 10 (BlobService + CORS error handling)
+  Notes   : BlobService.UploadPublicAsync now catches PublicAccessNotPermitted
+            (Azure Storage accounts with blob public access disabled at account
+            level) and falls back to PublicAccessType.None so the upload does
+            not 500. Global exception handler added to Program.cs after
+            UseCors() so CORS headers are preserved on unhandled 500 responses.
+            CC Stores page badge updated to render logo image only (no initials
+            fallback). CC shell + sidebar refactored to glass/transparent theme.
+  Build   : Self-contained linux-x64, 54 MB
+  Status  : ✓ Deployed to Azure — /health 200 confirmed 09:39 UTC
+
+----------------------------------------------------
+SLICE 9 DEPLOY
+----------------------------------------------------
   Date    : 2026-05-25
   By      : kmmas
   Version : Slice 9 (Command Centre admin auth token flow)

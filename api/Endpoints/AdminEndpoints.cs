@@ -109,6 +109,14 @@ public static class AdminEndpoints
             receipt.AdminNote  = body.Note;
             receipt.ReviewedAt = DateTime.UtcNow.ToString("o");
 
+            if (body.Items is { Count: > 0 })
+            {
+                receipt.Items             = body.Items;
+                receipt.EstimatedWeightKg = receipt.Items.Sum(i => i.EstimatedKg);
+            }
+            if (!string.IsNullOrEmpty(body.WeightClass))
+                receipt.WeightClass = body.WeightClass;
+
             await cosmos.UpsertAsync("receipts", receipt, receipt.OrderId);
             return Results.Ok(receipt);
         });
@@ -199,6 +207,36 @@ public static class AdminEndpoints
             });
         });
 
+        // ── Create driver account ────────────────────────────────────────────
+        app.MapPost("/api/admin/drivers", async (HttpContext ctx, CosmosService cosmos) =>
+        {
+            if (!AuthHelpers.IsAdmin(ctx)) return Forbidden();
+
+            var body = await ctx.Request.ReadFromJsonAsync<CreateDriverBody>();
+            if (body is null || string.IsNullOrWhiteSpace(body.FullName))
+                return Results.BadRequest(new { error = "fullName is required" });
+
+            var driverId = !string.IsNullOrWhiteSpace(body.DriverId)
+                ? body.DriverId
+                : $"DRV-{DateTime.UtcNow:yyMMddHHmmss}";
+
+            var driver = new Driver
+            {
+                Id           = driverId,
+                DriverId     = driverId,
+                FullName     = body.FullName,
+                Email        = body.Email ?? "",
+                PhoneNumber  = body.PhoneNumber ?? "",
+                VehicleType  = body.VehicleType ?? "bakkie",
+                VehicleModel = body.VehicleModel ?? "",
+                Status       = "offline",
+                CreatedAt    = DateTime.UtcNow.ToString("o"),
+            };
+
+            var saved = await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
+            return Results.Created($"/api/drivers/{driver.DriverId}", saved);
+        });
+
         // ── Upload store logo ────────────────────────────────────────────────
         app.MapPost("/api/admin/upload-logo", async (HttpContext ctx, IFormFile file, BlobService blobs) =>
         {
@@ -243,6 +281,14 @@ public static class AdminEndpoints
     }
 }
 
-// ── Patch record types ───────────────────────────────────────────────────────
-record ReceiptReviewPatch(string Status, string? Note);
+// ── Patch / body record types ────────────────────────────────────────────────
+record ReceiptReviewPatch(string Status, string? Note, List<ReceiptItem>? Items, string? WeightClass);
 record AssignDriverPatch(string DriverId);
+record CreateDriverBody(
+    string FullName,
+    string? DriverId,
+    string? Email,
+    string? PhoneNumber,
+    string? VehicleType,
+    string? VehicleModel
+);
