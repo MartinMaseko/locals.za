@@ -33,13 +33,15 @@ const Deliveries = () => {
     }
   };
 
-  const visible = filter === 'all' ? deliveries : deliveries.filter(d => d.status === filter);
+  // Deduplicate in case the cross-partition Cosmos query returns the same document twice
+  const unique  = Array.from(new Map(deliveries.map(d => [d.id, d])).values());
+  const visible = filter === 'all' ? unique : unique.filter(d => d.status === filter);
 
   return (
     <div>
       <div className="cc-page-header">
         <h1 className="cc-page-title">Deliveries</h1>
-        <span style={{ color: '#555', fontSize: '0.8rem' }}>{deliveries.length} total</span>
+        <span style={{ color: '#555', fontSize: '0.8rem' }}>{unique.length} total</span>
       </div>
 
       <div className="cc-filter-bar">
@@ -72,8 +74,8 @@ const Deliveries = () => {
               </tr>
             </thead>
             <tbody>
-              {visible.map(d => (
-                <tr key={d.id}>
+              {visible.map((d, i) => (
+                <tr key={`${d.id}-${i}`}>
                   <td>{d.order_number || d.id.slice(0, 8)}</td>
                   <td><StatusBadge status={d.status} /></td>
                   <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>

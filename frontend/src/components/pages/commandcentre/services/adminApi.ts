@@ -81,7 +81,7 @@ export interface AdminDriver {
   estimatedPayout: number;
 }
 
-/** Full driver record as returned by GET /api/drivers (uses snake_case from explicit [JsonPropertyName] attrs) */
+/** Full driver record as returned by GET /api/drivers */
 export interface AdminDriverFull {
   id: string;
   driver_id: string;
@@ -93,6 +93,14 @@ export interface AdminDriverFull {
   vehicle_model: string;
   status: string;
   created_at: string;
+}
+
+/** Response from POST /api/admin/drivers — includes plain-text credentials shown once */
+export interface CreatedDriverResponse extends AdminDriverFull {
+  credentials: {
+    driver_id: string;
+    pin: string;
+  };
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
@@ -223,12 +231,16 @@ export const adminApi = {
 
   createDriver: (data: {
     fullName: string;
+    pin: string;
     driverId?: string;
     email?: string;
     phoneNumber?: string;
     vehicleType?: string;
     vehicleModel?: string;
-  }) => api.post<AdminDriverFull>('/api/admin/drivers', data).then(r => r.data),
+  }) => api.post<CreatedDriverResponse>('/api/admin/drivers', data).then(r => r.data),
+
+  deleteDriver: (driverId: string) =>
+    api.delete<{ deleted: boolean; driver_id: string }>(`/api/admin/drivers/${driverId}`).then(r => r.data),
 
   // ── Driver revenue ───────────────────────────────────────────────────────────
   getDriverRevenue: () =>

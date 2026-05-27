@@ -28,7 +28,7 @@
   min-height: 100vh;
   background: var(--lz-bg);
   color: var(--lz-ink);
-  font-family: "Michroma", "Montserrat", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   padding-bottom: 48px;
 }
 
@@ -96,13 +96,17 @@
 .step-back-btn {
   align-self: flex-start;
   background: transparent;
-  border: none;
+  border: 1px solid var(--lz-border);
+  border-radius: 8px;
   color: var(--lz-muted);
   font-size: 14px;
-  padding: 4px 0;
+  padding: 4px 8px;
   cursor: pointer;
 }
-.step-back-btn:hover { color: var(--lz-ink); }
+.step-back-btn:hover { 
+  color: #ffb803;
+  border-color: var(--lz-gold); 
+}
 .step-title {
   font-size: 12px;
   font-weight: 700;
@@ -116,7 +120,7 @@
   color: var(--lz-muted);
   font-size: 12px;
   line-height: 1.6;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0.2px;
 }
 
@@ -287,7 +291,7 @@
   margin: 0;
   color: var(--lz-muted);
   font-size: 13px;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   text-align: center;
   padding: 12px 0;
 }
@@ -295,7 +299,7 @@
   margin: 0;
   color: var(--lz-muted);
   font-size: 12px;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   text-align: center;
 }
 
@@ -363,7 +367,7 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 11px;
   margin-top: 4px;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0.2px;
 }
 .store-selected-badge {
@@ -560,7 +564,7 @@
 .receipt-upload-hint {
   font-size: 9px;
   color: var(--lz-muted);
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.4;
 }
 /* PDF info for details zone */
@@ -812,7 +816,7 @@
 .delivery-route-dot--dest  { background: #E30613; box-shadow: 0 0 0 3px rgba(227,6,19,0.2); }
 .delivery-route-label {
   font-size: 11px;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-weight: 600;
   color: var(--lz-ink);
   white-space: nowrap;
@@ -833,7 +837,7 @@
   font-weight: 700;
   padding: 5px 10px;
   border-radius: 999px;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0.3px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
@@ -990,7 +994,7 @@
   color: var(--lz-muted);
   font-size: 13px;
   line-height: 1.6;
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* ---------- Toast notification ---------- */
@@ -1210,6 +1214,170 @@
   padding-top: 14px;
 }
 .receipt-review-actions .btn-primary { flex: 2; margin-top: 0; }
+
+/* ── Order Journey Progress Tracker ──────────────────────────────────────────
+ * Transparent background, #ffb803 rail, LZA icon at the current step tip.
+ * --op-* custom properties are toggled by .op-track--dark for the dark map
+ * background on step 1 (SelectStore). Steps 2-4 use the default light values.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.op-track {
+  /* Light-background defaults */
+  --op-text:          var(--lz-muted);
+  --op-text-active:   var(--lz-ink);
+  --op-text-done:     var(--lz-gold-dark);
+  --op-rail-bg:       var(--lz-border);
+  --op-node-border:   var(--lz-border);
+  --op-check-color:   var(--lz-ink);
+
+  background: transparent;
+  width: 100%;
+}
+
+.op-track--dark {
+  /* Dark-background overrides (step 1 — full-screen map) */
+  --op-text:          rgba(255, 255, 255, 0.45);
+  --op-text-active:   #ffffff;
+  --op-text-done:     rgba(255, 184, 3, 0.9);
+  --op-rail-bg:       rgba(255, 255, 255, 0.18);
+  --op-node-border:   rgba(255, 255, 255, 0.28);
+  --op-check-color:   var(--lz-ink);
+}
+
+/* Container that holds rail + 4 node-wraps */
+.op-nodes {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 24px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+/* ── Rail (full-width base line) ──────────────────────────────── */
+.op-rail {
+  position: absolute;
+  /* vertically centred on the 32 px nodes: 14 px top padding + 16 px half-height */
+  top: calc(14px + 16px);
+  /* horizontally from centre of first node to centre of last node */
+  left:  calc(24px + 16px);
+  right: calc(24px + 16px);
+  height: 2px;
+  background: var(--op-rail-bg);
+  border-radius: 2px;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.op-rail-fill {
+  height: 100%;
+  background: var(--lz-gold);
+  border-radius: 2px;
+  transition: width 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Individual step node + label ─────────────────────────────── */
+.op-node-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  /* fixed width keeps the 4 nodes perfectly even across all viewports */
+  width: 32px;
+}
+
+.op-node {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--op-node-border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 300ms ease, background 300ms ease, box-shadow 300ms ease;
+}
+
+/* Completed step — solid gold fill */
+.op-node--done {
+  background: var(--lz-gold);
+  border-color: var(--lz-gold);
+}
+
+/* Current step — gold ring with soft glow */
+.op-node--current {
+  border-color: var(--lz-gold);
+  background: rgba(255, 184, 3, 0.10);
+  box-shadow:
+    0 0 0 4px rgba(255, 184, 3, 0.22),
+    0 2px 8px  rgba(255, 184, 3, 0.18);
+  animation: op-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes op-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(255, 184, 3, 0.22), 0 2px 8px rgba(255, 184, 3, 0.18); }
+  50%       { box-shadow: 0 0 0 6px rgba(255, 184, 3, 0.14), 0 2px 8px rgba(255, 184, 3, 0.12); }
+}
+
+/* LZA icon inside the current-step node */
+.op-node-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  /* slight pop-in when it appears */
+  animation: op-icon-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes op-icon-in {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ✓ tick inside completed nodes */
+.op-node-check {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--op-check-color);
+  line-height: 1;
+}
+
+/* ── Step labels ──────────────────────────────────────────────── */
+.op-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--op-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  white-space: nowrap;
+  transition: color 300ms ease;
+  line-height: 1;
+  text-align: center;
+}
+
+.op-label--done {
+  color: var(--op-text-done);
+}
+
+.op-label--current {
+  color: var(--op-text-active);
+  font-weight: 700;
+  font-size: 9px;
+}
+
+/* ── Tablet+: slightly larger nodes & labels ─────────────────── */
+@media (min-width: 480px) {
+  .op-node-wrap { width: 36px; }
+  .op-node      { width: 36px; height: 36px; }
+  .op-node-icon { width: 22px; height: 22px; }
+  .op-rail { top: calc(14px + 18px); left: calc(24px + 18px); right: calc(24px + 18px); }
+  .op-label { font-size: 9px; }
+  .op-label--current { font-size: 10px; }
+}
 
 /* ---------- Tablet+ ---------- */
 @media (min-width: 640px) {

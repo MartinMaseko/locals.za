@@ -1,0 +1,213 @@
+/* ── PWA Install Banner — bottom sheet ──────────────────────────────────────── */
+
+.pwa-banner {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* Only render on screens ≤ 820 px (mobile) */
+}
+
+.pwa-banner__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.pwa-banner__sheet {
+  position: relative;           /* above backdrop */
+  background: #141414;
+  border-radius: 22px 22px 0 0;
+  padding: 10px 20px 24px;
+  /* Respect iOS home-bar */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -6px 40px rgba(0, 0, 0, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  animation: pwa-slide-up 0.38s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes pwa-slide-up {
+  from { transform: translateY(110%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Handle ─────────────────────────────────────────────────────────────────── */
+
+.pwa-banner__handle {
+  width: 38px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+
+/* ── Header row ─────────────────────────────────────────────────────────────── */
+
+.pwa-banner__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.pwa-banner__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pwa-banner__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-banner__title {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pwa-banner__sub {
+  margin: 0;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pwa-banner__close {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.pwa-banner__close:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+/* ── Feature chips ──────────────────────────────────────────────────────────── */
+
+.pwa-banner__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.pwa-banner__chip {
+  background: rgba(255, 184, 3, 0.1);
+  border: 1px solid rgba(255, 184, 3, 0.2);
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ─────────────────────────────────────────────────────────── */
+
+.pwa-banner__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.pwa-banner__btn-install {
+  flex: 2;
+  background: #FFB803;
+  color: #0f0f0f;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 20px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.01em;
+}
+.pwa-banner__btn-install:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+.pwa-banner__btn-later {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.pwa-banner__btn-later:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* When used standalone for iOS (one full-width button) */
+.pwa-banner__btn-later:only-child {
+  flex: none;
+  width: 100%;
+}
+
+/* ── iOS instructions ───────────────────────────────────────────────────────── */
+
+.pwa-banner__ios-box {
+  background: rgba(255, 184, 3, 0.07);
+  border: 1px solid rgba(255, 184, 3, 0.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.pwa-banner__ios-text {
+  margin: 0;
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.pwa-banner__ios-text strong {
+  color: #FFB803;
+}
+
+.pwa-banner__ios-arrow {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  color: #FFB803;
+  animation: pwa-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes pwa-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(5px); }
+}
+
+/* ── Only render on mobile — hide entirely on desktop ───────────────────────── */
+@media (min-width: 821px) {
+  .pwa-banner { display: none !important; }
+}

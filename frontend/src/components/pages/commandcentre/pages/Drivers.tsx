@@ -3,6 +3,7 @@ import {
   adminApi,
   type AdminDriver,
   type AdminDriverFull,
+  type CreatedDriverResponse,
 } from '../services/adminApi';
 import { formatRand } from '../functions/formatters';
 import StatCard from '../components/StatCard';
@@ -10,7 +11,7 @@ import StatCard from '../components/StatCard';
 const VEHICLE_TYPES = ['bakkie', 'van', 'truck', 'motorbike'];
 
 const EMPTY_FORM = {
-  fullName: '', driverId: '', email: '',
+  fullName: '', driverId: '', pin: '', email: '',
   phoneNumber: '', vehicleType: 'bakkie', vehicleModel: '',
 };
 
@@ -24,13 +25,18 @@ const statusChip = (status: string) => {
 };
 
 const Drivers = () => {
-  const [drivers, setDrivers]       = useState<AdminDriverFull[]>([]);
-  const [revenue, setRevenue]       = useState<AdminDriver[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState<string | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
-  const [saving, setSaving]         = useState(false);
-  const [form, setForm]             = useState(EMPTY_FORM);
+  const [drivers, setDrivers]         = useState<AdminDriverFull[]>([]);
+  const [revenue, setRevenue]         = useState<AdminDriver[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState<string | null>(null);
+  const [showCreate, setShowCreate]   = useState(false);
+  const [saving, setSaving]           = useState(false);
+  const [form, setForm]               = useState(EMPTY_FORM);
+  const [showPin, setShowPin]         = useState(false);
+  // After creation: show credentials once
+  const [credsModal, setCredsModal]   = useState<CreatedDriverResponse | null>(null);
+  // Delete confirmation
+  const [deletingId, setDeletingId]   = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([adminApi.getDrivers(), adminApi.getDriverRevenue()])
@@ -40,19 +46,21 @@ const Drivers = () => {
   }, []);
 
   const getRevData = (driverId: string) =>
-    revenue.find(r => r.driverId === driverId);
+    driverId ? revenue.find(r => r.driverId === driverId) : undefined;
 
   const totalTrips   = revenue.reduce((s, r) => s + r.completedTrips, 0);
   const totalPayout  = revenue.reduce((s, r) => s + r.estimatedPayout, 0);
-  const platformCut  = revenue.reduce((s, r) => s + r.estimatedPayout * 0.25, 0);
+  const platformCut  = totalPayout * 0.25;
 
   const handleCreate = async () => {
     if (!form.fullName.trim()) return;
+    if (!form.pin.trim()) { setError('PIN is required'); return; }
     setSaving(true);
     setError(null);
     try {
       const created = await adminApi.createDriver({
         fullName:     form.fullName,
+        pin:          form.pin,
         driverId:     form.driverId   || undefined,
         email:        form.email      || undefined,
         phoneNumber:  form.phoneNumber || undefined,
@@ -62,10 +70,25 @@ const Drivers = () => {
       setDrivers(prev => [...prev, created]);
       setShowCreate(false);
       setForm(EMPTY_FORM);
+      setShowPin(false);
+      setCredsModal(created);          // show credentials once
     } catch {
       setError('Failed to create driver account.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async (driverId: string) => {
+    if (!driverId) return;
+    try {
+      await adminApi.deleteDriver(driverId);
+      // Remove by driver_id OR id — handles legacy docs where driver_id was empty
+      setDrivers(prev => prev.filter(d => d.driver_id !== driverId && d.id !== driverId));
+    } catch {
+      setError('Failed to delete driver.');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -82,10 +105,10 @@ const Drivers = () => {
       </div>
 
       <div className="cc-stat-grid" style={{ marginBottom: '1.5rem' }}>
-        <StatCard label="Total Drivers"      value={drivers.length} />
-        <StatCard label="Completed Trips"    value={totalTrips}              accent="#64b5f6" />
-        <StatCard label="Driver Payouts (80%)" value={formatRand(totalPayout)}  accent="#4CAF50" />
-        <StatCard label="Platform Cut (20%)" value={formatRand(platformCut)} accent="#FFB803" />
+        <StatCard label="Total Drivers"        value={drivers.length} />
+        <StatCard label="Completed Trips"      value={totalTrips}             accent="#64b5f6" />
+        <StatCard label="Driver Payouts (80%)" value={formatRand(totalPayout)} accent="#4CAF50" />
+        <StatCard label="Platform Cut (20%)"   value={formatRand(platformCut)} accent="#FFB803" />
       </div>
 
       {loading && <p className="cc-loading">Loading…</p>}
@@ -93,14 +116,18 @@ const Drivers = () => {
 
       {!loading && !error && (
         <div className="cc-drivers-grid">
-          {drivers.map(d => {
+          {drivers.map((d, i) => {
+            // Use driver_id as key, fall back to id or index for legacy docs with empty driver_id
+            const key = d.driver_id || d.id || `driver-${i}`;
+            // Stable identifier for delete — prefer driver_id, fall back to id
+            const deleteId = d.driver_id || d.id;
             const rev = getRevData(d.driver_id);
             return (
-              <div key={d.driver_id} className="cc-driver-card">
+              <div key={key} className="cc-driver-card">
                 <div className="cc-driver-card__header">
                   <div>
                     <div className="cc-driver-card__name">{d.full_name}</div>
-                    <div className="cc-driver-card__id">{d.driver_id}</div>
+                    <div className="cc-driver-card__id">{d.driver_id || d.id}</div>
                   </div>
                   <span className={statusChip(d.status)}>
                     {d.status.replace('_', ' ')}
@@ -127,6 +154,34 @@ const Drivers = () => {
                     </span>
                   </div>
                 </div>
+                {/* Delete — only show when we have a stable ID to delete by */}
+                {deleteId && (
+                  <div style={{ marginTop: '0.75rem', textAlign: 'right' }}>
+                    {deletingId === deleteId ? (
+                      <span style={{ fontSize: '0.78rem', color: '#888' }}>
+                        Confirm delete?{' '}
+                        <button
+                          className="cc-btn cc-btn--danger"
+                          style={{ fontSize: '0.78rem', padding: '2px 10px' }}
+                          onClick={() => handleDelete(deleteId)}
+                        >Yes, Delete</button>{' '}
+                        <button
+                          className="cc-btn cc-btn--secondary"
+                          style={{ fontSize: '0.78rem', padding: '2px 10px' }}
+                          onClick={() => setDeletingId(null)}
+                        >Cancel</button>
+                      </span>
+                    ) : (
+                      <button
+                        className="cc-btn cc-btn--danger"
+                        style={{ fontSize: '0.75rem', padding: '3px 10px' }}
+                        onClick={() => setDeletingId(deleteId)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -140,7 +195,8 @@ const Drivers = () => {
 
       <p style={{ color: '#333', fontSize: '0.72rem', marginTop: '1.5rem' }}>
         Payout model: 80% of delivery fee to driver · 20% platform fee · drivers log in
-        at <code style={{ color: '#555' }}>/driverlogin</code> using their Full Name + Driver ID.
+        at <code style={{ color: '#555' }}>/driverlogin</code> using their{' '}
+        <strong>Driver ID</strong> + <strong>PIN</strong>.
       </p>
 
       {/* ── Create driver modal ── */}
@@ -148,17 +204,18 @@ const Drivers = () => {
         <div className="cc-modal-overlay" onClick={() => setShowCreate(false)}>
           <div
             className="cc-modal"
-            style={{ maxWidth: 500 }}
+            style={{ maxWidth: 520 }}
             onClick={e => e.stopPropagation()}
           >
             <div className="cc-modal-header">
               <h2 className="cc-modal-title">New Driver Account</h2>
-              <button className="cc-modal-close" onClick={() => setShowCreate(false)}>✕</button>
+              <button className="cc-modal-close" onClick={() => { setShowCreate(false); setError(null); }}>✕</button>
             </div>
 
             <p style={{ color: '#666', fontSize: '0.8rem', margin: '0 0 1rem' }}>
               Driver logs in at <strong>/driverlogin</strong> using their{' '}
-              <strong>Full Name</strong> and <strong>Driver ID</strong>.
+              <strong>Driver ID</strong> and <strong>PIN</strong>.
+              The PIN will be shown <em>once</em> after creation — save it to share with the driver.
             </p>
 
             {error && <p className="cc-error">{error}</p>}
@@ -182,6 +239,33 @@ const Drivers = () => {
                   onChange={e => set('driverId', e.target.value)}
                   placeholder="Auto-generated if blank"
                 />
+              </div>
+
+              <div className="cc-form-field">
+                <label className="cc-form-label">PIN * (4–8 digits)</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="cc-form-input"
+                    type={showPin ? 'text' : 'password'}
+                    inputMode="numeric"
+                    maxLength={8}
+                    value={form.pin}
+                    onChange={e => set('pin', e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 1234"
+                    style={{ paddingRight: '2.5rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin(v => !v)}
+                    style={{
+                      position: 'absolute', right: '0.6rem', top: '50%',
+                      transform: 'translateY(-50%)', background: 'none',
+                      border: 'none', cursor: 'pointer', color: '#888', fontSize: '0.78rem',
+                    }}
+                  >
+                    {showPin ? 'hide' : 'show'}
+                  </button>
+                </div>
               </div>
 
               <div className="cc-form-field">
@@ -236,17 +320,80 @@ const Drivers = () => {
                 className="cc-btn cc-btn--primary"
                 style={{ minWidth: 130 }}
                 onClick={handleCreate}
-                disabled={saving || !form.fullName.trim()}
+                disabled={saving || !form.fullName.trim() || !form.pin.trim()}
               >
                 {saving ? 'Creating…' : 'Create Driver'}
               </button>
               <button
                 className="cc-btn cc-btn--secondary"
-                onClick={() => { setShowCreate(false); setError(null); }}
+                onClick={() => { setShowCreate(false); setError(null); setForm(EMPTY_FORM); }}
               >
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Credentials modal (shown once after creation) ── */}
+      {credsModal && (
+        <div className="cc-modal-overlay" onClick={() => setCredsModal(null)}>
+          <div
+            className="cc-modal"
+            style={{ maxWidth: 420 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="cc-modal-header">
+              <h2 className="cc-modal-title">✅ Driver Created</h2>
+              <button className="cc-modal-close" onClick={() => setCredsModal(null)}>✕</button>
+            </div>
+
+            <p style={{ color: '#555', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Share these login credentials with <strong>{credsModal.full_name}</strong>.
+              The PIN cannot be retrieved again after you close this window.
+            </p>
+
+            <div style={{
+              background: '#f5f5f5', borderRadius: '8px', padding: '1rem 1.25rem',
+              border: '1px solid #ddd', marginBottom: '1rem',
+            }}>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.72rem', color: '#888', display: 'block', marginBottom: '2px' }}>
+                  Driver ID
+                </span>
+                <strong style={{ fontSize: '1.1rem', letterSpacing: '0.05em', color: '#111' }}>
+                  {credsModal.credentials.driver_id}
+                </strong>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: '#888', display: 'block', marginBottom: '2px' }}>
+                  PIN
+                </span>
+                <strong style={{ fontSize: '1.1rem', letterSpacing: '0.2em', color: '#111' }}>
+                  {credsModal.credentials.pin}
+                </strong>
+              </div>
+            </div>
+
+            <button
+              className="cc-btn cc-btn--primary"
+              style={{ width: '100%' }}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `Driver ID: ${credsModal.credentials.driver_id}\nPIN: ${credsModal.credentials.pin}`
+                );
+              }}
+            >
+              📋 Copy Credentials
+            </button>
+
+            <button
+              className="cc-btn cc-btn--secondary"
+              style={{ width: '100%', marginTop: '0.5rem' }}
+              onClick={() => setCredsModal(null)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

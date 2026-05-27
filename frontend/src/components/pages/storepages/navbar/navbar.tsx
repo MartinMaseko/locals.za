@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
 import { useAuth } from '../../../../Auth/AuthProvider';
+import { triggerPWAInstall, usePWAInstallAvailable } from '../../../pwa/PWAInstallBanner';
 import './navstyle.css';
 
 const Navbar = () => {
@@ -11,6 +12,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const auth = getAuth(app);
   const { currentUser } = useAuth();
+  const canInstall = usePWAInstallAvailable();
 
   const close = () => { setMenuOpen(false); setAccountOpen(false); };
 
@@ -45,9 +47,6 @@ const Navbar = () => {
           <div className="navbar-icon-group">
             <Link to="/support" className="navbar-icon-btn" aria-label="Support">
               <img src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="Support" />
-            </Link>
-            <Link to="/messages" className="navbar-icon-btn" aria-label="Messages">
-              <img src="https://img.icons8.com/ios-filled/40/ffb803/message-group.png" alt="Messages" />
             </Link>
           </div>
         </div>
@@ -105,17 +104,26 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* 3. Messages */}
-          <Link to="/messages" className="navbar-dropdown-item" onClick={close}>
-            <img className="navbar-dropdown-icon" src="https://img.icons8.com/ios-filled/40/ffb803/message-group.png" alt="" />
-            Messages
+          {/* 4. Calculator */}
+          <Link to="/calculator" className="navbar-dropdown-item" onClick={close}>
+            <img className="navbar-dropdown-icon" src="https://img.icons8.com/ios-filled/40/ffb803/calculator.png" alt="" />
+            Calculator
           </Link>
 
-          {/* 4. Support */}
+          {/* 5. Support */}
           <Link to="/support" className="navbar-dropdown-item" onClick={close}>
             <img className="navbar-dropdown-icon" src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="" />
             Support
           </Link>
+          {/* 6. Install App — only shown when installable / on iOS */}
+          {canInstall && (
+            <button
+              className="navbar-dropdown-item"
+              onClick={() => { triggerPWAInstall(); close(); }}
+            >
+              Install App
+            </button>
+          )}
         </div>
       </div>
     </nav>

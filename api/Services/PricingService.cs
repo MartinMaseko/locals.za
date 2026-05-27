@@ -24,12 +24,15 @@ public class PricingService
     {
         try
         {
+            // Ensure the container exists — first GET after a fresh deploy would
+            // otherwise throw CosmosException 404 (container not found).
+            await _cosmos.EnsureContainerAsync("config", "/id");
             return await _cosmos.GetAsync<PricingConfig>("config", "pricing", "pricing")
                 ?? new PricingConfig();
         }
         catch
         {
-            // Container may not exist yet (first deploy) — defaults are safe
+            // Network / auth issue — safe to fall back to hardcoded defaults
             return new PricingConfig();
         }
     }

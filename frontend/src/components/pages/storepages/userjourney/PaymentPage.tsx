@@ -26,7 +26,7 @@ const PaymentPage = () => {
           className="step-back-btn"
           onClick={() => navigate('/order/delivery')}
         >
-          ← Back
+          ←
         </button>
       )}
 

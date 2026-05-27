@@ -11,6 +11,7 @@ import type {
 } from './wholesale.types';
 import { STEP_PATHS } from './wholesale.types';
 import Navbar from '../navbar/navbar';
+import OrderProgress from './OrderProgress';
 
 /** localStorage key for the in-progress order draft. */
 const STORAGE_KEY = 'lza_order_draft';
@@ -54,18 +55,12 @@ const WholesaleLayout = () => {
     }
   }, [order]);
 
-  const stepIndex = Math.max(
-    0,
-    STEP_PATHS.findIndex(p => location.pathname.endsWith(p)),
-  );
-  const step = stepIndex + 1;
+  const stepIndex = STEP_PATHS.findIndex(p => location.pathname.endsWith(p));
+  const isInFlow = stepIndex !== -1;
+  const step = Math.max(1, stepIndex + 1);
 
   const goTo = (index: number) => navigate(`/order/${STEP_PATHS[index]}`);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2500);
-  };
 
   // ─── Step handlers ───────────────────────────────────────────────────────────
 
@@ -175,12 +170,11 @@ const WholesaleLayout = () => {
   return (
     <div className="order-flow">
       {step === 1 && <Navbar />}
-      <div className="order-progress-track">
-        <div
-          className="order-progress-fill"
-          style={{ width: `${(step / 4) * 100}%` }}
-        />
-      </div>
+
+      {/* Progress tracker — hidden on non-funnel routes (e.g. payment-result) */}
+      {isInFlow && (
+        <OrderProgress step={step} dark={step === 1} />
+      )}
 
       <main className="order-content">
         <Outlet context={context} />

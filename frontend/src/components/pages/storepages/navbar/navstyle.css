@@ -2,6 +2,7 @@
 .navbar {
   width: 100vw;
   position: sticky;
+  background: #090909;
   padding: calc(0.5rem + env(safe-area-inset-top)) 0 0.5rem 0;
   top: 0;
   z-index: 105;

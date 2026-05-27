@@ -200,7 +200,43 @@ const Receipts = () => {
                     rel="noopener noreferrer"
                     className="cc-receipt-img-link"
                   >
-                    <img src={reviewing.blobUrl} alt="Receipt" className="cc-receipt-img" />
+                    <img
+                      src={reviewing.blobUrl}
+                      alt="Receipt"
+                      className="cc-receipt-img"
+                      onError={e => {
+                        const img = e.currentTarget;
+                        img.style.display = 'none';
+                        const placeholder = img.parentElement?.querySelector('.cc-receipt-img-error') as HTMLElement | null;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                    />
+                    {/* Shown when blob returns 404 / ResourceNotFound */}
+                    <div
+                      className="cc-receipt-img-error"
+                      style={{
+                        display: 'none',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '1.5rem',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px dashed rgba(255,184,3,0.3)',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        fontSize: '0.82rem',
+                        color: '#aaa',
+                      }}
+                    >
+                      <span style={{ fontSize: '1.8rem' }}>🖼️</span>
+                      <span>Image not publicly accessible</span>
+                      <span style={{ fontSize: '0.72rem', color: '#666' }}>
+                        Set the <strong style={{ color: '#FFB803' }}>receipts</strong> container
+                        to <strong style={{ color: '#FFB803' }}>Blob</strong> access in Azure Portal
+                        → Storage accounts → localszastorage → Containers → receipts → Change access level
+                      </span>
+                    </div>
                     <span className="cc-receipt-img-hint">Open full size ↗</span>
                   </a>
                 ) : (
@@ -345,8 +381,8 @@ const Receipts = () => {
                     onChange={e => setAssignedDriver(e.target.value)}
                   >
                     <option value="">— Assign after confirming —</option>
-                    {drivers.map(d => (
-                      <option key={d.driver_id} value={d.driver_id}>
+                    {drivers.filter(d => d.driver_id).map((d, i) => (
+                      <option key={d.driver_id || `driver-${i}`} value={d.driver_id}>
                         {d.full_name}
                         {d.vehicle_type ? ` · ${d.vehicle_type}` : ''}
                         {d.status === 'available' ? ' ✓' : d.status === 'on_delivery' ? ' (busy)' : ' (offline)'}

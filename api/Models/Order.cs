@@ -48,6 +48,10 @@ public class Order
     [JsonPropertyName("receipt_id")]
     public string?         ReceiptId       { get; set; }      // links to Cosmos receipts container
 
+    // Captured during UploadReceipt step — shown to drivers on the delivery screen
+    public string          CustomerName    { get; set; } = "";
+    public string          ContactNumber   { get; set; } = "";
+
     [JsonPropertyName("weight_class")]
     public string          WeightClass     { get; set; } = "light"; // light|medium|heavy|bulk
 

@@ -1,35 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import { compression } from 'vite-plugin-compression2'; // Import compression
 import path from 'path';
 
 export default defineConfig({
   plugins: [
     react(),
-    // Add compression to reduce file transfer size
-    compression({ algorithms: ['gzip'] }),
-    compression({ algorithms: ['brotliCompress'], exclude: [/\.(br)$/, /\.(gz)$/] }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-      manifest: {
-        name: 'LocalsZA',
-        short_name: 'LocalsZA',
-        theme_color: '#ffffff',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      },
+      // Use the hand-crafted manifest.webmanifest in /public instead of generating one.
+      // This avoids duplicating manifest entries and keeps icons pointing to correct paths.
+      manifest: false,
+      includeAssets: ['locals-favicon.svg', 'assets/icons/icon-192x192.png', 'assets/icons/icon-512x512.png'],
       workbox: {
         cleanupOutdatedCaches: true,
         sourcemap: true,
@@ -99,12 +81,16 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // Split out heavy libraries
-            if (id.includes('firebase')) return 'firebase-core';
-            if (id.includes('react-dom')) return 'react-dom'; // Split React DOM
-            if (id.includes('react-router')) return 'react-router';
-            if (id.includes('slick-carousel')) return 'ui-carousel';
-            if (id.includes('react')) return 'react-core';
+            // Split out heavy libraries first (order matters — most specific first)
+            if (id.includes('firebase'))            return 'firebase-core';
+            if (id.includes('react-dom'))           return 'react-dom';
+            if (id.includes('react-router'))        return 'react-router';
+            if (id.includes('azure-maps-control'))  return 'azure-maps';
+            if (id.includes('@supabase'))            return 'supabase';
+            if (id.includes('date-fns'))             return 'date-fns';
+            if (id.includes('axios'))                return 'axios';
+            if (id.includes('slick-carousel'))       return 'ui-carousel';
+            if (id.includes('react'))                return 'react-core';
             return 'vendor';
           }
           // Existing page splitting

@@ -182,7 +182,7 @@ const UploadReceipt = () => {
         className="step-back-btn"
         onClick={() => navigate('/order/select-store')}
       >
-        ← Back
+        ←
       </button>
 
       <h1 className="step-title">Upload your receipt</h1>

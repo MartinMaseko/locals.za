@@ -29,6 +29,13 @@ public class Driver
     // "offline" | "available" | "on_delivery"
     public string  Status       { get; set; } = "offline";
 
+    /// <summary>
+    /// SHA-256 hex of "{driver_id}:{pin}". Set by admin on creation / PIN reset.
+    /// Never returned to the frontend — excluded via projection or omitted from responses.
+    /// </summary>
+    [JsonPropertyName("pin_hash")]
+    public string  PinHash      { get; set; } = "";
+
     [JsonPropertyName("current_location")]
     public DriverLocation? CurrentLocation { get; set; }
 

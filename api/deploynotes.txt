@@ -176,6 +176,79 @@ CLEAN UP (optional, after successful deploy)
 ----------------------------------------------------
 LAST DEPLOYED
 ----------------------------------------------------
+  Date    : 2026-05-27
+  By      : kmmas
+  Version : Slice 14 (Driver system refactor — PIN auth + job workflow)
+  Notes   : Backend:
+            1. Driver.cs — added PinHash field (SHA-256 hex of "{driverId}:{pin}").
+            2. Order.cs — added CustomerName + ContactNumber (captured on receipt
+               upload, shown to driver on the delivery screen).
+            3. AdminEndpoints — POST /api/admin/drivers now requires `pin`,
+               hashes it with SHA-256(driverId:pin), stores as pin_hash.
+               Returns credentials {driver_id, pin} once (plain text) for staff.
+               New DELETE /api/admin/drivers/{driverId} removes driver from Cosmos.
+            4. DriverEndpoints — complete rewrite:
+               • HashPin / SafeDriver helpers.
+               • PATCH /api/drivers/me/status (available|offline toggle).
+               • GET /api/drivers/me/jobs (all assigned jobs).
+               • GET /api/drivers/me/jobs/{orderId} (single job, 403 if not theirs).
+               • PATCH /api/drivers/me/jobs/{orderId}/status (status progression:
+                 assigned→accepted→arrivedAtPickup→loaded→delivered; on delivered
+                 sets driverPayout=deliveryFee*0.8, platformFee*0.2, driver=available).
+               • GET /api/drivers/me/revenue (today/week/month/allTime/trips).
+               • POST /api/drivers/verify-credentials — Driver ID + PIN hash auth.
+               • POST /api/drivers/login-link — issues Firebase custom token.
+            Frontend:
+            5. adminApi.ts — createDriver includes pin param + CreatedDriverResponse
+               type; deleteDriver() added.
+            6. Drivers.tsx (CC) — PIN field in create form; credentials modal shown
+               once after creation (Driver ID + PIN to share with driver); delete
+               button with confirmation on each driver card.
+            7. DriverLogin.tsx — replaced Full Name+ID with Driver ID + PIN flow.
+            8. driversDash.tsx — rewritten: online/offline toggle
+               (PATCH /api/drivers/me/status), live job list from
+               GET /api/drivers/me/jobs, status-coloured cards, payout preview.
+            9. driverDeliveries.tsx — rewritten: status progression buttons
+               (Accept → Arrived at Store → Loaded → Delivered), customer info,
+               Waze navigation link, real PATCH /api/drivers/me/jobs/{id}/status.
+           10. driverRevenue.tsx — rewritten: real earnings from
+               GET /api/drivers/me/revenue (today/week/month/allTime/trips).
+           11. driverNav.tsx — added online/offline status indicator dot.
+           12. DriverLayout.tsx — fixed redirect to /driverlogin.
+  Build   : Self-contained linux-x64 (54 MB, C:\Temp\lza-deploy.zip)
+  Status  : ✓ Deployed — RuntimeSuccessful at 20:04 UTC
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
+  Date    : 2026-05-27
+  By      : kmmas
+  Version : Slice 13 (Pricing config fix + font + calculator page)
+  Notes   : 1. CosmoService — added EnsureContainerAsync(name, pkPath).
+               Calls CreateContainerIfNotExistsAsync so containers are
+               provisioned automatically on first use (no manual Azure
+               Portal step required).
+            2. AdminEndpoints PUT /api/admin/pricing — wrapped in try/catch,
+               calls EnsureContainerAsync("config","/id") before upsert.
+               Fixes 500 on first-ever Save Config (container didn't exist).
+            3. PricingService.GetConfigAsync — also calls EnsureContainerAsync
+               so the container is created on first GET as well.
+            4. Font: replaced Michroma/Montserrat with Inter across all CSS
+               and index.html. Changed display=block → display=swap to fix
+               invisible-text flash on first load.
+            5. Calculator page: new /calculator route + navbar link. Sales
+               tool comparing customer transport costs vs LocalsZA pricing.
+            6. Deliveries.tsx: deduplication + composite key to silence
+               React duplicate-key warnings from Cosmos cross-partition query.
+            7. Receipts.tsx: driver dropdown filters empty driver_id; image
+               onError handler shows inline fix instructions when Azure blob
+               container is private (ResourceNotFound).
+  Build   : Self-contained linux-x64 (54.3 MB, C:\Temp\lza-deploy.zip)
+  Status  : ✓ Deployed — /health 200 at 19:18 UTC
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
   Date    : 2026-05-26
   By      : kmmas
   Version : Slice 12 (Receipt review workflow + Driver management)

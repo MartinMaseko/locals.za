@@ -55,4 +55,16 @@ public class CosmosService
 
     public async Task DeleteAsync(string container, string id, string partitionKey)
         => await C(container).DeleteItemAsync<object>(id, new PartitionKey(partitionKey));
+
+    /// <summary>
+    /// Creates the Cosmos container if it doesn't already exist.
+    /// Safe to call on every request — SDK returns 200 OK when the container is
+    /// already present. Use this before any upsert on containers that may not
+    /// have been manually created (e.g. "config" on first deploy).
+    /// </summary>
+    public async Task EnsureContainerAsync(string name, string partitionKeyPath = "/id")
+    {
+        var db = _client.GetDatabase(_db);
+        await db.CreateContainerIfNotExistsAsync(name, partitionKeyPath);
+    }
 }

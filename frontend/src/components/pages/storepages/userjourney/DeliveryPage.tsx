@@ -236,7 +236,7 @@ const DeliveryPage = () => {
         className="step-back-btn"
         onClick={() => navigate('/order/upload-receipt')}
       >
-        Back
+        ←
       </button>
 
       <h1 className="step-title">Delivery details</h1>

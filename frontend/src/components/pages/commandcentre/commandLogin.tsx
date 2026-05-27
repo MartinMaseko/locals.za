@@ -24,10 +24,10 @@ const CommandLogin = () => {
     setError('');
     try {
       // Validate against backend admin auth
-      const response = await axios.post(`${API_URL}/api/admin/auth`, {
-        email: form.email,
-        password: form.password,
-      });
+      const response = await axios.post<{ isAdmin: boolean; token?: string }>(
+        `${API_URL}/api/admin/auth`,
+        { email: form.email, password: form.password },
+      );
 
       if (response.data.isAdmin && response.data.token) {
         // Admin confirmed — store auth state and the signed token for API calls

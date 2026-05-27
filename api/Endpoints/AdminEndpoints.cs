@@ -1,6 +1,8 @@
 using LocalsZaApi.Models;
 using LocalsZaApi.Services;
 using Azure.Storage.Blobs.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace LocalsZaApi.Endpoints;
 
@@ -8,6 +10,15 @@ public static class AdminEndpoints
 {
     private static IResult Forbidden()
         => Results.Json(new { error = "Admin access required" }, statusCode: 403);
+
+    /// <summary>
+    /// Produces the same salted SHA-256 hash used by DriverEndpoints.
+    /// Salt = driver_id so identical PINs produce different hashes.
+    /// </summary>
+    private static string HashPin(string driverId, string pin)
+        => Convert.ToHexString(
+               SHA256.HashData(Encoding.UTF8.GetBytes($"{driverId}:{pin}"))
+           ).ToLower();
 
     public static void MapAdminEndpoints(this WebApplication app)
     {
@@ -215,26 +226,63 @@ public static class AdminEndpoints
             var body = await ctx.Request.ReadFromJsonAsync<CreateDriverBody>();
             if (body is null || string.IsNullOrWhiteSpace(body.FullName))
                 return Results.BadRequest(new { error = "fullName is required" });
+            if (string.IsNullOrWhiteSpace(body.Pin))
+                return Results.BadRequest(new { error = "pin is required" });
 
             var driverId = !string.IsNullOrWhiteSpace(body.DriverId)
-                ? body.DriverId
+                ? body.DriverId.Trim()
                 : $"DRV-{DateTime.UtcNow:yyMMddHHmmss}";
 
             var driver = new Driver
             {
                 Id           = driverId,
                 DriverId     = driverId,
-                FullName     = body.FullName,
+                FullName     = body.FullName.Trim(),
                 Email        = body.Email ?? "",
                 PhoneNumber  = body.PhoneNumber ?? "",
                 VehicleType  = body.VehicleType ?? "bakkie",
                 VehicleModel = body.VehicleModel ?? "",
                 Status       = "offline",
+                PinHash      = HashPin(driverId, body.Pin.Trim()),
                 CreatedAt    = DateTime.UtcNow.ToString("o"),
             };
 
             var saved = await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
-            return Results.Created($"/api/drivers/{driver.DriverId}", saved);
+
+            // Return the safe record plus the plain-text driverId + pin
+            // for the command centre to display once (PIN is never stored in plain text)
+            return Results.Created($"/api/drivers/{driver.DriverId}", new
+            {
+                id           = saved.Id,
+                driver_id    = saved.DriverId,
+                full_name    = saved.FullName,
+                email        = saved.Email,
+                phone_number = saved.PhoneNumber,
+                vehicle_type = saved.VehicleType,
+                vehicle_model= saved.VehicleModel,
+                status       = saved.Status,
+                created_at   = saved.CreatedAt,
+                // Returned once so staff can share credentials with the driver.
+                // Pin is NOT stored in plain text — this is the only time it appears.
+                credentials  = new { driver_id = driverId, pin = body.Pin.Trim() },
+            });
+        });
+
+        // ── Delete driver account ─────────────────────────────────────────────
+        app.MapDelete("/api/admin/drivers/{driverId}", async (HttpContext ctx,
+            string driverId, CosmosService cosmos) =>
+        {
+            if (!AuthHelpers.IsAdmin(ctx)) return Forbidden();
+
+            var drivers = await cosmos.QueryAsync<Driver>("drivers",
+                "SELECT * FROM c WHERE c.driver_id = @id",
+                new() { ["@id"] = driverId });
+
+            var driver = drivers.FirstOrDefault();
+            if (driver is null) return Results.NotFound(new { error = "Driver not found" });
+
+            await cosmos.DeleteAsync("drivers", driver.Id, driver.DriverId);
+            return Results.Ok(new { deleted = true, driver_id = driverId });
         });
 
         // ── Upload store logo ────────────────────────────────────────────────
@@ -275,8 +323,21 @@ public static class AdminEndpoints
             config.Id        = "pricing";
             config.UpdatedAt = DateTime.UtcNow.ToString("o");
 
-            await cosmos.UpsertAsync("config", config, "pricing");
-            return Results.Ok(config);
+            try
+            {
+                // Create the "config" container on first save if it doesn't exist yet.
+                // Partition key path is "/id" — the single document has id = "pricing".
+                await cosmos.EnsureContainerAsync("config", "/id");
+                await cosmos.UpsertAsync("config", config, "pricing");
+                return Results.Ok(config);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(
+                    title:      "Failed to save pricing config",
+                    detail:     ex.Message,
+                    statusCode: 500);
+            }
         });
     }
 }
@@ -286,6 +347,7 @@ record ReceiptReviewPatch(string Status, string? Note, List<ReceiptItem>? Items,
 record AssignDriverPatch(string DriverId);
 record CreateDriverBody(
     string FullName,
+    string Pin,
     string? DriverId,
     string? Email,
     string? PhoneNumber,

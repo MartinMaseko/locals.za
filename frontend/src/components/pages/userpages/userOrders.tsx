@@ -54,7 +54,6 @@ const UserOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const auth = getAuth(app);
   
   // Access the global loading context
@@ -147,23 +146,6 @@ const UserOrders: React.FC = () => {
     };
   }, [auth]);
 
-  // Cancel a pending_payment order
-  const handleCancelOrder = async (orderId: string) => {
-    setCancellingOrderId(orderId);
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      const token = await user.getIdToken();
-      await axios.put(`${API_URL}/api/orders/${orderId}/cancel`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
-    } catch (err: any) {
-      // Cancel order failed
-    } finally {
-      setCancellingOrderId(null);
-    }
-  };
 
   // Loading state and UI
   if (loading) return (

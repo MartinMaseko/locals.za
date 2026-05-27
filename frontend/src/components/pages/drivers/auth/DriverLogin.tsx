@@ -1,129 +1,55 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
 import axios from 'axios';
 import '../../../assets/UI/loginReg.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-type VerifyCredentialsResponse = {
-  firebase_uid: string;
-  driver_id: string;
-  email?: string;
-  success?: boolean;
-  [key: string]: any;
-};
-
-type LoginLinkResponse = {
-  temporaryPassword: string;
-  customToken: string;
-  success?: boolean;
-  [key: string]: any;
-};
-
 const DriverLogin: React.FC = () => {
-  const [formData, setFormData] = useState({
-    full_name: '',
-    driver_id: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [driverId, setDriverId] = useState('');
+  const [pin, setPin]           = useState('');
+  const [showPin, setShowPin]   = useState(false);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
   const auth = getAuth(app);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!driverId.trim() || !pin.trim()) {
+      setError('Driver ID and PIN are required.');
+      return;
+    }
     setError('');
     setLoading(true);
 
     try {
-      // Step 1: Verify driver credentials
-      const verifyResponse = await axios.post<VerifyCredentialsResponse>(`${API_URL}/api/drivers/verify-credentials`, {
-        full_name: formData.full_name,
-        driver_id: formData.driver_id
+      // Step 1 — verify Driver ID + PIN (throws on 401/403 if invalid)
+      await axios.post(`${API_URL}/api/drivers/verify-credentials`, {
+        driver_id: driverId.trim(),
+        pin:       pin.trim(),
       });
 
-      // Check if we have the firebase_uid - that's all we need for custom token auth
-      if (!verifyResponse.data || !verifyResponse.data.firebase_uid) {
-        throw new Error('Failed to verify driver credentials');
-      }
-
-      // Step 2: Get temporary login credentials
-      const { firebase_uid } = verifyResponse.data;
-
-      const loginResponse = await axios.post<LoginLinkResponse>(`${API_URL}/api/drivers/login-link`, {
-        driver_id: formData.driver_id,
-        firebase_uid: firebase_uid
+      // Step 2 — get Firebase custom token
+      const tokenRes = await axios.post<{ customToken: string }>(`${API_URL}/api/drivers/login-link`, {
+        driver_id: driverId.trim(),
       });
 
-      // Check if we have the login response
-      if (!loginResponse.data) {
-        throw new Error('Failed to generate login credentials');
-      }
-
-      // Try to authenticate with custom token (preferred method)
-      if (loginResponse.data.customToken) {
-        try {
-          await signInWithCustomToken(auth, loginResponse.data.customToken);
-          navigate('/driversdashboard');
-          return;
-        } catch (customTokenError) {
-          // Fall back to email/password if available
-        }
-      }
-
-      // Fall back to email/password if we have both email and temporaryPassword
-      if (loginResponse.data.temporaryPassword && verifyResponse.data.email) {
-        const temporaryPassword = loginResponse.data.temporaryPassword;
-        const email = verifyResponse.data.email;
-
-        try {
-          // Ensure email is a string and not undefined or null
-          if (typeof email !== 'string' || !email.includes('@')) {
-            throw new Error('Invalid email format');
-          }
-          
-          await signInWithEmailAndPassword(auth, email, temporaryPassword);
-          navigate('/driversdashboard');
-        } catch (emailPassError: any) {
-          throw emailPassError;
-        }
-      } else {
-        if (!loginResponse.data.customToken) {
-          throw new Error('No authentication method available');
-        }
-      }
+      // Step 3 — sign in with the custom token
+      await signInWithCustomToken(auth, tokenRes.data.customToken);
+      navigate('/driversdashboard');
     } catch (err: any) {
-      // Handle different error types
-      if (err.response) {
-        // Server responded with an error status
-        if (err.response.status === 401) {
-          setError('Invalid driver credentials. Please check your name and driver ID.');
-        } else if (err.response.status === 403) {
-          setError('Access denied. Your account may be disabled.');
-        } else {
-          setError(err.response.data?.error || 'Login failed. Please try again.');
-        }
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        setError('Authentication failed. Please contact support.');
-      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
-        setError('Driver account not properly set up. Please contact support.');
-      } else if (err.code === 'auth/missing-email') {
-        setError('Missing email information. Please contact support.');
+      if (err.response?.status === 401) {
+        setError('Invalid Driver ID or PIN. Please check your credentials.');
+      } else if (err.response?.status === 403) {
+        setError('Your account is not active. Please contact support.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
       } else if (err.request) {
-        // Request was made but no response
-        setError('No response from server. Please check your connection and try again.');
+        setError('No response from server. Please check your connection.');
       } else {
-        // Error setting up request
         setError('Login failed. Please try again or contact support.');
       }
     } finally {
@@ -133,70 +59,79 @@ const DriverLogin: React.FC = () => {
 
   return (
     <div className="registerLogin-container driver-login-container">
-      <img src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FdriverLogo.png?alt=media&token=f9413fdd-7ea8-43d9-a013-8161dd5bd34f" alt="Locals ZA" className="reg-logo" />
-      
+      <img
+        src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FdriverLogo.png?alt=media&token=f9413fdd-7ea8-43d9-a013-8161dd5bd34f"
+        alt="Locals ZA"
+        className="reg-logo"
+      />
+
       <h1>LocalsZA</h1>
       <p className="driver-login-subtitle">Driver Login</p>
-      
+
       {error && <div className="error-message">{error}</div>}
-      
+
       <form onSubmit={handleSubmit} className="app-form driver-login-form">
         <div className="form-group">
           <input
             type="text"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
-            placeholder="Full Name"
-            required
             id="driver-login-input"
+            value={driverId}
+            onChange={e => setDriverId(e.target.value)}
+            placeholder="Driver ID (e.g. DRV-241103120045)"
+            required
+            autoComplete="username"
           />
         </div>
-        
-        <div className="form-group">
+
+        <div className="form-group" style={{ position: 'relative' }}>
           <input
-            type="text"
-            name="driver_id"
-            value={formData.driver_id}
-            onChange={handleChange}
-            placeholder="Driver ID"
+            type={showPin ? 'text' : 'password'}
+            id="driver-pin-input"
+            inputMode="numeric"
+            value={pin}
+            onChange={e => setPin(e.target.value)}
+            placeholder="PIN"
             required
-            id="driver-login-input"
+            autoComplete="current-password"
+            style={{ paddingRight: '3rem' }}
           />
+          <button
+            type="button"
+            onClick={() => setShowPin(v => !v)}
+            style={{
+              position: 'absolute', right: '0.75rem', top: '50%',
+              transform: 'translateY(-50%)', background: 'none',
+              border: 'none', cursor: 'pointer', color: '#aaa', fontSize: '0.8rem',
+            }}
+          >
+            {showPin ? 'hide' : 'show'}
+          </button>
         </div>
-        
-        <button 
-          type="submit" 
-          className="app-btn"
-          disabled={loading}
-        >
-          {loading ? 'Signing in...' : 'Sign In'}
+
+        <button type="submit" className="app-btn" disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
-      
+
       <div className="driver-help">
-        <p>Need help? Email support at <strong className='help-cta'>admin@locals-za.co.za</strong></p>
-        <p>WhatsApp Support</p> 
-        <a 
-                href="https://wa.me/27682858930" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="whatsapp-link"
-                aria-label="Contact us on WhatsApp"
-              >
-                <div className="whatsapp-icon pulsate">
-                  <img 
-                    width="48" 
-                    height="48" 
-                    src="https://img.icons8.com/color/48/whatsapp--v1.png" 
-                    alt="WhatsApp Support"
-                  />
-                </div>
-              </a>
-      </div>
-        <a href="/" className="back-to-app">
-          Back to Store
+        <p>Need help? Email <strong className="help-cta">admin@locals-za.co.za</strong></p>
+        <p>WhatsApp Support</p>
+        <a
+          href="https://wa.me/27682858930"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="whatsapp-link"
+          aria-label="Contact us on WhatsApp"
+        >
+          <div className="whatsapp-icon pulsate">
+            <img width="48" height="48"
+              src="https://img.icons8.com/color/48/whatsapp--v1.png"
+              alt="WhatsApp Support"
+            />
+          </div>
         </a>
+      </div>
+      <a href="/" className="back-to-app">Back to Store</a>
     </div>
   );
 };

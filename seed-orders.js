@@ -1,589 +1,485 @@
 /**
- * LocalsZA — Order Seed Script
- * -------------------------------------------------------
- * Writes 50 mock orders directly to Cosmos DB for testing
- * the admin dashboard (deliveries, metrics, driver revenue).
+ * LocalsZA — Seed Script v2
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Populates Cosmos DB with realistic post-payment orders that match the actual
+ * user journey:  SelectStore → UploadReceipt → Delivery quote → Pay →
+ * order lands in Command Centre (Deliveries tab) as "pending".
  *
- * Areas: Katlehong, Vosloorus, Alberton, Germiston, Boksburg
- *        (10 orders each)
+ * Modes
+ * ─────
+ *   node seed-orders.js                  Seed 25 orders + receipt documents
+ *   node seed-orders.js --drivers        Seed 4 driver accounts
+ *   node seed-orders.js --upload-images  Upload local receipt photos to Azure
+ *                                        Blob then print the blob URLs to paste
+ *                                        into RECEIPT_IMAGES below.
  *
- * Prerequisites (run once in this folder):
- *   npm install @azure/cosmos
+ * Prerequisites
+ * ─────────────
+ *   npm install @azure/cosmos            (always required)
+ *   npm install @azure/storage-blob      (only for --upload-images)
  *
- * Usage:
- *   node seed-orders.js
+ * Receipt images workflow
+ * ───────────────────────
+ *   1. Create a ./seed-receipts/ folder next to this file.
+ *   2. Drop in:
+ *        receipt-1.(jpg|png)  →  Mokoena's C&C beverages (table photo)
+ *        receipt-2.(jpg|png)  →  Mokoena's C&C dry goods (printer photo)
+ *        receipt-3.(jpg|png)  →  Gumede's Wholesale Outlet
+ *   3. Run:  node seed-orders.js --upload-images
+ *   4. Copy the 3 blob URLs printed to the console into RECEIPT_IMAGES below.
+ *   5. Run:  node seed-orders.js
  *
- * Safe to re-run — uses fixed IDs (seed-order-001 … 050)
- * so it upserts rather than duplicates.
- * -------------------------------------------------------
+ * Safe to re-run — fixed IDs (seed-order-001 … 025) → upserts, no duplicates.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
+'use strict';
 const { CosmosClient } = require('@azure/cosmos');
-const { randomUUID }   = require('crypto'); // built-in Node ≥ 14.17
+const path             = require('path');
+const fs               = require('fs');
 
-// ── CONFIG (from appsettings.Development.json) ────────────────────────────────
+// ── COSMOS CONFIG ─────────────────────────────────────────────────────────────
 const COSMOS_ENDPOINT = 'https://localsza-cosmos.documents.azure.com:443/';
 const COSMOS_KEY      = 'REDACTED_COSMOS_KEY=';
 const DB_NAME         = 'localsza';
-const CONTAINER       = 'orders';
+
+// ── AZURE BLOB CONFIG (only used for --upload-images) ─────────────────────────
+const BLOB_CONN_STR  = 'DefaultEndpointsProtocol=https;AccountName=localszastorage;AccountKey=REDACTED_STORAGE_KEY=;EndpointSuffix=core.windows.net';
+const BLOB_CONTAINER = 'receipts';
+
 // ─────────────────────────────────────────────────────────────────────────────
+// RECEIPT IMAGES
+// ─────────────────────────────────────────────────────────────────────────────
+// Paste the Azure Blob URLs here after running:  node seed-orders.js --upload-images
+//
+// If blobUrl is left as an empty string the seed will fall back to a
+// descriptive placehold.co URL so the rest of the data still seeds correctly.
+// ─────────────────────────────────────────────────────────────────────────────
+const RECEIPT_IMAGES = [
+  // ── Image 0 ── Mokoena's C&C — beverages (table photo) ───────────────────
+  {
+    blobUrl:           'https://localszastorage.blob.core.windows.net/receipts/seed-receipt-1-1779876850192.jpg',
+    storeName:         "Mokoena's Cash & Carry",
+    date:              '12/03/2026',
+    subtotal:          1174.90,
+    total:             1351.14,
+    items: [
+      { description: 'Coca-Cola Original 2L Btl',        qty: 10, unitPrice: 22.99,  lineTotal: 229.90,  estimatedKg:  2.2 },
+      { description: 'Fanta Orange 2L Btl',              qty:  5, unitPrice: 21.50,  lineTotal: 107.50,  estimatedKg:  2.1 },
+      { description: 'Bonaqua Still Water 500ml',        qty: 12, unitPrice:  7.50,  lineTotal:  90.00,  estimatedKg: 0.55 },
+      { description: 'Score Energy Drink 500ml (6×6pk)', qty:  3, unitPrice: 65.00,  lineTotal: 195.00,  estimatedKg:  3.6 },
+      { description: 'Appletiser 330ml Can (×6pk)',      qty:  4, unitPrice: 72.50,  lineTotal: 290.00,  estimatedKg:  2.3 },
+      { description: 'Liqui-Fruit Berry Blaze 2L Btl',   qty:  1, unitPrice: 28.00,  lineTotal:  28.00,  estimatedKg:  2.1 },
+      { description: 'Iwisa Maize Meal 10 kg Bag',       qty:  1, unitPrice: 145.00, lineTotal: 145.00,  estimatedKg: 10.0 },
+      { description: 'Huletts Sugar 5 kg Bag',           qty:  1, unitPrice:  89.50, lineTotal:  89.50,  estimatedKg:  5.0 },
+    ],
+    estimatedWeightKg: 74.4,
+    weightClass:       'heavy',
+    qualityScore:      0.88,
+    warnings:          [],
+  },
 
-// ── Reference data ────────────────────────────────────────────────────────────
+  // ── Image 1 ── Mokoena's C&C — dry goods (printer photo) ─────────────────
+  {
+    blobUrl:           'https://localszastorage.blob.core.windows.net/receipts/seed-receipt-2-1779876851819.jpg',
+    storeName:         "Mokoena's Cash & Carry",
+    date:              '12/02/2026',
+    subtotal:          1995.00,
+    total:             2294.25,
+    items: [
+      { description: 'Iwisa Maize Meal 10 kg',     qty: 3, unitPrice: 145.00, lineTotal: 435.00,  estimatedKg: 10.0 },
+      { description: 'Golden Penny Flour 25 kg',   qty: 2, unitPrice: 310.00, lineTotal: 620.00,  estimatedKg: 25.0 },
+      { description: 'Juko Tea Bags 100pk',        qty: 1, unitPrice: 140.00, lineTotal: 140.00,  estimatedKg:  0.8 },
+      { description: 'Knorr Soup Packets',         qty: 4, unitPrice:  18.25, lineTotal:  73.00,  estimatedKg:  0.2 },
+      { description: 'Bulk Cleaning Paper 60pk',   qty: 1, unitPrice:  97.00, lineTotal:  97.00,  estimatedKg:  3.0 },
+      { description: 'Cleaning Detergent 5 L',     qty: 2, unitPrice: 115.00, lineTotal: 230.00,  estimatedKg:  5.5 },
+      { description: 'Bulk Cooking Oil 20 L',      qty: 1, unitPrice: 400.00, lineTotal: 400.00,  estimatedKg: 18.5 },
+    ],
+    estimatedWeightKg: 93.0,
+    weightClass:       'bulk',
+    qualityScore:      0.82,
+    warnings:          [],
+  },
 
-// Store IDs from seed-stores.js (must be seeded first)
-const STORES = {
-  katlehong:  'katlehong-cash-carry',
-  germiston:  'sa-cash-and-carry',
-  germiston2: 'germiston-trade-centre',
-  vosloorus:  'shoprite',
-  vosloorus2: 'vosloorus-trade-hub',
-  alberton:   'sa-cash-and-carry',
-};
-
-const DRIVER_IDS = [
-  'driver-mthembu-001',
-  'driver-dlamini-002',
-  'driver-nkosi-003',
-  'driver-sithole-004',
+  // ── Image 2 ── Gumede's Wholesale Outlet — bulk restocking ───────────────
+  {
+    blobUrl:           'https://localszastorage.blob.core.windows.net/receipts/seed-receipt-3-1779876851916.jpg',
+    storeName:         "Gumede's Wholesale Outlet",
+    date:              '19/05/2026',
+    subtotal:          42660.00,
+    total:             49059.00,
+    items: [
+      { description: 'Golden Glory Rice 10 kg',           qty: 100, unitPrice: 125.00, lineTotal: 12500.00, estimatedKg: 10.0 },
+      { description: 'Simba Chips Assorted 48pk',         qty:  50, unitPrice: 204.00, lineTotal: 10200.00, estimatedKg:  1.5 },
+      { description: 'Coca-Cola Original 2L (6pk)',       qty:  30, unitPrice: 110.00, lineTotal:  3300.00, estimatedKg: 13.0 },
+      { description: 'Bulk Sugar (Huletts) 25 kg',        qty:  20, unitPrice: 350.00, lineTotal:  7000.00, estimatedKg: 25.0 },
+      { description: 'Bulk Cleaning Supplies (Ajax) 5 L', qty:  10, unitPrice: 180.00, lineTotal:  1800.00, estimatedKg:  5.5 },
+      { description: 'Knorr Popp Packets',                qty:  10, unitPrice: 116.00, lineTotal:  1160.00, estimatedKg:  0.4 },
+      { description: 'Bulk Cooking Oil 20 L',             qty:  10, unitPrice: 340.00, lineTotal:  3400.00, estimatedKg: 18.5 },
+      { description: 'Bulk Crate Soft Drinks (24-pack)',  qty:  10, unitPrice: 330.00, lineTotal:  3300.00, estimatedKg: 10.0 },
+    ],
+    estimatedWeightKg: 950.0,
+    weightClass:       'bulk',
+    qualityScore:      0.91,
+    warnings:          ['Very large order — may require truck transport'],
+  },
 ];
 
-const PLACEHOLDER_RECEIPT_IMG =
-  'https://placehold.co/800x600/cccccc/666666?text=Receipt+Image';
-
-// Wholesale products — realistic East Rand cash-and-carry stock
-const PRODUCTS = [
-  { description: 'Coca-Cola 2L (6-pack)',               unitPrice: 89.99,  estimatedKg: 12.0 },
-  { description: 'Sunflower Oil 2L',                    unitPrice: 54.99,  estimatedKg: 1.9  },
-  { description: 'White Maize Meal 12.5 kg',            unitPrice: 159.99, estimatedKg: 12.5 },
-  { description: 'Albany White Bread 700 g',            unitPrice: 19.99,  estimatedKg: 0.7  },
-  { description: 'Omo Washing Powder 2 kg',             unitPrice: 79.99,  estimatedKg: 2.0  },
-  { description: 'Toilet Paper 18-roll Pack',           unitPrice: 89.99,  estimatedKg: 1.8  },
-  { description: 'White Sugar 2.5 kg',                  unitPrice: 49.99,  estimatedKg: 2.5  },
-  { description: 'Frozen Chicken Portions 2 kg',        unitPrice: 129.99, estimatedKg: 2.0  },
-  { description: 'Glenryck Pilchards 400 g (6-pack)',   unitPrice: 79.99,  estimatedKg: 2.4  },
-  { description: 'Long Grain Rice 5 kg',                unitPrice: 89.99,  estimatedKg: 5.0  },
-  { description: 'Candles 10-pack',                     unitPrice: 24.99,  estimatedKg: 0.5  },
-  { description: 'Maggi Noodles 30-pack',               unitPrice: 59.99,  estimatedKg: 1.5  },
-  { description: 'Fanta Orange 2L (6-pack)',             unitPrice: 84.99,  estimatedKg: 12.0 },
-  { description: 'Knorrox Stock Cubes 12-pack',         unitPrice: 29.99,  estimatedKg: 0.3  },
-  { description: 'Full Cream Milk 1L (6-pack)',          unitPrice: 119.99, estimatedKg: 6.0  },
-  { description: 'Simba Chips 120 g (12-pack)',          unitPrice: 99.99,  estimatedKg: 1.4  },
-  { description: 'Wilson\'s All Gold Tomato Sauce 700 g', unitPrice: 34.99, estimatedKg: 0.7 },
-  { description: 'Handy Andy Multipurpose 750 ml (4-pack)', unitPrice: 69.99, estimatedKg: 3.0 },
+// ── DRIVERS ───────────────────────────────────────────────────────────────────
+// Seeded to the `drivers` Cosmos container via:  node seed-orders.js --drivers
+// These populate the driver dropdown in Receipts.tsx.
+const DRIVERS = [
+  {
+    id:            'driver-mthembu-001',
+    driver_id:     'driver-mthembu-001',
+    firebase_uid:  null,
+    full_name:     'Tebogo Mthembu',
+    email:         'tebogo.mthembu@localsza.co.za',
+    phone_number:  '+27820011001',
+    vehicle_type:  'bakkie',
+    vehicle_model: 'Toyota Hilux 2.4 GD-6',
+    status:        'available',
+    created_at:    '2026-01-15T08:00:00.000Z',
+  },
+  {
+    id:            'driver-dlamini-002',
+    driver_id:     'driver-dlamini-002',
+    firebase_uid:  null,
+    full_name:     'Lungisa Dlamini',
+    email:         'lungisa.dlamini@localsza.co.za',
+    phone_number:  '+27820022002',
+    vehicle_type:  'van',
+    vehicle_model: 'Volkswagen Caddy 2.0 TDI',
+    status:        'available',
+    created_at:    '2026-01-20T08:00:00.000Z',
+  },
+  {
+    id:            'driver-nkosi-003',
+    driver_id:     'driver-nkosi-003',
+    firebase_uid:  null,
+    full_name:     'Sizwe Nkosi',
+    email:         'sizwe.nkosi@localsza.co.za',
+    phone_number:  '+27820033003',
+    vehicle_type:  'bakkie',
+    vehicle_model: 'Ford Ranger 2.2 XLS',
+    status:        'offline',
+    created_at:    '2026-02-01T08:00:00.000Z',
+  },
+  {
+    id:            'driver-sithole-004',
+    driver_id:     'driver-sithole-004',
+    firebase_uid:  null,
+    full_name:     'Nhlanhla Sithole',
+    email:         'nhlanhla.sithole@localsza.co.za',
+    phone_number:  '+27820044004',
+    vehicle_type:  'truck',
+    vehicle_model: 'Isuzu NPR 400',
+    status:        'available',
+    created_at:    '2026-02-10T08:00:00.000Z',
+  },
 ];
 
-// ── Address pools (10 per area) ───────────────────────────────────────────────
+// ── CUSTOMER PROFILES ─────────────────────────────────────────────────────────
+// 25 profiles — 5 per area — representing spaza shop owners after paying.
+// Each profile pins to an area, store, and street address.
+const CUSTOMERS = [
+  // ── Katlehong (indices 0–4) ───────────────────────────────────────────────
+  { name: 'Sipho Dlamini',      phone: '+27821345678', area: 'katlehong', storeId: 'katlehong-cash-carry',  addr: '15 Molapo Street,    Katlehong, Gauteng, 1431', lat: -26.3544, lng: 28.1489 },
+  { name: 'Nomvula Khumalo',    phone: '+27834567890', area: 'katlehong', storeId: 'shoprite',               addr: '42 Ntuli Road,        Katlehong, Gauteng, 1431', lat: -26.3582, lng: 28.1523 },
+  { name: 'Thabo Mokoena',      phone: '+27761234567', area: 'katlehong', storeId: 'sa-cash-and-carry',      addr: '7 Nkosi Street,       Katlehong, Gauteng, 1432', lat: -26.3501, lng: 28.1467 },
+  { name: 'Zanele Sithole',     phone: '+27836789012', area: 'katlehong', storeId: 'katlehong-cash-carry',  addr: '88 Masondo Avenue,    Katlehong, Gauteng, 1431', lat: -26.3567, lng: 28.1445 },
+  { name: 'Bongani Shabalala',  phone: '+27823456789', area: 'katlehong', storeId: 'shoprite',               addr: '23 Khumalo Drive,     Katlehong, Gauteng, 1431', lat: -26.3612, lng: 28.1512 },
 
-const ADDRESSES = {
+  // ── Vosloorus (indices 5–9) ───────────────────────────────────────────────
+  { name: 'Precious Radebe',    phone: '+27741234567', area: 'vosloorus', storeId: 'shoprite',               addr: '23 Thaba Nchu Street, Vosloorus, Gauteng, 1475', lat: -26.3633, lng: 28.1789 },
+  { name: 'Lebogang Ndlovu',    phone: '+27856789012', area: 'vosloorus', storeId: 'vosloorus-trade-hub',    addr: '88 Phiri Street,      Vosloorus, Gauteng, 1475', lat: -26.3678, lng: 28.1756 },
+  { name: 'Ayanda Mthembu',     phone: '+27821234560', area: 'vosloorus', storeId: 'shoprite',               addr: '14 Dlamini Drive,     Vosloorus, Gauteng, 1476', lat: -26.3601, lng: 28.1812 },
+  { name: 'Mthokozisi Phiri',   phone: '+27834560123', area: 'vosloorus', storeId: 'vosloorus-trade-hub',    addr: '45 Mthembu Road,      Vosloorus, Gauteng, 1475', lat: -26.3645, lng: 28.1834 },
+  { name: 'Lungelo Maphumulo',  phone: '+27769012345', area: 'vosloorus', storeId: 'shoprite',               addr: '9 Radebe Avenue,      Vosloorus, Gauteng, 1475', lat: -26.3689, lng: 28.1768 },
 
-  katlehong: [
-    { street: '15 Molapo Street',       city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3544, lng: 28.1489 },
-    { street: '42 Ntuli Road',           city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3582, lng: 28.1523 },
-    { street: '7 Nkosi Street',          city: 'Katlehong', province: 'Gauteng', postalCode: '1432', lat: -26.3501, lng: 28.1467 },
-    { street: '88 Masondo Avenue',       city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3567, lng: 28.1445 },
-    { street: '23 Khumalo Drive',        city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3612, lng: 28.1512 },
-    { street: '56 Sithole Street',       city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3489, lng: 28.1534 },
-    { street: '4 Dlamini Road',          city: 'Katlehong', province: 'Gauteng', postalCode: '1432', lat: -26.3623, lng: 28.1478 },
-    { street: '31 Shabalala Crescent',   city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3543, lng: 28.1467 },
-    { street: '19 Molefe Street',        city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3578, lng: 28.1498 },
-    { street: '62 Ndlovu Avenue',        city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3534, lng: 28.1512 },
-  ],
+  // ── Alberton (indices 10–14) ──────────────────────────────────────────────
+  { name: 'Nompilo Molefe',     phone: '+27821345679', area: 'alberton',  storeId: 'sa-cash-and-carry',      addr: '5 New Redruth Road,   Alberton,  Gauteng, 1449', lat: -26.2685, lng: 28.1205 },
+  { name: 'Siyabonga Cele',     phone: '+27834567891', area: 'alberton',  storeId: 'sa-cash-and-carry',      addr: '19 Voortrekker Road,  Alberton,  Gauteng, 1449', lat: -26.2712, lng: 28.1178 },
+  { name: 'Thandeka Buthelezi', phone: '+27762345678', area: 'alberton',  storeId: 'metro-wholesale-soweto', addr: '33 Bracken Road,      Alberton,  Gauteng, 1448', lat: -26.2654, lng: 28.1234 },
+  { name: 'Mandla Vilakazi',    phone: '+27836789013', area: 'alberton',  storeId: 'sa-cash-and-carry',      addr: '7 Hennie Alberts St,  Alberton,  Gauteng, 1449', lat: -26.2698, lng: 28.1189 },
+  { name: 'Nokwanda Mkhize',    phone: '+27823456780', area: 'alberton',  storeId: 'metro-wholesale-soweto', addr: '44 Engelbrecht Street,Alberton,  Gauteng, 1449', lat: -26.2671, lng: 28.1212 },
 
-  vosloorus: [
-    { street: '23 Thaba Nchu Street',    city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3633, lng: 28.1789 },
-    { street: '88 Phiri Street',         city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3678, lng: 28.1756 },
-    { street: '14 Dlamini Drive',        city: 'Vosloorus', province: 'Gauteng', postalCode: '1476', lat: -26.3601, lng: 28.1812 },
-    { street: '45 Mthembu Road',         city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3645, lng: 28.1834 },
-    { street: '9 Radebe Avenue',         city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3689, lng: 28.1768 },
-    { street: '71 Maphumulo Street',     city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3612, lng: 28.1801 },
-    { street: '37 Zondo Crescent',       city: 'Vosloorus', province: 'Gauteng', postalCode: '1476', lat: -26.3658, lng: 28.1745 },
-    { street: '6 Ntanzi Road',           city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3624, lng: 28.1823 },
-    { street: '52 Mbatha Avenue',        city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3667, lng: 28.1778 },
-    { street: '18 Shabalala Street',     city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3641, lng: 28.1757 },
-  ],
+  // ── Germiston (indices 15–19) ─────────────────────────────────────────────
+  { name: 'Sibongile Xulu',     phone: '+27741234568', area: 'germiston', storeId: 'sa-cash-and-carry',      addr: '12 Victoria Street,  Germiston, Gauteng, 1401', lat: -26.2281, lng: 28.1753 },
+  { name: 'Lwazi Ntanzi',       phone: '+27856789013', area: 'germiston', storeId: 'germiston-trade-centre', addr: '55 Webber Street,     Germiston, Gauteng, 1401', lat: -26.2254, lng: 28.1789 },
+  { name: 'Phindile Mbatha',    phone: '+27821234561', area: 'germiston', storeId: 'germiston-trade-centre', addr: '8 De Villiers Street, Germiston, Gauteng, 1401', lat: -26.2312, lng: 28.1722 },
+  { name: 'Sifiso Mnguni',      phone: '+27834560124', area: 'germiston', storeId: 'sa-cash-and-carry',      addr: '34 Cross Street,      Germiston, Gauteng, 1401', lat: -26.2267, lng: 28.1812 },
+  { name: 'Nobuhle Hadebe',     phone: '+27769012346', area: 'germiston', storeId: 'germiston-trade-centre', addr: '23 Odendaal Road,     Germiston, Gauteng, 1401', lat: -26.2298, lng: 28.1745 },
 
-  alberton: [
-    { street: '5 New Redruth Road',      city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2685, lng: 28.1205 },
-    { street: '19 Voortrekker Road',     city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2712, lng: 28.1178 },
-    { street: '33 Bracken Road',         city: 'Alberton',  province: 'Gauteng', postalCode: '1448', lat: -26.2654, lng: 28.1234 },
-    { street: '7 Hennie Alberts Street', city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2698, lng: 28.1189 },
-    { street: '44 Engelbrecht Street',   city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2671, lng: 28.1212 },
-    { street: '28 Gericke Avenue',       city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2723, lng: 28.1167 },
-    { street: '12 Joubert Street',       city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2645, lng: 28.1245 },
-    { street: '66 Northdale Avenue',     city: 'Alberton',  province: 'Gauteng', postalCode: '1450', lat: -26.2734, lng: 28.1156 },
-    { street: '3 Dekker Road',           city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2667, lng: 28.1223 },
-    { street: '51 Rietfontein Road',     city: 'Alberton',  province: 'Gauteng', postalCode: '1449', lat: -26.2709, lng: 28.1198 },
-  ],
-
-  germiston: [
-    { street: '12 Victoria Street',      city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2281, lng: 28.1753 },
-    { street: '55 Webber Street',        city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2254, lng: 28.1789 },
-    { street: '8 De Villiers Street',    city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2312, lng: 28.1722 },
-    { street: '34 Cross Street',         city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2267, lng: 28.1812 },
-    { street: '23 Odendaal Road',        city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2298, lng: 28.1745 },
-    { street: '17 Pretoria Road',        city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2245, lng: 28.1801 },
-    { street: '48 Steyn Street',         city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2323, lng: 28.1768 },
-    { street: '9 Library Road',          city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2278, lng: 28.1734 },
-    { street: '72 Smit Street',          city: 'Germiston', province: 'Gauteng', postalCode: '1401', lat: -26.2256, lng: 28.1823 },
-    { street: '31 Kobus Street',         city: 'Germiston', province: 'Gauteng', postalCode: '1402', lat: -26.2334, lng: 28.1712 },
-  ],
-
-  boksburg: [
-    { street: '21 Commissioner Street',  city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2078, lng: 28.2612 },
-    { street: '4 Trichardt Road',        city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2112, lng: 28.2578 },
-    { street: '67 Rietfontein Road',     city: 'Boksburg',  province: 'Gauteng', postalCode: '1460', lat: -26.2045, lng: 28.2645 },
-    { street: '14 Adcock Road',          city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2089, lng: 28.2634 },
-    { street: '38 Voortrekker Road',     city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2123, lng: 28.2589 },
-    { street: '9 Plantation Road',       city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2056, lng: 28.2667 },
-    { street: '25 Market Street',        city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2101, lng: 28.2601 },
-    { street: '53 Murray Road',          city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2067, lng: 28.2656 },
-    { street: '7 Leeukop Street',        city: 'Boksburg',  province: 'Gauteng', postalCode: '1460', lat: -26.2134, lng: 28.2567 },
-    { street: '44 West Road',            city: 'Boksburg',  province: 'Gauteng', postalCode: '1459', lat: -26.2078, lng: 28.2623 },
-  ],
-};
-
-// ── Status schedule (index → status + driver assignment) ─────────────────────
-// 50 slots: 0-9 Katlehong, 10-19 Vosloorus, 20-29 Alberton, 30-39 Germiston, 40-49 Boksburg
-const STATUS_PLAN = [
-  // Katlehong (0–9)
-  { status: 'delivered',       driver: 0 },
-  { status: 'delivered',       driver: 1 },
-  { status: 'delivered',       driver: 2 },
-  { status: 'cancelled',       driver: null },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'accepted',        driver: 3 },
-  { status: 'arrivedAtPickup', driver: 0 },
-  { status: 'delivered',       driver: 1 },
-  { status: 'cancelled',       driver: null },
-
-  // Vosloorus (10–19)
-  { status: 'delivered',       driver: 2 },
-  { status: 'delivered',       driver: 3 },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'loaded',          driver: 0 },
-  { status: 'cancelled',       driver: null },
-  { status: 'delivered',       driver: 1 },
-  { status: 'accepted',        driver: 2 },
-  { status: 'pending',         driver: null },
-
-  // Alberton (20–29)
-  { status: 'delivered',       driver: 3 },
-  { status: 'delivered',       driver: 0 },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'cancelled',       driver: null },
-  { status: 'arrivedAtPickup', driver: 1 },
-  { status: 'delivered',       driver: 2 },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'cancelled',       driver: null },
-
-  // Germiston (30–39)
-  { status: 'delivered',       driver: 3 },
-  { status: 'delivered',       driver: 0 },
-  { status: 'delivered',       driver: 1 },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'loaded',          driver: 2 },
-  { status: 'arrivedAtDropoff',driver: 3 },
-  { status: 'accepted',        driver: 0 },
-  { status: 'cancelled',       driver: null },
-  { status: 'pending',         driver: null },
-
-  // Boksburg (40–49)
-  { status: 'delivered',       driver: 1 },
-  { status: 'delivered',       driver: 2 },
-  { status: 'delivered',       driver: 3 },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'accepted',        driver: 0 },
-  { status: 'cancelled',       driver: null },
-  { status: 'pending',         driver: null },
-  { status: 'confirmed',       driver: null },
-  { status: 'pending',         driver: null },
+  // ── Boksburg (indices 20–24) ──────────────────────────────────────────────
+  { name: 'Dumisani Mhlongo',   phone: '+27821345670', area: 'boksburg',  storeId: 'germiston-trade-centre', addr: '21 Commissioner St,  Boksburg,  Gauteng, 1459', lat: -26.2078, lng: 28.2612 },
+  { name: 'Thulisile Gumbi',    phone: '+27834567892', area: 'boksburg',  storeId: 'alex-wholesale',         addr: '4 Trichardt Road,     Boksburg,  Gauteng, 1459', lat: -26.2112, lng: 28.2578 },
+  { name: 'Sandile Nyandeni',   phone: '+27763456789', area: 'boksburg',  storeId: 'germiston-trade-centre', addr: '67 Rietfontein Road,  Boksburg,  Gauteng, 1460', lat: -26.2045, lng: 28.2645 },
+  { name: 'Ntombi Majola',      phone: '+27836789014', area: 'boksburg',  storeId: 'tembisa-depot',          addr: '14 Adcock Road,       Boksburg,  Gauteng, 1459', lat: -26.2089, lng: 28.2634 },
+  { name: 'Khosi Madlala',      phone: '+27823456781', area: 'boksburg',  storeId: 'germiston-trade-centre', addr: '38 Voortrekker Road,  Boksburg,  Gauteng, 1459', lat: -26.2123, lng: 28.2589 },
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 
-function pick(arr, index) {
-  return arr[index % arr.length];
-}
-
-/** Random int in [min, max] */
-function rInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/** ISO date string offset by negative days from today */
+/** ISO timestamp, N days ago (+ optional hour offset for variety) */
 function daysAgo(days, hoursOffset = 0) {
   const d = new Date();
   d.setDate(d.getDate() - days);
   d.setHours(d.getHours() - hoursOffset);
+  d.setMinutes(Math.floor(Math.random() * 60));
   return d.toISOString();
 }
 
-function buildItems(seed) {
-  const count = (seed % 4) + 1; // 1–4 line items
-  const items = [];
-  for (let i = 0; i < count; i++) {
-    const p   = PRODUCTS[(seed + i * 3) % PRODUCTS.length];
-    const qty = ((seed + i) % 3) + 1; // 1–3 units
-    items.push({
-      description: p.description,
-      qty,
-      unitPrice:   p.unitPrice,
-      lineTotal:   parseFloat((p.unitPrice * qty).toFixed(2)),
-      estimatedKg: p.estimatedKg * qty,
-    });
-  }
-  return items;
+/**
+ * Build a fallback placehold.co URL when blobUrl is empty.
+ * Gives admins an obvious placeholder they can replace with the real image.
+ */
+function fallbackUrl(imgIndex) {
+  const labels = [
+    "Mokoena%27s+C%26C+Receipt+%231",
+    "Mokoena%27s+C%26C+Receipt+%232",
+    "Gumede%27s+Wholesale+Receipt",
+  ];
+  return `https://placehold.co/800x1100/1a1a1a/ffb803?text=${labels[imgIndex]}`;
 }
 
-function buildOrder(index) {
-  const areas     = ['katlehong', 'vosloorus', 'alberton', 'germiston', 'boksburg'];
-  const areaIndex = Math.floor(index / 10);      // 0–4
-  const localIdx  = index % 10;                  // 0–9 within area
-  const area      = areas[areaIndex];
-
-  const storeMap = {
-    katlehong: STORES.katlehong,
-    vosloorus: localIdx < 5 ? STORES.vosloorus : STORES.vosloorus2,
-    alberton:  STORES.alberton,
-    germiston: localIdx < 5 ? STORES.germiston : STORES.germiston2,
-    boksburg:  STORES.germiston2,
-  };
-
-  const address    = ADDRESSES[area][localIdx];
-  const plan       = STATUS_PLAN[index];
-  const items      = buildItems(index);
-  const subtotal   = parseFloat(items.reduce((s, i) => s + i.lineTotal, 0).toFixed(2));
-  const serviceFee = parseFloat((subtotal * 0.05).toFixed(2));   // 5% platform fee on goods
-  const distanceKm = parseFloat((rInt(2, 18) + (index % 10) * 0.3).toFixed(1));
-  const deliveryFee = parseFloat((35 + distanceKm * 5).toFixed(2));
-  const total      = parseFloat((subtotal + serviceFee + deliveryFee).toFixed(2));
-  const driverPayout = parseFloat((deliveryFee * 0.8).toFixed(2));
-  const platformFee  = parseFloat((deliveryFee * 0.2 + serviceFee).toFixed(2));
-
-  const totalKg = items.reduce((s, i) => s + i.estimatedKg, 0);
-  const weightClass =
-    totalKg < 5  ? 'light'  :
-    totalKg < 15 ? 'medium' :
-    totalKg < 30 ? 'heavy'  : 'bulk';
-
-  // Spread dates: ~30 days back, newer orders at higher indexes
-  const daysBack = Math.max(1, 30 - Math.floor(index * 0.55));
-  const createdAt = daysAgo(daysBack, index % 12);
-  const updatedAt = daysAgo(Math.max(0, daysBack - 1), (index + 3) % 12);
-
-  const guestId = `seed-guest-${String(index + 1).padStart(3, '0')}`;
-
+/** Parse a simple "Street, City, Province, Postal" string into address fields. */
+function parseAddr(raw, lat, lng) {
+  const parts = raw.split(',').map(s => s.trim());
   return {
-    id:              `seed-order-${String(index + 1).padStart(3, '0')}`,
-    userId:          guestId,   // partition key — mirrors API's UserId ??= guestId pattern
-    guestId,
-    storeId:         storeMap[area],
-    orderNumber:     `ORD-SEED-${String(index + 1).padStart(3, '0')}`,
-    items,
-    subtotal,
-    serviceFee,
-    deliveryFee,
-    total,
-    platformFee,
-    driverPayout,
-    deliveryAddress: address,
-    status:          plan.status,
-    driverId:        plan.driver !== null ? DRIVER_IDS[plan.driver] : null,
-    receiptId:       `seed-receipt-${String(index + 1).padStart(3, '0')}`,
-    weightClass,
-    rush:            index % 7 === 0,
-    pooled:          index % 5 === 0,
-    distanceKm,
-    createdAt,
-    updatedAt,
+    street:     parts[0] || '',
+    city:       parts[1] || '',
+    province:   parts[2] || 'Gauteng',
+    postalCode: parts[3] || '',
+    lat,
+    lng,
   };
 }
 
-// ── Receipt-backed orders (from real receipt images) ─────────────────────────
-//
-// Orders 051–053 are derived from the three receipt photos used in demos.
-// Each has a corresponding receipt document seeded into the `receipts` container.
-// Use `node seed-orders.js --receipts` to also seed the receipts container.
-//
-// Receipt images: placeholder URLs (real images uploaded via CC after seeding).
+// ── ORDER + RECEIPT BUILDERS ──────────────────────────────────────────────────
 
-const RECEIPT_ORDERS = [
-  {
-    // Mokoena's Cash & Carry — beverages + staples (table photo)
-    id:              'seed-order-051',
-    userId:          'seed-guest-051',
-    guestId:         'seed-guest-051',
-    storeId:         'germiston-trade-centre',
-    orderNumber:     'ORD-SEED-051',
-    items: [
-      { description: 'Coca-Cola Original 2L Btl',        qty: 10, unitPrice: 22.99,  lineTotal: 229.90,  estimatedKg: 2.2  },
-      { description: 'Fanta Orange 2L Btl',              qty:  5, unitPrice: 21.50,  lineTotal: 107.50,  estimatedKg: 2.1  },
-      { description: 'Bonaqua Still Water 500ml',        qty: 12, unitPrice:  7.50,  lineTotal:  90.00,  estimatedKg: 0.55 },
-      { description: 'Score Energy Drink 500ml (6x6pk)', qty:  3, unitPrice: 65.00,  lineTotal: 195.00,  estimatedKg: 3.60 },
-      { description: 'Appletiser 330ml Can (x6pk)',      qty:  4, unitPrice: 72.50,  lineTotal: 290.00,  estimatedKg: 2.30 },
-      { description: 'Liqui-Fruit Berry Blaze 2L Btl',   qty:  1, unitPrice: 28.00,  lineTotal:  28.00,  estimatedKg: 2.10 },
-      { description: 'Iwisa Maize Meal 10kg Bag',        qty:  1, unitPrice: 145.00, lineTotal: 145.00,  estimatedKg: 10.0 },
-      { description: 'Huletts Sugar 5kg Bag',            qty:  1, unitPrice:  89.50, lineTotal:  89.50,  estimatedKg: 5.0  },
-    ],
-    subtotal:        1174.90,
-    serviceFee:        58.75,
-    deliveryFee:      148.75,
-    total:           1382.40,
-    platformFee:       88.50,
-    driverPayout:     119.00,
-    deliveryAddress: { street: '42 Ntuli Road', city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3582, lng: 28.1523 },
+function buildSeedOrder(index) {
+  const customer  = CUSTOMERS[index];
+  const imgIdx    = index % 3;          // rotate 0 → 1 → 2 → 0 …
+  const receipt   = RECEIPT_IMAGES[imgIdx];
+  const id        = `seed-order-${String(index + 1).padStart(3, '0')}`;
+  const guestId   = `seed-guest-${String(index + 1).padStart(3, '0')}`;
+
+  // Delivery fee based on distance (simple linear model)
+  const distanceKm  = parseFloat((6 + (index * 0.7 + 1.3) % 14).toFixed(1));
+  const ratePerKm   = receipt.weightClass === 'bulk' ? 8 : receipt.weightClass === 'heavy' ? 7 : 5;
+  const deliveryFee = parseFloat((35 + distanceKm * ratePerKm).toFixed(2));
+
+  // Spread created_at across the past 6 days (most recent = today, oldest = 6 days ago)
+  const daysBack    = Math.floor(index / 4);    // 0,0,0,0 → 1,1,1,1 → … → 6
+  const hoursBack   = (index * 3) % 23;
+  const createdAt   = daysAgo(daysBack, hoursBack);
+
+  const order = {
+    id,
+    userId:          guestId,
+    guestId,
+    storeId:         customer.storeId,
+    orderNumber:     `ORD-2026-${String(index + 1).padStart(3, '0')}`,
+    // Customer info captured during UploadReceipt step
+    customerName:    customer.name,
+    contactNumber:   customer.phone,
+    deliveryAddress: parseAddr(customer.addr, customer.lat, customer.lng),
+    // Financials — delivery cost only (goods cost is in the receipt document)
+    deliveryFee,
+    total:           deliveryFee,
+    distanceKm,
+    weightClass:     receipt.weightClass,
+    // Status: 'pending' = just confirmed by Ozow, waiting for Command Centre
     status:          'pending',
     driverId:        null,
-    receiptId:       'seed-order-051',
-    weightClass:     'heavy',
-    rush:            false,
-    pooled:          false,
-    distanceKm:      12.5,
-    createdAt:       '2026-03-12T08:20:00.000Z',
-    updatedAt:       '2026-03-12T08:20:00.000Z',
-  },
-  {
-    // Mokoena's Cash & Carry — bulk dry goods (printer photo)
-    id:              'seed-order-052',
-    userId:          'seed-guest-052',
-    guestId:         'seed-guest-052',
-    storeId:         'germiston-trade-centre',
-    orderNumber:     'ORD-SEED-052',
-    items: [
-      { description: 'Iwisa Maize Meal 10kg',         qty: 3, unitPrice: 145.00, lineTotal: 435.00,  estimatedKg: 10.0 },
-      { description: 'Golden Penny Flour 25kg',       qty: 2, unitPrice: 310.00, lineTotal: 620.00,  estimatedKg: 25.0 },
-      { description: 'Juko Tea Bags 100pk',           qty: 1, unitPrice: 140.00, lineTotal: 140.00,  estimatedKg: 0.8  },
-      { description: 'Knorr Soup Packets',            qty: 4, unitPrice:  18.25, lineTotal:  73.00,  estimatedKg: 0.2  },
-      { description: 'Bulk Cleaning Paper 60pk',      qty: 1, unitPrice:  97.00, lineTotal:  97.00,  estimatedKg: 3.0  },
-      { description: 'Cleaning Detergent 5L',         qty: 2, unitPrice: 115.00, lineTotal: 230.00,  estimatedKg: 5.5  },
-      { description: 'Bulk Cooking Oil 20L',          qty: 1, unitPrice: 400.00, lineTotal: 400.00,  estimatedKg: 18.5 },
-    ],
-    subtotal:        1995.00,
-    serviceFee:        99.75,
-    deliveryFee:      118.75,
-    total:           2213.50,
-    platformFee:       99.50,
-    driverPayout:      95.00,
-    deliveryAddress: { street: '23 Thaba Nchu Street', city: 'Vosloorus', province: 'Gauteng', postalCode: '1475', lat: -26.3633, lng: 28.1789 },
-    status:          'pending',
-    driverId:        null,
-    receiptId:       'seed-order-052',
-    weightClass:     'bulk',
-    rush:            false,
-    pooled:          false,
-    distanceKm:      8.2,
-    createdAt:       '2026-03-12T09:45:00.000Z',
-    updatedAt:       '2026-03-12T09:45:00.000Z',
-  },
-  {
-    // Gumede's Wholesale Outlet — massive commercial restocking
-    id:              'seed-order-053',
-    userId:          'seed-guest-053',
-    guestId:         'seed-guest-053',
-    storeId:         'alex-wholesale',
-    orderNumber:     'ORD-SEED-053',
-    items: [
-      { description: 'Golden Glory Rice 10kg',              qty: 100, unitPrice: 125.00, lineTotal: 12500.00, estimatedKg: 10.0 },
-      { description: 'Simba Chips Assorted 48pk',           qty:  50, unitPrice: 204.00, lineTotal: 10200.00, estimatedKg: 1.5  },
-      { description: 'Coca-Cola Original 2L (6pk)',         qty:  30, unitPrice: 110.00, lineTotal:  3300.00, estimatedKg: 13.0 },
-      { description: 'Bulk Sugar (Huletts) 25kg',           qty:  20, unitPrice: 350.00, lineTotal:  7000.00, estimatedKg: 25.0 },
-      { description: 'Bulk Cleaning Supplies (Ajax) 5L',    qty:  10, unitPrice: 180.00, lineTotal:  1800.00, estimatedKg: 5.5  },
-      { description: 'Knorr Popp Packets',                  qty:  10, unitPrice: 116.00, lineTotal:  1160.00, estimatedKg: 0.4  },
-      { description: 'Bulk Cooking Oil 20L',                qty:  10, unitPrice: 340.00, lineTotal:  3400.00, estimatedKg: 18.5 },
-      { description: 'Bulk Crate Soft Drinks (24-pack)',    qty:  10, unitPrice: 330.00, lineTotal:  3300.00, estimatedKg: 10.0 },
-    ],
-    subtotal:        42660.00,
-    serviceFee:       2133.00,
-    deliveryFee:       270.00,
-    total:           45063.00,
-    platformFee:      2187.00,
-    driverPayout:      216.00,
-    deliveryAddress: { street: '15 Molapo Street', city: 'Katlehong', province: 'Gauteng', postalCode: '1431', lat: -26.3544, lng: 28.1489 },
-    status:          'pending',
-    driverId:        null,
-    receiptId:       'seed-order-053',
-    weightClass:     'bulk',
-    rush:            false,
-    pooled:          false,
-    distanceKm:      22.0,
-    createdAt:       '2026-05-19T10:26:00.000Z',
-    updatedAt:       '2026-05-19T10:26:00.000Z',
-  },
-];
+    receiptId:       id,
+    rush:            index % 9 === 0,    // ~11 % rush orders
+    pooled:          index % 7 === 0,    // ~14 % pool orders
+    createdAt,
+    updatedAt:       createdAt,
+  };
 
-// ── Receipt documents for the 3 receipt-backed orders ────────────────────────
-// These go into the `receipts` Cosmos container (partition key = orderId = id).
-
-const RECEIPT_DOCS = [
-  {
-    id:               'seed-order-051',
-    orderId:          'seed-order-051',
-    blobUrl:          'https://placehold.co/800x1100/1a1a1a/cccccc?text=Mokoena%27s+Receipt+1',
-    storeName:        "Mokoena's Cash & Carry",
-    date:             '12/03/2026',
-    subtotal:         1174.90,
-    total:            1351.14,
-    items: [
-      { description: 'Coca-Cola Original 2L Btl',        qty: 10, unitPrice: 22.99,  lineTotal: 229.90,  estimatedKg: 2.2  },
-      { description: 'Fanta Orange 2L Btl',              qty:  5, unitPrice: 21.50,  lineTotal: 107.50,  estimatedKg: 2.1  },
-      { description: 'Bonaqua Still Water 500ml',        qty: 12, unitPrice:  7.50,  lineTotal:  90.00,  estimatedKg: 0.55 },
-      { description: 'Score Energy Drink 500ml (6x6pk)', qty:  3, unitPrice: 65.00,  lineTotal: 195.00,  estimatedKg: 3.60 },
-      { description: 'Appletiser 330ml Can (x6pk)',      qty:  4, unitPrice: 72.50,  lineTotal: 290.00,  estimatedKg: 2.30 },
-      { description: 'Liqui-Fruit Berry Blaze 2L Btl',   qty:  1, unitPrice: 28.00,  lineTotal:  28.00,  estimatedKg: 2.10 },
-      { description: 'Iwisa Maize Meal 10kg Bag',        qty:  1, unitPrice: 145.00, lineTotal: 145.00,  estimatedKg: 10.0 },
-      { description: 'Huletts Sugar 5kg Bag',            qty:  1, unitPrice:  89.50, lineTotal:  89.50,  estimatedKg: 5.0  },
-    ],
-    estimatedWeightKg: 74.4,
-    weightClass:      'heavy',
-    qualityScore:     0.88,
-    warnings:         [],
-    parsedAt:         '2026-03-12T08:20:00.000Z',
-    status:           'pending',
+  const receiptDoc = {
+    id,                               // partition key = orderId
+    orderId:          id,
+    blobUrl:          receipt.blobUrl || fallbackUrl(imgIdx),
+    storeName:        receipt.storeName,
+    date:             receipt.date,
+    subtotal:         receipt.subtotal,
+    total:            receipt.total,
+    items:            receipt.items,
+    estimatedWeightKg:receipt.estimatedWeightKg,
+    weightClass:      receipt.weightClass,
+    qualityScore:     receipt.qualityScore,
+    warnings:         receipt.warnings,
+    parsedAt:         createdAt,
+    status:           'pending',      // awaiting admin review in Receipts tab
     adminNote:        null,
     reviewedAt:       null,
-  },
-  {
-    id:               'seed-order-052',
-    orderId:          'seed-order-052',
-    blobUrl:          'https://placehold.co/800x1100/1a1a1a/cccccc?text=Mokoena%27s+Receipt+2',
-    storeName:        "Mokoena's Cash & Carry",
-    date:             '12/02/2026',
-    subtotal:         1995.00,
-    total:            2294.25,
-    items: [
-      { description: 'Iwisa Maize Meal 10kg',         qty: 3, unitPrice: 145.00, lineTotal: 435.00,  estimatedKg: 10.0 },
-      { description: 'Golden Penny Flour 25kg',       qty: 2, unitPrice: 310.00, lineTotal: 620.00,  estimatedKg: 25.0 },
-      { description: 'Juko Tea Bags 100pk',           qty: 1, unitPrice: 140.00, lineTotal: 140.00,  estimatedKg: 0.8  },
-      { description: 'Knorr Soup Packets',            qty: 4, unitPrice:  18.25, lineTotal:  73.00,  estimatedKg: 0.2  },
-      { description: 'Bulk Cleaning Paper 60pk',      qty: 1, unitPrice:  97.00, lineTotal:  97.00,  estimatedKg: 3.0  },
-      { description: 'Cleaning Detergent 5L',         qty: 2, unitPrice: 115.00, lineTotal: 230.00,  estimatedKg: 5.5  },
-      { description: 'Bulk Cooking Oil 20L',          qty: 1, unitPrice: 400.00, lineTotal: 400.00,  estimatedKg: 18.5 },
-    ],
-    estimatedWeightKg: 93.0,
-    weightClass:      'bulk',
-    qualityScore:     0.82,
-    warnings:         [],
-    parsedAt:         '2026-03-12T09:45:00.000Z',
-    status:           'pending',
-    adminNote:        null,
-    reviewedAt:       null,
-  },
-  {
-    id:               'seed-order-053',
-    orderId:          'seed-order-053',
-    blobUrl:          'https://placehold.co/800x1400/1a1a1a/cccccc?text=Gumede%27s+Wholesale+Receipt',
-    storeName:        "Gumede's Wholesale Outlet",
-    date:             '19/05/2026',
-    subtotal:         35100.00,
-    total:            40365.00,
-    items: [
-      { description: 'Golden Glory Rice 10kg',              qty: 100, unitPrice: 125.00, lineTotal: 12500.00, estimatedKg: 10.0 },
-      { description: 'Simba Chips Assorted 48pk',           qty:  50, unitPrice: 204.00, lineTotal: 10200.00, estimatedKg: 1.5  },
-      { description: 'Coca-Cola Original 2L (6pk)',         qty:  30, unitPrice: 110.00, lineTotal:  3300.00, estimatedKg: 13.0 },
-      { description: 'Bulk Sugar (Huletts) 25kg',           qty:  20, unitPrice: 350.00, lineTotal:  7000.00, estimatedKg: 25.0 },
-      { description: 'Bulk Cleaning Supplies (Ajax) 5L',    qty:  10, unitPrice: 180.00, lineTotal:  1800.00, estimatedKg: 5.5  },
-      { description: 'Knorr Popp Packets',                  qty:  10, unitPrice: 116.00, lineTotal:  1160.00, estimatedKg: 0.4  },
-      { description: 'Bulk Cooking Oil 20L',                qty:  10, unitPrice: 340.00, lineTotal:  3400.00, estimatedKg: 18.5 },
-      { description: 'Bulk Crate Soft Drinks (24-pack)',    qty:  10, unitPrice: 330.00, lineTotal:  3300.00, estimatedKg: 10.0 },
-    ],
-    estimatedWeightKg: 950.0,
-    weightClass:      'bulk',
-    qualityScore:     0.91,
-    warnings:         ['Very large order — may require truck transport'],
-    parsedAt:         '2026-05-19T10:26:00.000Z',
-    status:           'pending',
-    adminNote:        null,
-    reviewedAt:       null,
-  },
-];
+  };
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+  return { order, receiptDoc };
+}
+
+// ── IMAGE UPLOAD HELPER ───────────────────────────────────────────────────────
+
+async function uploadImages() {
+  let BlobServiceClient;
+  try {
+    ({ BlobServiceClient } = require('@azure/storage-blob'));
+  } catch {
+    console.error('\n✗  @azure/storage-blob is not installed.');
+    console.error('   Run:  npm install @azure/storage-blob  then try again.\n');
+    process.exit(1);
+  }
+
+  const dir = path.join(__dirname, 'seed-receipts');
+  if (!fs.existsSync(dir)) {
+    console.error(`\n✗  Folder not found: ${dir}`);
+    console.error('   Create it and drop in receipt-1, receipt-2, receipt-3 image files.\n');
+    process.exit(1);
+  }
+
+  const slots = ['receipt-1', 'receipt-2', 'receipt-3'];
+  const exts  = ['.jpg', '.jpeg', '.png', '.webp'];
+
+  const blobService = BlobServiceClient.fromConnectionString(BLOB_CONN_STR);
+  const container   = blobService.getContainerClient(BLOB_CONTAINER);
+
+  console.log('\nUploading receipt images to Azure Blob Storage…\n');
+
+  for (const slot of slots) {
+    const found = exts.map(e => path.join(dir, slot + e)).find(fs.existsSync);
+    if (!found) {
+      console.warn(`  ⚠  ${slot}.(jpg|png) not found in ${dir} — skipping`);
+      continue;
+    }
+
+    const ext      = path.extname(found);
+    const blobName = `seed-${slot}-${Date.now()}${ext}`;
+    const client   = container.getBlockBlobClient(blobName);
+
+    const data         = fs.readFileSync(found);
+    const contentType  = ext === '.png' ? 'image/png' : 'image/jpeg';
+    await client.uploadData(data, { blobHTTPHeaders: { blobContentType: contentType } });
+
+    console.log(`  ✓  ${slot}  →  ${client.url}`);
+    console.log(`     Paste this URL into RECEIPT_IMAGES[${slots.indexOf(slot)}].blobUrl\n`);
+  }
+
+  console.log('Done. Update RECEIPT_IMAGES in this file then run:  node seed-orders.js\n');
+}
+
+// ── MAIN ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const seedReceipts = process.argv.includes('--receipts');
+  const args          = process.argv.slice(2);
+  const doDrivers     = args.includes('--drivers');
+  const doUpload      = args.includes('--upload-images');
 
-  console.log('\nLocalsZA Order Seed');
-  console.log(`Target: ${COSMOS_ENDPOINT} → ${DB_NAME}/${CONTAINER}`);
-  if (seedReceipts) console.log('  + will also seed receipts container');
-  console.log('─'.repeat(55));
-
-  const client    = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
-  const container = client.database(DB_NAME).container(CONTAINER);
-
-  const areas = ['Katlehong', 'Vosloorus', 'Alberton', 'Germiston', 'Boksburg'];
-  let success = 0, failed = 0;
-
-  for (let i = 0; i < 50; i++) {
-    const order  = buildOrder(i);
-    const areaName = areas[Math.floor(i / 10)];
-    const pk     = order.userId;
-
-    try {
-      await container.items.upsert(order, { partitionKey: pk });
-      console.log(`  ✓ [${String(i + 1).padStart(2, '0')}] ${order.orderNumber}  ${areaName.padEnd(12)} ${order.status}`);
-      success++;
-    } catch (err) {
-      console.error(`  ✗ [${String(i + 1).padStart(2, '0')}] ${order.order_number}  ${err.message}`);
-      failed++;
-    }
+  // ── Mode: --upload-images ──────────────────────────────────────────────────
+  if (doUpload) {
+    await uploadImages();
+    return;
   }
 
-  // Seed the 3 receipt-backed orders
-  console.log('\n── Receipt-backed orders ──');
-  for (const order of RECEIPT_ORDERS) {
-    try {
-      await container.items.upsert(order, { partitionKey: order.userId });
-      console.log(`  ✓ ${order.orderNumber}  (${order.storeId})  ${order.weightClass}`);
-      success++;
-    } catch (err) {
-      console.error(`  ✗ ${order.order_number}  ${err.message}`);
-      failed++;
-    }
-  }
+  // ── Mode: --drivers ────────────────────────────────────────────────────────
+  if (doDrivers) {
+    console.log('\nLocalsZA — Seed Drivers');
+    console.log(`Target: ${COSMOS_ENDPOINT} → ${DB_NAME}/drivers`);
+    console.log('─'.repeat(55));
 
-  console.log('─'.repeat(55));
-  console.log(`\n✓ ${success} orders seeded  |  ✗ ${failed} failed\n`);
+    const client            = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
+    const driversContainer  = client.database(DB_NAME).container('drivers');
 
-  // Summary by status
-  const statusCounts = {};
-  for (let i = 0; i < 50; i++) {
-    const s = STATUS_PLAN[i].status;
-    statusCounts[s] = (statusCounts[s] || 0) + 1;
-  }
-  RECEIPT_ORDERS.forEach(o => {
-    statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
-  });
-  console.log('Status breakdown:');
-  Object.entries(statusCounts)
-    .sort((a, b) => b[1] - a[1])
-    .forEach(([s, n]) => console.log(`  ${s.padEnd(20)} ${n}`));
-  console.log();
-
-  // Optionally seed the receipts container
-  if (seedReceipts) {
-    console.log('── Seeding receipts container ──');
-    const receiptsContainer = client.database(DB_NAME).container('receipts');
-    let rSuccess = 0, rFailed = 0;
-    for (const r of RECEIPT_DOCS) {
+    let ok = 0, fail = 0;
+    for (const d of DRIVERS) {
       try {
-        // Partition key for receipts container = orderId
-        await receiptsContainer.items.upsert(r, { partitionKey: r.orderId });
-        console.log(`  ✓ ${r.id}  ${r.storeName}  ${r.weightClass}`);
-        rSuccess++;
+        await driversContainer.items.upsert(d, { partitionKey: d.driver_id });
+        console.log(`  ✓  ${d.driver_id.padEnd(25)} ${d.full_name.padEnd(22)} ${d.vehicle_type}`);
+        ok++;
       } catch (err) {
-        console.error(`  ✗ ${r.id}  ${err.message}`);
-        rFailed++;
+        console.error(`  ✗  ${d.driver_id}  ${err.message}`);
+        fail++;
       }
     }
-    console.log(`\n✓ ${rSuccess} receipts seeded  |  ✗ ${rFailed} failed\n`);
+    console.log('─'.repeat(55));
+    console.log(`\n✓ ${ok} drivers seeded  |  ✗ ${fail} failed\n`);
+    return;
   }
+
+  // ── Mode: default — seed orders + receipts ─────────────────────────────────
+
+  // Warn if any receipt images are still using fallback URLs
+  const missingImages = RECEIPT_IMAGES.filter(r => !r.blobUrl);
+  if (missingImages.length) {
+    console.warn('\n⚠  Real blob URLs not configured for:');
+    missingImages.forEach(r => console.warn(`     – ${r.storeName} (${r.weightClass})`));
+    console.warn('   Seed will use placehold.co fallbacks.');
+    console.warn('   Run  node seed-orders.js --upload-images  to upload your real images.\n');
+  }
+
+  console.log('\nLocalsZA — Seed Orders v2');
+  console.log(`Target : ${COSMOS_ENDPOINT} → ${DB_NAME}`);
+  console.log(`Orders : ${CUSTOMERS.length}  (all status = "pending")`);
+  console.log(`Receipts: seeded in parallel — 1 per order`);
+  console.log('─'.repeat(55));
+
+  const client          = new CosmosClient({ endpoint: COSMOS_ENDPOINT, key: COSMOS_KEY });
+  const ordersContainer = client.database(DB_NAME).container('orders');
+  const recContainer    = client.database(DB_NAME).container('receipts');
+
+  let oOk = 0, oFail = 0, rOk = 0, rFail = 0;
+
+  for (let i = 0; i < CUSTOMERS.length; i++) {
+    const { order, receiptDoc } = buildSeedOrder(i);
+    const imgTag = `[img${(i % 3) + 1}]`;
+
+    // ── Upsert order ──────────────────────────────────────────────────────────
+    try {
+      await ordersContainer.items.upsert(order, { partitionKey: order.userId });
+      console.log(`  ✓  ${order.orderNumber}  ${order.customerName.padEnd(22)} ${order.storeId.padEnd(25)} ${imgTag}`);
+      oOk++;
+    } catch (err) {
+      console.error(`  ✗  ${order.orderNumber}  ${err.message}`);
+      oFail++;
+    }
+
+    // ── Upsert receipt doc ────────────────────────────────────────────────────
+    try {
+      await recContainer.items.upsert(receiptDoc, { partitionKey: receiptDoc.orderId });
+      rOk++;
+    } catch (err) {
+      console.error(`  ✗  receipt ${receiptDoc.id}  ${err.message}`);
+      rFail++;
+    }
+  }
+
+  console.log('─'.repeat(55));
+  console.log(`\n✓ ${oOk} orders seeded   |  ✗ ${oFail} failed`);
+  console.log(`✓ ${rOk} receipts seeded  |  ✗ ${rFail} failed`);
+
+  // ── Receipt image usage summary ───────────────────────────────────────────
+  console.log('\nReceipt image assignment:');
+  const imgTotals = RECEIPT_IMAGES.map((r, i) => ({
+    label:  r.storeName,
+    count:  CUSTOMERS.filter((_, ci) => ci % 3 === i).length,
+    hasUrl: !!r.blobUrl,
+  }));
+  imgTotals.forEach(t => {
+    const status = t.hasUrl ? '✓ real image' : '⚠ fallback placeholder';
+    console.log(`  [img${imgTotals.indexOf(t) + 1}]  ${t.label.padEnd(38)} ×${t.count}  ${status}`);
+  });
+
+  console.log('\nNext steps:');
+  if (missingImages.length) {
+    console.log('  1. node seed-orders.js --upload-images  → get real blob URLs');
+    console.log('  2. Paste URLs into RECEIPT_IMAGES, re-run: node seed-orders.js');
+  } else {
+    console.log('  ✓ All receipt images use real Azure Blob URLs');
+  }
+  console.log('  • node seed-orders.js --drivers  → seed driver accounts\n');
 }
 
 main().catch(err => {
