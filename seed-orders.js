@@ -39,12 +39,12 @@ const path             = require('path');
 const fs               = require('fs');
 
 // ── COSMOS CONFIG ─────────────────────────────────────────────────────────────
-const COSMOS_ENDPOINT = 'https://localsza-cosmos.documents.azure.com:443/';
-const COSMOS_KEY      = 'REDACTED_COSMOS_KEY=';
+const COSMOS_ENDPOINT = process.env.COSMOS_ENDPOINT || 'https://localsza-cosmos.documents.azure.com:443/';
+const COSMOS_KEY      = process.env.COSMOS_KEY;
 const DB_NAME         = 'localsza';
 
 // ── AZURE BLOB CONFIG (only used for --upload-images) ─────────────────────────
-const BLOB_CONN_STR  = 'DefaultEndpointsProtocol=https;AccountName=localszastorage;AccountKey=REDACTED_STORAGE_KEY=;EndpointSuffix=core.windows.net';
+const BLOB_CONN_STR  = process.env.AZURE_BLOB_CONNECTION_STRING;
 const BLOB_CONTAINER = 'receipts';
 
 // ─────────────────────────────────────────────────────────────────────────────
