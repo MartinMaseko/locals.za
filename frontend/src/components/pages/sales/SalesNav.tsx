@@ -1,0 +1,128 @@
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import '../storepages/navbar/navstyle.css';
+import '../drivers/driverStyles.css';
+
+const SalesNav = () => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    try {
+      // Clear sales rep data from localStorage
+      localStorage.removeItem('salesRepId');
+      localStorage.removeItem('salesRepUsername');
+      localStorage.removeItem('salesRepEmail');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('salesRepCart');
+      localStorage.removeItem('salesRepCartInfo');
+      
+      setDropdownOpen(false);
+      navigate('/saleslogin');
+    } catch (error) {
+      // Sign out failed
+    }
+  };
+
+  return (
+      <nav className="sales-navbar">
+        <div className="sales-navbar-content">
+          <div className="sales-navbar-logo">
+            <NavLink to="/sales/revenue">
+              <img src="https://firebasestorage.googleapis.com/v0/b/localsza.firebasestorage.app/o/logos%2FsalesLogo.png?alt=media&token=1b30f1ce-164a-42af-9567-6b1cacba86c7" alt="LocalsZA" className="sales-logo" />
+            </NavLink>
+          </div>
+
+          <div className="navbar-menu">
+            <button
+              className="navbar-icon"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label="Menu"
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <img 
+                src="https://img.icons8.com/forma-thin-filled/40/FFB803/menu.png"
+                alt="User Menu"
+                style={{ width: '40px', height: '40px' }}
+              />
+            </button>
+          </div>
+        </div>
+
+        <div className={`navbar-fullscreen-dropdown ${dropdownOpen ? 'open' : ''}`}>
+          <button
+            className="navbar-close"
+            onClick={() => setDropdownOpen(false)}
+            aria-label="Close Menu"
+          >
+            &times;
+          </button>
+          <div className="navbar-fullscreen-items">
+            <NavLink
+              to="/sales/add-customer"
+              className="navbar-dropdown-item"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <img
+                width="35"
+                height="35"
+                src="https://img.icons8.com/ios-filled/35/ffb803/add-user-male.png"
+                alt="add-customer"
+              />
+              Add Customer
+            </NavLink>
+            <NavLink
+              to="/sales/customers"
+              className="navbar-dropdown-item"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <img
+                width="35"
+                height="35"
+                src="https://img.icons8.com/ios-filled/35/ffb803/user-group-man-man.png"
+                alt="customers"
+              />
+              View Customers
+            </NavLink>
+            <NavLink
+              to="/sales/shop"
+              className="navbar-dropdown-item"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <img
+                className="navbar-dropdown-icon"
+                src="https://img.icons8.com/ios-glyphs/35/ffb803/shop.png"
+                alt="shop"
+              />
+              Shop
+            </NavLink>
+            <NavLink
+              to="/sales/revenue"
+              className="navbar-dropdown-item"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <img
+                className="navbar-dropdown-icon"
+                src="https://img.icons8.com/ios-glyphs/35/ffb803/money-bag.png"
+                alt="revenue"
+              />
+              Revenue
+            </NavLink>
+            <button
+              className="navbar-logout"
+              onClick={handleSignOut}
+            >
+              <img
+                className="navbar-dropdown-icon"
+                src="https://img.icons8.com/ios-glyphs/35/ffb803/logout-rounded-left.png"
+                alt="logout"
+              />
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </nav>
+  );
+};
+
+export default SalesNav;
