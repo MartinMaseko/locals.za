@@ -48,71 +48,21 @@ const driverRoutes = require('./src/routes/driverRoutes');
 // Mount the driver router at the /api/drivers base path.
 app.use('/api/drivers', driverRoutes);
 
-// Import the dashboard routes for internal team operations.
-// This will handle operations like fetching driver locations and dashboard deliveries.
-const dashboardRoutes = require('./src/routes/dashboardRoutes');
-
-// Mount the dashboard router at the /api/dashboard base path.
-app.use('/api/dashboard', dashboardRoutes);
-
-
-// Import the report routes for generating delivery reports.
-// This will handle operations like fetching delivered deliveries for reporting.
-const reportRoutes = require('./src/routes/reportRoutes');
-
-// Mount the report router at the /api/reports base path.
-app.use('/api/reports', reportRoutes);
-
-// Import the message routes for handling user messages.
-// This will handle operations like sending and retrieving messages between users.
-const messageRoutes = require('./src/routes/messageRoutes');
-
-// Mount the message router at the /api/messages base path.
-app.use('/api/messages', messageRoutes);
-
-// Import the ticket routes for handling support tickets.
-// This will handle operations like creating, updating, and retrieving support tickets.
-const ticketRoutes = require('./src/routes/ticketRoutes');
-
-// Mount the ticket router at the /api/tickets base path.
-app.use('/api/tickets', ticketRoutes);
-
-// Mount the admin router at the /api/admin base path.  
-const adminRoutes = require('./src/routes/adminRoutes');
-
-// Mount the admin router at the /api/admin base path.
-app.use('/api/admin', adminRoutes);
-
 // Mount the maps router at the /api/maps base path.
 const mapsRoutes = require('./src/routes/mapsRoutes');
-
-// Mount the maps router at the /api/maps base path.
 app.use('/api/maps', mapsRoutes);
 
 // Mount the support router at the /api/support base path.
 const supportRoutes = require('./src/routes/supportRoutes');
 app.use('/api/support', supportRoutes);
 
+// Mount the message router at the /api/messages base path.
+const messageRoutes = require('./src/routes/messageRoutes');
+app.use('/api/messages', messageRoutes);
+
 // Mount the product request router at the /api/product-requests base path.
 const productRequestRoutes = require('./src/routes/productRequestRoutes');
 app.use('/api/product-requests', productRequestRoutes);
-
-// Mount payment routes
-const paymentRoutes = require('./src/routes/paymentRoutes');
-app.use('/api/payment', paymentRoutes);
-
-// Import the discount routes for handling discounts.
-// This will handle operations like creating, updating, and retrieving discount information.
-const discountRoutes = require('./src/routes/discountRoutes');
-
-// Mount the discount router at the /api/discounts base path.
-app.use('/api/discounts', discountRoutes);
-
-// sales routes
-const salesRoutes = require('./src/routes/salesRoutes');
-
-// sales routes
-app.use('/api/sales', salesRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -124,10 +74,6 @@ app.use('*', (req, res) => {
   console.log('404 - Route not found:', req.method, req.originalUrl);
   res.status(404).json({ error: 'Route not found', path: req.originalUrl });
 });
-
-// Add sales routes
-const salesRoutes = require('./src/routes/salesRoutes');
-app.use('/api/sales', salesRoutes);
 
 // Start the server on the specified port or default to 3000.
 const PORT = process.env.PORT || 3000;

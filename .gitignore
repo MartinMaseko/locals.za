@@ -9,3 +9,15 @@ yarn-debug.log
 # Firebase service account key
 localsza-firebase-adminsdk-fbsvc-08ecb67c57.json
 src/utils/localsza-firebase-adminsdk-fbsvc-08ecb67c57.json
+
+# Python virtual environments
+venv/
+.venv/
+ai-service/venv/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+**/publish/
+*.zip
+deploy.zip

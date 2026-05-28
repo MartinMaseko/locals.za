@@ -108,7 +108,6 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     return (
       <div className='loading-container'>
         <img src={LogoAnime} alt="Loading..." className="loading-gif" />
-        Loading...
       </div>
     );
   }

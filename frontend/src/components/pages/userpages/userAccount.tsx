@@ -70,7 +70,7 @@ const UserAccount = () => {
       // Force a fresh token
       const token = await user.getIdToken(true);
 
-      const { data } = await axios.get<UserProfile>(`${API_URL}/api/users/me`, {
+      const { data } = await axios.get<UserProfile>(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -173,16 +173,12 @@ const UserAccount = () => {
       const token = await authUser.getIdToken(true);
 
       // Update the profile directly
-      await axios.put(
-        `${API_URL}/api/users/me`,
+      await axios.patch(
+        `${API_URL}/api/auth/me`,
         {
           full_name: profile.full_name,
           phone_number: profile.phone_number,
           profile_picture_url: imageUrl,
-          display_name: authUser.displayName || profile.full_name,
-          email: authUser.email || profile.email,
-          auth_provider: authUser.providerData?.[0]?.providerId || 'unknown',
-          uid: authUser.uid, 
         },
         {
           headers: { Authorization: `Bearer ${token}` },

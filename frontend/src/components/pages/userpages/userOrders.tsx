@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient'; 
 import axios from 'axios';
 import './userstyle.css';
-import ProductCard from '../storepages/productview/productsCard';
 import LoadingContext from '../storepages/LoadingContext';
 import LogoAnime from '../../../components/assets/logos/locals-svg.gif';
 import { Link } from 'react-router-dom';
-import { useCart } from '../../contexts/CartContext';
 import LocalsZAIcon from '../../assets/logos/LZA ICON.png';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -53,27 +50,11 @@ type Order = {
   etaUpdatedAt?: string;
 };
 
-// Frequently purchased products
-interface FrequentProduct {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string;
-  purchaseCount: number; // Number of times purchased
-  lastPurchased: string; // Date of most recent purchase
-}
-
 const UserOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [frequentProducts, setFrequentProducts] = useState<FrequentProduct[]>([]);
-  const [showFrequentProducts, setShowFrequentProducts] = useState(false);
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
-  const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null);
   const auth = getAuth(app);
-  const { addToCart } = useCart();
-  const navigate = useNavigate(); 
   
   // Access the global loading context
   const { setLoading: setGlobalLoading } = useContext(LoadingContext);
@@ -151,11 +132,6 @@ const UserOrders: React.FC = () => {
         
         if (mounted) {
           setOrders(normalized);
-          
-          // Process orders to find frequently purchased products
-          if (normalized.length > 0) {
-            generateFrequentlyPurchasedProducts(normalized);
-          }
         }
       } catch (err: any) {
         if (mounted) setError(err?.response?.data?.error || err?.message || 'Failed to load orders');
@@ -170,109 +146,6 @@ const UserOrders: React.FC = () => {
     };
   }, [auth]);
 
-  // Function to generate frequently purchased products from orders
-  const generateFrequentlyPurchasedProducts = (orders: Order[]) => {
-    // Map to track product purchase frequency
-    const productMap: Record<string, FrequentProduct> = {};
-    
-    // Process all orders to find product purchase patterns
-    orders.forEach(order => {
-      if (!order.items || !Array.isArray(order.items)) return;
-      
-      const orderDate = order.createdAt || new Date().toISOString();
-      
-      order.items.forEach(item => {
-        if (!item.productId || !item.product) return;
-        
-        const productId = item.productId;
-        
-        if (!productMap[productId]) {
-          // First time seeing this product
-          productMap[productId] = {
-            id: productId,
-            name: item.product.name || 'Unknown Product',
-            price: typeof item.product.price === 'number' ? item.product.price : 
-                  Number(item.product.price || 0),
-            image_url: item.product.image_url || '',
-            purchaseCount: item.qty,
-            lastPurchased: orderDate
-          };
-        } else {
-          // Update existing product data
-          productMap[productId].purchaseCount += item.qty;
-          
-          // Update last purchased date if this order is more recent
-          if (orderDate > productMap[productId].lastPurchased) {
-            productMap[productId].lastPurchased = orderDate;
-          }
-        }
-      });
-    });
-    
-    // Convert map to array and sort by purchase count (descending)
-    const frequentItems = Object.values(productMap).sort((a, b) => 
-      b.purchaseCount - a.purchaseCount
-    );
-    
-    setFrequentProducts(frequentItems);
-  };
-
-
-  // Custom handler for when product card is clicked
-  const handleProductClick = (product: any) => {
-    // You can navigate to product detail or do nothing
-    navigate(`/product/${product.id}`, { state: { product } });
-  };
-
-  // Retry payment: add items back to cart and navigate to checkout
-  const handleRetryPayment = async (order: Order) => {
-    setRetryingOrderId(order.id);
-    try {
-      for (const item of order.items) {
-        if (item.product) {
-          addToCart({
-            id: item.productId || item.product.id || '',
-            name: item.product.name || '',
-            price: typeof item.product.price === 'number' ? item.product.price : Number(item.product.price || 0),
-            image_url: item.product.image_url || '',
-            quantity: item.qty,
-          });
-        }
-      }
-      // Cancel the old unpaid order so it doesn't linger
-      const user = auth.currentUser;
-      if (user) {
-        const token = await user.getIdToken();
-        await axios.put(`${API_URL}/api/orders/${order.id}/cancel`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
-      }
-      navigate('/checkout');
-    } catch (err) {
-      // Retry payment failed
-    } finally {
-      setRetryingOrderId(null);
-    }
-  };
-
-  // Cancel a pending_payment order
-  const handleCancelOrder = async (orderId: string) => {
-    setCancellingOrderId(orderId);
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      const token = await user.getIdToken();
-      await axios.put(`${API_URL}/api/orders/${orderId}/cancel`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
-    } catch (err: any) {
-      // Cancel order failed
-    } finally {
-      setCancellingOrderId(null);
-    }
-  };
 
   // Loading state and UI
   if (loading) return (
@@ -303,79 +176,10 @@ const UserOrders: React.FC = () => {
     <div className="user-orders-page">
       <h1>Your Orders</h1>
       
-      {/* Frequently Purchased Products Section */}
-      {frequentProducts.length > 0 && (
-        <div className="frequent-products-section">
-          <h2>Frequently Purchased Items</h2>
-          <p className="frequent-products-description">
-            These are items you've purchased before. Add them to your cart with just one click.
-          </p>
-          <button 
-            className="toggle-frequent-products"
-            onClick={() => setShowFrequentProducts(!showFrequentProducts)}
-          >
-            {showFrequentProducts ? 'Hide Items' : 'View Items'}
-          </button>
-          
-          {showFrequentProducts && (
-            <div className="frequent-products-grid">
-              {frequentProducts.slice(0, 10).map(product => {
-                // Convert FrequentProduct to Product format for ProductCard
-                const productCardData = {
-                  id: product.id,
-                  name: product.name,
-                  price: product.price,
-                  image_url: product.image_url
-                };
-                
-                return (
-                  <div key={product.id} className="frequent-product-item">
-                    <ProductCard 
-                      product={productCardData}
-                      onClick={handleProductClick}
-                    />
-                    <div className="frequent-product-stats">
-                      <span className="purchase-count">
-                        Purchased {product.purchaseCount} {product.purchaseCount === 1 ? 'time' : 'times'}
-                      </span>
-                      <button 
-                        className="reorder-add-to-cart"
-                        onClick={() => addToCart({
-                          ...productCardData,
-                          quantity: 1
-                        })}
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Pending Payment Banner */}
-      {orders.some(o => o.status === 'pending_payment') && (
-        <div className="pending-payment-banner">
-          <div className="pending-payment-icon">
-            <img width="32" height="32" src="https://img.icons8.com/ios-filled/50/ffb803/shopping-basket-2.png" alt="basket" />
-          </div>
-          <div className="pending-payment-content">
-            <h3>Left your basket?</h3>
-            <p>You have unpaid orders. Want to try again or cancel?</p>
-          </div>
-        </div>
-      )}
-      
       {orders.length === 0 ? (
-        <><div className='empty-orders-wrapper'>
-            <img width="100" height="100" src="https://img.icons8.com/clouds/100/shopping-cart.png" alt="shopping-cart"/>
-            <p>You have no orders yet.</p>
-            <Link to="/" className="start-shopping-link">Start Shopping</Link>
-          </div>
-        </>
+        <div className='empty-orders-wrapper'>
+          <p>You have no orders yet.</p>
+        </div>
       ) : (
         <div className="orders-section">
           <h2>Order History</h2>
@@ -419,7 +223,7 @@ const UserOrders: React.FC = () => {
                       // Check if this item has missing quantities
                       const missingItem = o.missingItems?.find((mi: any) => mi.productId === it.productId);
                       
-                      // Convert OrderItem to Product format for ProductCard
+                      // Convert OrderItem to product display format
                       const product = {
                         id: it.productId || `product-${idx}`,
                         name: it.product?.name || `Product #${it.productId}`,
@@ -429,10 +233,10 @@ const UserOrders: React.FC = () => {
                       
                       return (
                         <div key={idx} className={`order-item-wrapper ${missingItem ? 'has-missing' : ''}`}>
-                          <ProductCard 
-                            product={product} 
-                            onClick={handleProductClick}
-                          />
+                          <div className="order-item-product">
+                            {product.image_url && <img src={product.image_url} alt={product.name} width="60" height="60" />}
+                            <span className="order-item-name">{product.name}</span>
+                          </div>
                           <div className="order-item-quantity">
                             Qty: {it.qty}
                             {/* Show missing status if item is affected */}
@@ -489,29 +293,6 @@ const UserOrders: React.FC = () => {
                   {(o.refundAmount ?? 0) > 0 && (
                     <div className="refund-credit-note">
                       A credit of R{Number(o.refundAmount).toFixed(2)} has been added to your account for your next order.
-                    </div>
-                  )}
-
-                  {/* Retry / Cancel actions for unpaid orders */}
-                  {o.status === 'pending_payment' && (
-                    <div className="pending-payment-actions">
-                      <p className="pending-payment-hint">Payment was not completed for this order.</p>
-                      <div className="pending-payment-buttons">
-                        <button
-                          className="retry-payment-btn"
-                          disabled={retryingOrderId === o.id || cancellingOrderId === o.id}
-                          onClick={() => handleRetryPayment(o)}
-                        >
-                          {retryingOrderId === o.id ? 'Loading...' : 'Try Again'}
-                        </button>
-                        <button
-                          className="cancel-order-btn"
-                          disabled={retryingOrderId === o.id || cancellingOrderId === o.id}
-                          onClick={() => handleCancelOrder(o.id)}
-                        >
-                          {cancellingOrderId === o.id ? 'Cancelling...' : 'Cancel Order'}
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>

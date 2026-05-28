@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../../Auth/firebaseClient';
@@ -7,878 +7,357 @@ import './driverStyles.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface MissingItem {
-  productId: string;
-  name: string;
-  quantity: number;
-  missingQuantity: number;
-  price: number;
-  reason: string;
+interface OrderItem {
+  description: string;
+  qty:         number;
+  unit_price:  number;
+  line_total:  number;
 }
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image_url?: string;
-  description?: string;
+interface Job {
+  id:               string;
+  order_number:     string;
+  status:           string;
+  store_id:         string;
+  customer_name:    string;
+  contact_number:   string;
+  delivery_address: {
+    addressLine?: string;
+    suburb?:      string;
+    city?:        string;
+    province?:    string;
+    postal?:      string;
+    [key: string]: any;
+  };
+  items:            OrderItem[];
+  subtotal:         number;
+  delivery_fee:     number;
+  total:            number;
+  driver_payout:    number;
+  weight_class:     string;
+  distance_km:      number;
+  created_at:       string;
+  updated_at:       string;
   [key: string]: any;
 }
 
-interface Order {
-  id: string;
-  status: string;
-  customer_name?: string;
-  customer_phone?: string;
-  customer_email?: string;
-  deliveryAddress: {
-    street?: string;
-    city?: string;
-    postalCode?: string;
-    [key: string]: any;
-  };
-  products: Product[];
-  total: number;
-  createdAt: string;
-  delivery_fee?: number;
-  subtotal?: number;
-  supplier?: {
-    name?: string;
-    address?: string;
-    phone?: string;
-    [key: string]: any;
-  };
-  [key: string]: any;
-}
+// Status progression shown to the driver
+const NEXT_ACTION: Record<string, { label: string; color: string; textColor: string }> = {
+  assigned:        { label: 'Accept Job',          color: '#FFB803', textColor: '#111' },
+  accepted:        { label: 'Arrived at Store',    color: '#64b5f6', textColor: '#111' },
+  arrivedAtPickup: { label: 'Order Loaded',         color: '#ff8a00', textColor: '#fff' },
+  loaded:          { label: 'Mark as Delivered',   color: '#4CAF50', textColor: '#fff' },
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  assigned:        'Assigned',
+  accepted:        'Accepted',
+  arrivedAtPickup: 'At Store',
+  loaded:          'En Route',
+  delivered:       'Delivered',
+};
+
+const formatAddress = (addr: Job['delivery_address']): string => {
+  if (!addr) return 'No address';
+  return [
+    addr.addressLine || addr.address_line || addr.street || '',
+    addr.suburb   || '',
+    addr.city     || '',
+    addr.province || addr.province || '',
+    addr.postal   || addr.postalCode || '',
+  ].filter(Boolean).join(', ') || 'No address details';
+};
 
 const DriverDeliveries = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [addressCopied, setAddressCopied] = useState(false);
-  
-  // State variables for item verification
-  const [verifyingItems, setVerifyingItems] = useState(false);
-  const [missingItems, setMissingItems] = useState<MissingItem[]>([]);
-  const [submittingMissingItems, setSubmittingMissingItems] = useState(false);
-  const [missingItemSuccess, setMissingItemSuccess] = useState('');
-  
-  // State for alert customer
-  const [alertSent, setAlertSent] = useState(false);
-  const [alerting, setAlerting] = useState(false);
-
-  // State for proof of delivery modal
-  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
-  const [deliveryPin, setDeliveryPin] = useState('');
-  const [confirmItemsChecked, setConfirmItemsChecked] = useState(false);
-  const [proofImage, setProofImage] = useState<File | null>(null);
-  const [proofImagePreview, setProofImagePreview] = useState<string | null>(null);
-  const [pinSent, setPinSent] = useState(false);
-  const [sendingPin, setSendingPin] = useState(false);
-  const [confirmingDelivery, setConfirmingDelivery] = useState(false);
-  const [deliveryError, setDeliveryError] = useState('');
-  
+  const [job, setJob]               = useState<Job | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [advancing, setAdvancing]   = useState(false);
+  const [error, setError]           = useState('');
+  const [addressCopied, setAddrCopied] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth(app);
 
-  // Data normalization function
-  const normalizeOrderData = (orderData: any): Order => {
-    // products array
-    if (!orderData.products) {
-      orderData.products = [];
-      
-      // Convert items to products if available
-      if (orderData.items && Array.isArray(orderData.items)) {
-        orderData.products = orderData.items.map((item: any) => {
-          // Ensure price is a number
-          let price = 0;
-          if (typeof item.price === 'number') {
-            price = item.price;
-          } else if (typeof item.price === 'string') {
-            price = parseFloat(item.price) || 0;
-          } else if (item.product && typeof item.product.price === 'number') {
-            price = item.product.price;
-          } else if (item.product && typeof item.product.price === 'string') {
-            price = parseFloat(item.product.price) || 0;
-          }
-          
-          return {
-            id: item.productId || item.id || 'unknown',
-            name: item.product?.name || 'Unknown Product',
-            price,
-            quantity: typeof item.qty === 'number' ? item.qty : 1,
-            image_url: item.product?.image_url || item.image_url
-          };
-        });
-      }
-    } else {
-      // Make sure existing products have proper format
-      orderData.products = orderData.products.map((product: any) => ({
-        ...product,
-        price: typeof product.price === 'number' 
-          ? product.price 
-          : typeof product.price === 'string'
-            ? parseFloat(product.price) || 0
-            : 0,
-        quantity: typeof product.quantity === 'number' ? product.quantity : 1
-      }));
-    }
-    
-    // Get customer information from various possible locations in the data structure
-    // Based on your Firestore screenshot
-    const customerInfo = {
-      customer_name: orderData.deliveryAddress?.name || 
-                     orderData.customer_name || 
-                     orderData.customerName || 
-                     (orderData.customer ? (orderData.customer.full_name || orderData.customer.name) : null) ||
-                     'Not provided',
-      customer_phone: orderData.deliveryAddress?.phone || 
-                     orderData.customer_phone || 
-                     orderData.customerPhone || 
-                     (orderData.customer ? orderData.customer.phone : null) ||
-                     'Not provided',
-      customer_email: orderData.customer_email || 
-                     orderData.customerEmail ||
-                     (orderData.customer ? orderData.customer.email : null) ||
-                     'Not provided',
-    };
-    
-    // Normalize delivery address based on your Firestore structure
-    let deliveryAddress = orderData.deliveryAddress || orderData.delivery_address || {};
-    
-    // Ensure all address components exist based on your Firestore field names
-    const normalizedAddress = {
-      street: deliveryAddress.addressLine || deliveryAddress.street || deliveryAddress.address_line1 || '',
-      suburb: deliveryAddress.suburb || deliveryAddress.address_line2 || '',
-      city: deliveryAddress.city || deliveryAddress.town || '',
-      province: deliveryAddress.province || deliveryAddress.state || '',
-      postalCode: deliveryAddress.postal || deliveryAddress.postalCode || deliveryAddress.postal_code || deliveryAddress.zip || '',
-      country: deliveryAddress.country || 'South Africa',
-      coordinates: deliveryAddress.coordinates || deliveryAddress.location || null,
-      // Store raw address for backup
-      fullAddress: deliveryAddress.addressLine ? 
-                  `${deliveryAddress.addressLine}, ${deliveryAddress.city || ''} ${deliveryAddress.postal || ''}`.trim() : 
-                  deliveryAddress.fullAddress || '',
-    };
-    
-    // Normalize numeric fields
-    return {
-      ...orderData,
-      ...customerInfo,
-      deliveryAddress: normalizedAddress,
-      total: typeof orderData.total === 'number' ? orderData.total : 0,
-      subtotal: typeof orderData.subtotal === 'number' ? orderData.subtotal : 0,
-      delivery_fee: typeof orderData.delivery_fee === 'number' ? orderData.delivery_fee : 0
-    };
-  };
+  const getToken = useCallback(async () => {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
+    return token;
+  }, [auth]);
 
   useEffect(() => {
-    const fetchOrderDetails = async () => {
-      if (!orderId) {
-        setError('Order ID is missing');
-        setLoading(false);
-        return;
-      }
-
+    const fetch = async () => {
+      if (!orderId) { setError('Order ID missing'); setLoading(false); return; }
       try {
-        const token = await auth.currentUser?.getIdToken();
-        
-        if (!token) {
-          throw new Error('Authentication required');
-        }
-        
-        // Try to get full order details including products
-        const response = await axios.get<Order>(`${API_URL}/api/orders/${orderId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (response.data && response.data.id) {
-      
-          // Normalize the data
-          const normalizedOrder = normalizeOrderData(response.data);
-          setOrder(normalizedOrder);
-        } else {
-          throw new Error('Invalid order data received');
-        }
-      } catch (error: any) {
-        // More detailed error information
-        if (error.response) {
-          if (error.response.status === 403) {
-            setError('You do not have permission to view this order. Please contact support.');
-          } else if (error.response.status === 404) {
-            setError('Order not found. It may have been deleted or moved.');
-          } else {
-            setError(`Failed to load order details: ${error.response.data?.error || error.message}`);
-          }
-        } else if (error.request) {
-          // The request was made but no response was received
-          setError('No response from server. Please check your connection and try again.');
-        } else {
-          // Something happened in setting up the request
-          setError(`Error setting up request: ${error.message}`);
-        }
+        const token = await getToken();
+        const res = await axios.get<Job>(
+          `${API_URL}/api/drivers/me/jobs/${orderId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setJob(res.data);
+      } catch (err: any) {
+        if (err.response?.status === 403)
+          setError('You are not assigned to this job.');
+        else if (err.response?.status === 404)
+          setError('Job not found.');
+        else
+          setError('Failed to load job details.');
       } finally {
         setLoading(false);
       }
     };
+    fetch();
+  }, [orderId, getToken]);
 
-    fetchOrderDetails();
-  }, [orderId, auth]);
-
-  
-  const getFormattedDate = (dateString: string) => {
-    if (!dateString) return '';
-    
+  const advanceStatus = async () => {
+    if (!job || !NEXT_ACTION[job.status]) return;
+    setAdvancing(true);
+    setError('');
     try {
-      const date = new Date(dateString);
-      return date.toLocaleString('en-ZA', { 
-        day: 'numeric', 
-        month: 'short',
-        hour: '2-digit', 
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  const handleBackToOrders = () => {
-    navigate('/driversdashboard');
-  };
-
-  const handleCopyAddress = async () => {
-    if (!order) return;
-    const parts = [
-      order.deliveryAddress.street,
-      order.deliveryAddress.suburb,
-      order.deliveryAddress.city,
-      order.deliveryAddress.province,
-      order.deliveryAddress.postalCode,
-    ].filter(Boolean);
-    const formatted = parts.length ? parts.join(', ') : 'No address available';
-    try {
-      await navigator.clipboard.writeText(formatted);
-      setAddressCopied(true);
-      setTimeout(() => setAddressCopied(false), 3000);
-    } catch {
-      // Fallback for older browsers
-      const textarea = document.createElement('textarea');
-      textarea.value = formatted;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      setAddressCopied(true);
-      setTimeout(() => setAddressCopied(false), 3000);
-    }
-  };
-
-
-  const handleCollectOrder = () => {
-    // Instead of immediately updating status, start item verification
-    setVerifyingItems(true);
-  };
-
-  const handleItemCheck = (productId: string, isAvailable: boolean, availableQty: number, originalQty: number) => {
-    if (isAvailable && availableQty >= originalQty) {
-      // If item is fully available, remove it from missing items if it exists
-      setMissingItems(prev => prev.filter(item => item.productId !== productId));
-    } else {
-      // If item is missing or partially available
-      const product = order?.products.find(p => p.id === productId);
-      if (product) {
-        const missingQty = originalQty - availableQty;
-        
-        // Check if item already exists in missing items
-        const existingItemIndex = missingItems.findIndex(item => item.productId === productId);
-        
-        if (existingItemIndex >= 0) {
-          // Update existing item
-          const updatedItems = [...missingItems];
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            missingQuantity: missingQty,
-            quantity: originalQty
-          };
-          setMissingItems(updatedItems);
-        } else {
-          // Add new missing item
-          setMissingItems(prev => [
-            ...prev, 
-            {
-              productId,
-              name: product.name,
-              quantity: originalQty,
-              missingQuantity: missingQty,
-              price: product.price,
-              reason: 'Out of stock'
-            }
-          ]);
-        }
-      }
-    }
-  };
-
-
-  const handleCompleteVerification = async () => {
-    try {
-      setSubmittingMissingItems(true);
-      
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Authentication required');
-      
-      // Calculate refund amount for missing items
-      const refundAmount = missingItems.length > 0 ? missingItems.reduce(
-        (total, item) => total + (item.price * item.missingQuantity), 
-        0
-      ) : 0;
-      
-      // Use the status update endpoint which is already working
-      // Include the missing items data there
-      await axios.put(
-        `${API_URL}/api/orders/${orderId}/status`, 
-        { 
-          status: 'in transit',
-          missingItems: missingItems.length > 0 ? missingItems : [],
-          refundAmount,
-          driverNote: "Items missing during collection",
-          hasRefund: refundAmount > 0,
-          refundStatus: 'pending',
-          adjustedTotal: order ? order.total - refundAmount : 0
-        },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      
-      // Update local order state
-      setOrder(prev => prev ? { 
-        ...prev, 
-        status: 'in transit',
-        missingItems: missingItems.length > 0 ? missingItems : undefined,
-        refundAmount,
-        adjustedTotal: prev.total - refundAmount
-      } : null);
-      
-      // Show success message if there were missing items
-      if (missingItems.length > 0) {
-        setMissingItemSuccess(`Reported ${missingItems.length} missing item(s). Customer will be notified.`);
-      }
-      
-      // Close verification mode after a short delay
-      setTimeout(() => {
-        setVerifyingItems(false);
-      }, 1500);
-      
-    } catch (error) {
-      setError('Failed to update order with missing items');
-      
-      // Fallback approach - try to update just the status without missing items
-      try {
-        const token = await auth.currentUser?.getIdToken();
-        await axios.put(
-          `/api/orders/${orderId}/status`, 
-          { status: 'in transit' },
-          { headers: { Authorization: `Bearer ${token}` }}
-        );
-        
-        // At least update the local status
-        setOrder(prev => prev ? { ...prev, status: 'in transit' } : null);
-        
-        setVerifyingItems(false);
-        // Show limited success but note the missing items weren't reported
-        setMissingItemSuccess("Order marked as in transit, but couldn't report missing items.");
-      } catch (fallbackError) {
-        // Fallback status update also failed
-      }
-    } finally {
-      setSubmittingMissingItems(false);
-    }
-  };
-
-  const handleCancelVerification = () => {
-    // Cancel verification mode without changes
-    setVerifyingItems(false);
-    setMissingItems([]);
-  };
-
-  // Alert customer that driver is heading to their address
-  const handleAlertCustomer = async () => {
-    try {
-      setAlerting(true);
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Authentication required');
-
-      await axios.post(
-        `${API_URL}/api/orders/${orderId}/alert-customer`,
+      const token = await getToken();
+      const res = await axios.patch<Job>(
+        `${API_URL}/api/drivers/me/jobs/${job.id}/status`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setAlertSent(true);
-    } catch (error) {
-      setError('Failed to alert customer');
+      setJob(res.data);
+    } catch (err: any) {
+      if (err.response?.data?.error)
+        setError(err.response.data.error);
+      else
+        setError('Failed to update status. Please try again.');
     } finally {
-      setAlerting(false);
+      setAdvancing(false);
     }
   };
 
-  // Open the delivery confirmation modal and send PIN to customer
-  const handleDeliveryComplete = async () => {
-    setShowDeliveryModal(true);
-    setDeliveryError('');
-    setDeliveryPin('');
-    setConfirmItemsChecked(false);
-    setProofImage(null);
-    setProofImagePreview(null);
-
-    // Automatically generate and send PIN to customer
-    if (!pinSent) {
-      try {
-        setSendingPin(true);
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) throw new Error('Authentication required');
-
-        await axios.post(
-          `${API_URL}/api/orders/${orderId}/generate-delivery-pin`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        setPinSent(true);
-      } catch (error) {
-        setDeliveryError('Failed to send PIN to customer. Please try again.');
-      } finally {
-        setSendingPin(false);
-      }
-    }
-  };
-
-  // Handle proof image selection
-  const handleProofImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProofImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProofImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Confirm delivery with PIN verification
-  const handleConfirmDelivery = async () => {
-    if (!deliveryPin || deliveryPin.length !== 4) {
-      setDeliveryError('Please enter the 4-digit PIN from the customer');
-      return;
-    }
-
-    if (!confirmItemsChecked) {
-      setDeliveryError('Please confirm that all items have been delivered');
-      return;
-    }
-
+  const copyAddress = async () => {
+    if (!job) return;
+    const text = formatAddress(job.delivery_address);
     try {
-      setConfirmingDelivery(true);
-      setDeliveryError('');
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Authentication required');
-
-      await axios.post(
-        `${API_URL}/api/orders/${orderId}/confirm-delivery`,
-        {
-          pin: deliveryPin,
-          confirmItems: confirmItemsChecked,
-          hasProofImage: !!proofImage
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Update local state
-      setOrder(prev => prev ? { ...prev, status: 'completed' } : null);
-      setShowDeliveryModal(false);
-      setPinSent(false);
-    } catch (error: any) {
-      if (error.response?.data?.error === 'Invalid delivery PIN') {
-        setDeliveryError('Incorrect PIN. Please ask the customer for the correct PIN.');
-      } else {
-        setDeliveryError('Failed to confirm delivery. Please try again.');
-      }
-    } finally {
-      setConfirmingDelivery(false);
+      await navigator.clipboard.writeText(text);
+      setAddrCopied(true);
+      setTimeout(() => setAddrCopied(false), 3000);
+    } catch {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setAddrCopied(true);
+      setTimeout(() => setAddrCopied(false), 3000);
     }
   };
-
-
 
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading order details...</p>
+        <div className="loading-spinner" />
+        <p>Loading job details…</p>
       </div>
     );
   }
 
-  if (error || !order) {
+  if (error || !job) {
     return (
       <div className="error-container">
         <h2>Error</h2>
-        <p>{error || 'Failed to load order'}</p>
-        <button className="app-btn" onClick={handleBackToOrders}>
-          Back to Orders
+        <p>{error || 'Failed to load job'}</p>
+        <button className="app-btn" onClick={() => navigate('/driver/dashboard')}>
+          Back to Dashboard
         </button>
       </div>
     );
   }
 
+  const nextAction = NEXT_ACTION[job.status];
+  const isDelivered = job.status === 'delivered';
+  const payout = job.driver_payout > 0 ? job.driver_payout : job.delivery_fee * 0.8;
+
   return (
     <div className="driver-delivery-page">
+
+      {/* ── Header ── */}
       <div className="delivery-header">
-        <button className="back-btn" onClick={handleBackToOrders}>
-          <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffb803/back.png" alt="back"/> 
-           Back to orders
+        <button className="back-btn" onClick={() => navigate('/driver/dashboard')}>
+          <img width="20" height="20"
+            src="https://img.icons8.com/ios-filled/20/ffb803/back.png" alt="back" />
+          Back to jobs
         </button>
-        <h1>Order #{order?.id?.slice(-6)}</h1>
-        <div className='driver-order-status2'>
-          {order?.status.charAt(0).toUpperCase() + order?.status.slice(1)}
+        <h1>{job.order_number || `Order #${job.id.slice(-6).toUpperCase()}`}</h1>
+        <div
+          className="driver-order-status2"
+          style={{
+            background: isDelivered ? '#4CAF50' : '#FFB803',
+            color: '#111',
+          }}
+        >
+          {STATUS_LABEL[job.status] ?? job.status}
         </div>
       </div>
 
+      {error && (
+        <div style={{
+          background: '#3a1a1a', color: '#ff6b6b', padding: '10px 14px',
+          borderRadius: 8, margin: '12px 16px', fontSize: '0.82rem',
+        }}>
+          {error}
+        </div>
+      )}
+
       <div className="delivery-sections">
+
+        {/* ── Customer / delivery info ── */}
         <div className="delivery-section customer-info">
-          <h2>Customer Information</h2>
+          <h2>Delivery Info</h2>
           <div className="info-card">
-            <div className="info-row">
-              <span className="info-label">Name: </span>
-              <span className="info-value">{order?.customer_name || 'Not provided'}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Phone: </span>
-              <span className="info-value">
-                <a href={`tel:${order?.customer_phone}`} className="phone-link">
-                  {order?.customer_phone || 'Not provided'}
-                </a>
-              </span>
-            </div>
+            {job.customer_name && (
+              <div className="info-row">
+                <span className="info-label">Name: </span>
+                <span className="info-value">{job.customer_name}</span>
+              </div>
+            )}
+            {job.contact_number && (
+              <div className="info-row">
+                <span className="info-label">Phone: </span>
+                <span className="info-value">
+                  <a href={`tel:${job.contact_number}`} className="phone-link">
+                    {job.contact_number}
+                  </a>
+                </span>
+              </div>
+            )}
             <div className="info-row">
               <span className="info-label">Address: </span>
               <span className="info-value address-value">
-                {order?.deliveryAddress.street ? order.deliveryAddress.street : 'No street provided'}<br/>
-                {order?.deliveryAddress.city ? order.deliveryAddress.city : 'No city provided'}<br/>
-                {order?.deliveryAddress.postalCode ? order.deliveryAddress.postalCode : 'No postal code provided'}
+                {formatAddress(job.delivery_address)}
               </span>
             </div>
+            {job.weight_class && (
+              <div className="info-row">
+                <span className="info-label">Weight: </span>
+                <span className="info-value" style={{ textTransform: 'capitalize' }}>
+                  {job.weight_class}
+                </span>
+              </div>
+            )}
+            {job.distance_km > 0 && (
+              <div className="info-row">
+                <span className="info-label">Distance: </span>
+                <span className="info-value">{job.distance_km.toFixed(1)} km</span>
+              </div>
+            )}
             <div className="info-row">
-              <span className="info-label">Order Date: </span>
-              <span className="info-value">{order ? getFormattedDate(order.createdAt) : ''}</span>
+              <span className="info-label">Your Payout: </span>
+              <span className="info-value" style={{ color: '#4CAF50', fontWeight: 700 }}>
+                R{payout.toFixed(2)}
+              </span>
             </div>
           </div>
-          
+
           <div className="address-buttons">
-            <button 
+            <button
               className={`add-address-btn ${addressCopied ? 'added' : ''}`}
-              onClick={handleCopyAddress}
+              onClick={copyAddress}
             >
               {addressCopied ? (
                 <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="copied"/>
-                  Address Copied!
+                  <img width="18" height="18" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="" />
+                  Copied!
                 </>
               ) : (
                 <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/copy.png" alt="copy"/>
+                  <img width="18" height="18" src="https://img.icons8.com/ios-filled/20/ffffff/copy.png" alt="" />
                   Copy Address
                 </>
               )}
             </button>
+            <a
+              href={`https://waze.com/ul?q=${encodeURIComponent(formatAddress(job.delivery_address))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="show-route-btn"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', justifyContent: 'center' }}
+            >
+              <img width="18" height="18" src="https://img.icons8.com/color/48/waze.png" alt="" />
+              Open in Waze
+            </a>
           </div>
         </div>
-        
+
+        {/* ── Items ── */}
         <div className="delivery-section order-items">
-          <h2>Customer's Order</h2>
-          
-          {/* Display verification UI or normal product list */}
-          {verifyingItems ? (
-            <div className="item-verification-container">
-              <div className="verification-header">
-                <h3>Verify Available Items</h3>
-                <p className="verification-instructions">
-                  Please check which items are available for delivery. If an item is out of stock or only partially available,
-                  adjust the quantity and select a reason.
-                </p>
-              </div>
-              
-              <div className="verification-items-list">
-                {order?.products && order.products.map((product, index) => {
-                  const missingItem = missingItems.find(item => item.productId === product.id);
-                  
-                  return (
-                    <div key={product.id || index} className="verification-item">
-                      <div className="verification-item-details">
-                        <div className="verification-item-image">
-                          {product.image_url ? (
-                            <img 
-                              src={product.image_url} 
-                              alt={product.name} 
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.onerror = null; 
-                                target.src = 'https://img.icons8.com/ios-filled/100/999999/no-image.png';
-                              }}
-                            />
-                          ) : (
-                            <div className="no-image">No Image</div>
-                          )}
-                        </div>
-                        
-                        <div className="verification-item-info">
-                          <h4>{product.name || 'Unknown Product'}</h4>
-                          <p className="verification-item-quantity">Ordered Quantity: {product.quantity}</p>
-                          <p className="verification-item-price">R{product.price.toFixed(2)} each</p>
-                        </div>
-                      </div>
-                      
-                      <div className="verification-item-controls">
-                        <div className="verification-status-toggle">
-                          <button 
-                            className={`status-btn ${!missingItem ? 'active' : ''}`}
-                            onClick={() => handleItemCheck(product.id, true, product.quantity, product.quantity)}
-                          >
-                            Collect
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <div className="verification-actions">
-                <button 
-                  className="confirm-collection-btn"
-                  onClick={handleCompleteVerification}
-                  disabled={submittingMissingItems}
-                >
-                  {submittingMissingItems ? 'Submitting...' : 'Confirm Collection'}
-                </button>
-                <button 
-                  className="cancel-verification-btn"
-                  onClick={handleCancelVerification}
-                >
-                  Cancel
-                </button>
-              </div>
-              
-              {missingItemSuccess && (
-                <div className="success-message">
-                  {missingItemSuccess}
-                </div>
-              )}
-            </div>
-          ) : (
+          <h2>Items</h2>
+          {job.items && job.items.length > 0 ? (
             <div className="delivery-products-list">
-              {order.products.map((product, index) => (
-                <div key={product.id || index} className="driver-product-card">
-                  <div className="driver-product-image-container">
-                    {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.name} 
-                        className="driver-product-image"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.onerror = null; 
-                          target.src = 'https://img.icons8.com/ios-filled/100/999999/no-image.png';
-                        }}
-                      />
-                    ) : (
-                      <div className="no-image">
-                        <span>No Image</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="product-info">
-                    <h3>{product.name || 'Unknown Product'}</h3>
-                    <p className="product-description">{product.description || 'No description available'}</p>
-                    
-                    <div className="product-meta">
-                      <span className="product-quantity">Qty: {product.quantity || 1}</span>
+              {job.items.map((item, i) => (
+                <div key={i} className="driver-product-card" style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <div className="product-info" style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '0.9rem', margin: '0 0 4px' }}>{item.description}</h3>
+                    <div className="product-meta" style={{ display: 'flex', gap: 12 }}>
+                      <span style={{ fontSize: '0.78rem', color: '#888' }}>Qty: {item.qty}</span>
+                      {item.unit_price > 0 && (
+                        <span style={{ fontSize: '0.78rem', color: '#888' }}>
+                          R{item.unit_price.toFixed(2)} ea
+                        </span>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <div className="delivery-actions">
-            {!verifyingItems && (
-              <button className="collect-order-btn" onClick={handleCollectOrder} disabled={loading}>
-                Collect Order
-              </button>
-            )}
-
-            <button 
-              className={`alert-customer-btn ${alertSent ? 'sent' : ''}`}
-              onClick={handleAlertCustomer}
-              disabled={alerting || alertSent || order.status === 'completed'}
-            >
-              {alertSent ? (
-                <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="sent"/>
-                  Customer Alerted
-                </>
-              ) : alerting ? (
-                'Alerting...'
-              ) : (
-                <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/alarm.png" alt="alert"/>
-                  Alert Customer
-                </>
-              )}
-            </button>
-
-            <button 
-              className={`complete-order-btn ${order.status === 'completed' ? 'delivered' : ''}`}
-              onClick={handleDeliveryComplete} 
-              disabled={loading || order.status === 'completed'}
-            >
-              {order.status === 'completed' ? (
-                <>
-                  <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="delivered"/>
-                  Delivered
-                </>
-              ) : (
-                'Delivery Complete'
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Proof of Delivery Modal */}
-      {showDeliveryModal && (
-        <div className="delivery-modal-overlay" onClick={() => setShowDeliveryModal(false)}>
-          <div className="delivery-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="delivery-modal-header">
-              <h2>Confirm Delivery</h2>
-              <button className="modal-close-btn" onClick={() => setShowDeliveryModal(false)}>&times;</button>
-            </div>
-
-            <div className="delivery-modal-body">
-              {sendingPin && (
-                <div className="pin-sending-status">
-                  <div className="loading-spinner"></div>
-                  <p>Sending delivery PIN to customer...</p>
-                </div>
-              )}
-
-              {pinSent && (
-                <div className="pin-sent-status">
-                  <img width="24" height="24" src="https://img.icons8.com/ios-filled/24/4CAF50/checkmark.png" alt="sent"/>
-                  <p>PIN sent to customer's inbox. Ask the customer for their 4-digit PIN.</p>
-                </div>
-              )}
-
-              {/* 1. Confirm delivery items checkbox */}
-              <div className="modal-field">
-                <label className="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    checked={confirmItemsChecked}
-                    onChange={(e) => setConfirmItemsChecked(e.target.checked)}
-                  />
-                  <span>I confirm all delivery items have been handed to the customer</span>
-                </label>
-              </div>
-
-              {/* 2. Upload delivery proof image */}
-              <div className="modal-field">
-                <label className="field-label">Upload Delivery Proof (optional)</label>
-                <div className="proof-image-upload">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="environment"
-                    onChange={handleProofImageChange}
-                    id="proof-image-input"
-                    className="file-input-hidden"
-                  />
-                  <label htmlFor="proof-image-input" className="upload-btn">
-                    <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/ffffff/camera.png" alt="camera"/>
-                    {proofImage ? 'Change Photo' : 'Take Photo'}
-                  </label>
-                  {proofImagePreview && (
-                    <div className="proof-image-preview">
-                      <img src={proofImagePreview} alt="Delivery proof" />
+                  {item.line_total > 0 && (
+                    <div style={{ fontWeight: 600, color: '#212121', fontSize: '0.9rem' }}>
+                      R{item.line_total.toFixed(2)}
                     </div>
                   )}
                 </div>
+              ))}
+              <div style={{
+                borderTop: '1px solid #eee', paddingTop: 10, marginTop: 4,
+                display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem',
+              }}>
+                <span style={{ color: '#666' }}>Total</span>
+                <strong>R{job.total.toFixed(2)}</strong>
               </div>
-
-              {/* 3. Customer PIN input */}
-              <div className="modal-field">
-                <label className="field-label">Customer Delivery PIN</label>
-                <p className="field-hint">Ask the customer for the 4-digit PIN sent to their messages</p>
-                <div className="pin-input-container">
-                  {[0, 1, 2, 3].map((index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      className="pin-digit-input"
-                      value={deliveryPin[index] || ''}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9]/g, '');
-                        const newPin = deliveryPin.split('');
-                        newPin[index] = val;
-                        setDeliveryPin(newPin.join(''));
-                        // Auto-focus next input
-                        if (val && index < 3) {
-                          const next = e.target.nextElementSibling as HTMLInputElement;
-                          if (next) next.focus();
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Backspace' && !deliveryPin[index] && index > 0) {
-                          const prev = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
-                          if (prev) prev.focus();
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {deliveryError && (
-                <div className="delivery-error-message">
-                  {deliveryError}
-                </div>
-              )}
             </div>
+          ) : (
+            <p style={{ color: '#888', fontSize: '0.85rem', padding: '8px 0' }}>
+              No item details available.
+            </p>
+          )}
 
-            <div className="delivery-modal-footer">
-              <button 
-                className="cancel-delivery-btn"
-                onClick={() => setShowDeliveryModal(false)}
-              >
-                Cancel
+          {/* ── Status action button ── */}
+          <div className="delivery-actions">
+            {isDelivered ? (
+              <button className="complete-order-btn delivered" disabled>
+                <img width="20" height="20"
+                  src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="" />
+                Delivered
               </button>
-              <button 
-                className="confirm-delivery-btn"
-                onClick={handleConfirmDelivery}
-                disabled={confirmingDelivery || !pinSent}
+            ) : nextAction ? (
+              <button
+                className="collect-order-btn"
+                onClick={advanceStatus}
+                disabled={advancing}
+                style={{
+                  background: nextAction.color,
+                  color: nextAction.textColor,
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '14px 20px',
+                  cursor: advancing ? 'not-allowed' : 'pointer',
+                  opacity: advancing ? 0.7 : 1,
+                  transition: 'all 0.2s',
+                }}
               >
-                {confirmingDelivery ? 'Confirming...' : 'Confirm Delivery'}
+                {advancing ? 'Updating…' : nextAction.label}
               </button>
-            </div>
+            ) : null}
           </div>
         </div>
-      )}
 
+      </div>
     </div>
   );
 };

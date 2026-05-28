@@ -28,12 +28,17 @@ const UserRegistration = () => {
       const user = userCredential.user;
       const token = await user.getIdToken();
 
-      await axios.post(`${API_URL}/api/users/register`, {
+      // Seed Cosmos user doc (auto-created from JWT claims on first call)
+      await axios.get(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Set full_name and phone_number
+      await axios.patch(`${API_URL}/api/auth/me`, {
         full_name: form.full_name,
         phone_number: form.phone_number,
-        user_type: 'customer',
       }, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       
       // Set redirecting state to true and show the loading animation
@@ -56,13 +61,20 @@ const UserRegistration = () => {
       const user = result.user;
       const token = await user.getIdToken();
 
-      await axios.post(`${API_URL}/api/users/register`, {
-        full_name: user.displayName || '',
-        phone_number: '', 
-        user_type: 'customer',
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      // Seed Cosmos user doc (auto-created from JWT claims on first call)
+      await axios.get(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Set phone_number (name is already populated from Google token)
+      if (user.phoneNumber || user.displayName) {
+        await axios.patch(`${API_URL}/api/auth/me`, {
+          full_name: user.displayName ?? '',
+          phone_number: user.phoneNumber ?? '',
+        }, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       // Set redirecting state to true and show the loading animation
       setIsRedirecting(true);

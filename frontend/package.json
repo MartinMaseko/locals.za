@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0",
     "axios": "^1.11.0",
+    "azure-maps-control": "^3.7.4",
     "date-fns": "^4.1.0",
     "firebase": "^12.0.0",
     "react": "^19.1.0",
@@ -20,7 +21,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
-    "@types/axios": "^0.9.36",
     "@types/node": "^24.1.0",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",

@@ -17,6 +17,7 @@
   max-width: 420px;
   box-sizing: border-box;
   padding: 16px;
+  padding-top: 82px; /* clear the fixed navbar (~66px) */
 }
 
 /* Ensure large child elements wrap on mobile */
@@ -32,12 +33,12 @@
   .driver-layout {
     max-width: 600px;
   }
-  .driver-layout-content { padding: 18px; }
+  .driver-layout-content { padding: 82px 18px 18px; }
 }
 
 /* For very small phones reduce padding */
 @media (max-width: 360px) {
-  .driver-layout-content { padding: 10px; }
+  .driver-layout-content { padding: 82px 10px 10px; }
 }
 
 /* Loading State */
@@ -103,11 +104,7 @@
 /* Responsive Layout */
 @media (max-width: 768px) {
   .driver-layout-content {
-    padding: 15px;
+    padding: 82px 15px 15px;
   }
 }
 
-.driver-logo {
-  width: 50px;
-  margin-bottom: 20px;
-}

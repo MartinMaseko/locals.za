@@ -27,10 +27,10 @@
     border: 1px solid #dee2e6;
     border-radius: 8px;
     background-color: #f8f9fa;
-    padding: 1em 0em;
     box-shadow: 0 0 5px #dee2e6;
     color: #212529;
-    min-width: 300px;
+    width: 300px;
+    box-sizing: border-box;
     font-size: 1.125rem;
     padding: 1rem 1rem;
 

@@ -1,0 +1,75 @@
+name: Deploy API → Azure App Service
+
+# Trigger on pushes to main that touch the C# API or this workflow file.
+# Frontend-only or OCR-only commits won't trigger this.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'locals.za/api/**'
+      - '.github/workflows/deploy-api.yml'
+  # Allow manual re-deploys from the Actions tab (no code change needed)
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  WORKING_DIR: './locals.za/api'
+  AZURE_WEBAPP_NAME: 'localsza-api'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Pull the repo into the runner ──────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Install .NET 10 SDK ────────────────────────────────────────────
+      # .NET 10 is preview — quality: preview pulls from the preview channel
+      # so setup-dotnet doesn't fail looking for a GA release.
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: 'preview'
+
+      # ── 3. Restore NuGet packages ─────────────────────────────────────────
+      # Done explicitly so a restore failure is clearly attributable.
+      - name: Restore dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet restore
+
+      # ── 4. Build in Release mode ──────────────────────────────────────────
+      # --no-restore skips the implicit restore — we already did it.
+      - name: Build
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet build --configuration Release --no-restore
+
+      # ── 5. Publish to a deploy-ready folder ───────────────────────────────
+      # `dotnet publish` produces the runtime bundle:
+      #   - LocalsZaApi.dll + all dependency DLLs
+      #   - appsettings.json (placeholders — real values come from App Service env vars)
+      #   - firebase-service-account.json IF it's in the project folder
+      # We publish to ${{ github.workspace }}/publish so step 6 can zip it up.
+      - name: Publish
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dotnet publish --configuration Release --no-build --output ${{ github.workspace }}/publish
+
+      # ── 6. Authenticate to Azure with the service principal ───────────────
+      # Reuses the same AZURE_CREDENTIALS secret as the OCR workflow.
+      # This avoids needing SCM Basic Auth / publish profile, which Microsoft
+      # disabled by default on App Services in 2024.
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ── 7. Deploy the published folder to Azure App Service ───────────────
+      # webapps-deploy zips the package folder and uses the logged-in
+      # service-principal identity to push it via the Azure REST API.
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ github.workspace }}/publish

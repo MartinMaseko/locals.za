@@ -2,172 +2,175 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { lazy, Suspense } from 'react';
 import './App.css';
 import { AuthProvider } from './Auth/AuthProvider';
-import { ProtectedRoute } from './Auth/ProtectedRoute';  
-import LayOut from './components/pages/LayOut';
-import UserAccount from './components/pages/userpages/userAccount';
-import UserProfile from './components/pages/userpages/userProfile';
-import UserOrders from './components/pages/userpages/userOrders';
-import LoginPage from './components/pages/storepages/loginPage';
-import AdminLogin from './components/pages/dashboard/adminLogin'
-import UserRegistration from './components/pages/userpages/userReg'; 
-import HomePage from './components/pages/storepages/homepage';
-import LandingPage from './components/pages/storepages/landingPage';
-import ProductDetailPage from './components/pages/storepages/productview/productsDetail';
-import CartPage from './components/pages/storepages/cart/cartPage';
-import MessagesPage from './components/pages/storepages/messages/messagesPage';
-import StoreCategories from './components/pages/storepages/store/storeCategories';
-import SupportPage from './components/pages/storepages/support/supportPage';
+import { ProtectedRoute } from './Auth/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
-import { FavoritesProvider } from './components/contexts/FavoritesContext';
-import { CartProvider } from './components/contexts/CartContext';
 import { WazeRouteProvider } from './components/contexts/WazeRouteContext';
-import CheckoutPage from './components/pages/storepages/cart/CheckoutPage';
-import OrderConfirmationPage from './components/pages/storepages/cart/OrderConfirmationPage';
-import DriverLayout from './components/pages/drivers/layout/DriverLayout';
-import DriverLogin from './components/pages/drivers/auth/DriverLogin';
-import DriverDeliveries from './components/pages/drivers/driverDeliveries';
-import DriverRevenue from './components/pages/drivers/driverRevenue';
-import PaymentCancelledPage from './components/pages/storepages/cart/PaymentCancelledPage';
-import SharedCartPage from './components/pages/storepages/cart/SharedCartPage';
-import BuyerPriceUpdates from './components/pages/buyers/BuyerPriceUpdates';
-import BuyerLogin from './components/pages/buyers/BuyerLogin';
-import BuyerOrders from './components/pages/buyers/BuyerOrders';
-import SalesLogin from './components/pages/sales/SalesLogin';
-import AddCustomer from './components/pages/sales/AddCustomer';
-import ViewCustomers from './components/pages/sales/ViewCustomers';
-import SalesRevenue from './components/pages/sales/SalesRevenue';
-import SalesShop from './components/pages/sales/SalesShop';
-import SalesCart from './components/pages/sales/SalesCart';
-import SalesProtectedRoute from './Auth/SalesProtectedRoute';
 import SEOHead from './components/SEO/SEOHead';
 import StructuredData from './components/SEO/StructuredData';
+import PWAInstallBanner from './components/pwa/PWAInstallBanner';
 
-// Lazy load heavy pages
-const AdminDashboard = lazy(() => import('./components/pages/dashboard/adminDashboard'));
-const DriversDash = lazy(() => import('./components/pages/drivers/driversDash'));
-const BuyerLayout = lazy(() => import('./components/pages/buyers/BuyerLayout'));
-const SalesLayout = lazy(() => import('./components/pages/sales/SalesLayout'));
+// ── Critical path (landing = /order/select-store) — kept eager ───────────────
+import LayOut from './components/pages/LayOut';
+import WholesaleLayout from './components/pages/storepages/userjourney/WholesaleLayout';
+import SelectStore from './components/pages/storepages/userjourney/SelectStore';
 
-// Create a simple Loading component
+// ── Auth / one-shot pages ─────────────────────────────────────────────────────
+const LoginPage       = lazy(() => import('./components/pages/storepages/loginPage'));
+const UserRegistration = lazy(() => import('./components/pages/userpages/userReg'));
+const CommandLogin    = lazy(() => import('./components/pages/commandcentre/commandLogin'));
+const DriverLogin     = lazy(() => import('./components/pages/drivers/auth/DriverLogin'));
+
+// ── Authenticated user pages ──────────────────────────────────────────────────
+const UserAccount  = lazy(() => import('./components/pages/userpages/userAccount'));
+const UserProfile  = lazy(() => import('./components/pages/userpages/userProfile'));
+const UserOrders   = lazy(() => import('./components/pages/userpages/userOrders'));
+const MessagesPage = lazy(() => import('./components/pages/storepages/messages/messagesPage'));
+const SupportPage  = lazy(() => import('./components/pages/storepages/support/supportPage'));
+const CalculatorPage = lazy(() => import('./components/pages/storepages/calculator/CalculatorPage'));
+
+// ── Order journey (sequential after SelectStore — lazy is fine) ───────────────
+const UploadReceipt = lazy(() => import('./components/pages/storepages/userjourney/UploadReceipt'));
+const DeliveryPage  = lazy(() => import('./components/pages/storepages/userjourney/DeliveryPage'));
+const PaymentPage   = lazy(() => import('./components/pages/storepages/userjourney/PaymentPage'));
+const PaymentResult = lazy(() => import('./components/pages/storepages/userjourney/PaymentResult'));
+
+// ── Driver app ────────────────────────────────────────────────────────────────
+const DriverLayout     = lazy(() => import('./components/pages/drivers/layout/DriverLayout'));
+const DriversDash      = lazy(() => import('./components/pages/drivers/driversDash'));
+const DriverDeliveries = lazy(() => import('./components/pages/drivers/driverDeliveries'));
+const DriverRevenue    = lazy(() => import('./components/pages/drivers/driverRevenue'));
+
+// ── Command Centre (admin-only — never on the critical path) ──────────────────
+const CommandLayout = lazy(() => import('./components/pages/commandcentre/CommandLayout'));
+const CCDashboard   = lazy(() => import('./components/pages/commandcentre/pages/Dashboard'));
+const CCStores      = lazy(() => import('./components/pages/commandcentre/pages/Stores'));
+const CCPayments    = lazy(() => import('./components/pages/commandcentre/pages/Payments'));
+const CCReceipts    = lazy(() => import('./components/pages/commandcentre/pages/Receipts'));
+const CCDeliveries  = lazy(() => import('./components/pages/commandcentre/pages/Deliveries'));
+const CCDrivers     = lazy(() => import('./components/pages/commandcentre/pages/Drivers'));
+const CCDriverRev   = lazy(() => import('./components/pages/commandcentre/pages/DriverRevenue'));
+const CCMetrics     = lazy(() => import('./components/pages/commandcentre/pages/Metrics'));
+const CCPricing     = lazy(() => import('./components/pages/commandcentre/pages/PricingConfig'));
+
+// ── Suspense fallback ─────────────────────────────────────────────────────────
 const PageLoader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
-    <img src="path/to/locals-svg.gif" alt="Loading..." width="50" height="50" />
+  <div style={{
+    display: 'flex', justifyContent: 'center', alignItems: 'center',
+    minHeight: '100dvh', background: '#090909',
+  }}>
+    <div style={{
+      width: 36, height: 36,
+      border: '3px solid rgba(255,184,3,0.15)',
+      borderTopColor: '#FFB803',
+      borderRadius: '50%',
+      animation: 'lza-spin 0.65s linear infinite',
+    }} />
+    <style>{`@keyframes lza-spin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function App() {
   return (
     <>
       <Router>
         <SEOHead />
-        <StructuredData 
-          type="Organization" 
+        <StructuredData
+          type="Organization"
           data={{
-            name: "LocalsZA",
-            url: "https://locals-za.co.za",
-            logo: "https://locals-za.co.za/assets/logos/LZA ICON.png",
-            description: "Spaza shop, salon and fast food Online Cash and Carry supply chain aggregator for SMME's"
-          }} 
+            name:        'LocalsZA',
+            url:         'https://locals-za.co.za',
+            logo:        'https://locals-za.co.za/assets/logos/LZA ICON.png',
+            description: "Spaza shop, salon and fast food Online Cash and Carry supply chain aggregator for SMME's",
+          }}
         />
         <AuthProvider>
-          <FavoritesProvider>
-            <CartProvider>
-              <WazeRouteProvider>
-                <ScrollToTop />
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/register" element={<UserRegistration />} /> 
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/adminlogin" element={<AdminLogin />} />
-                    <Route path="/mock-up" element={<LandingPage />} />
-                    
-                    <Route path="/admindashboard" element={
-                      <ProtectedRoute redirectTo="/adminlogin">
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/driverlogin" element={<DriverLogin />} />
-                    
-                    <Route path="/driver" element={
-                      <ProtectedRoute redirectTo="/driverlogin">
-                        <DriverLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="dashboard" element={<DriversDash />} />
-                      <Route path="deliveries/:orderId" element={<DriverDeliveries />} />
-                      <Route path="revenue" element={<DriverRevenue />} />
-                    </Route>
-                    
-                    <Route path="/buyerlogin" element={<BuyerLogin/>} />
-                    <Route path="/buyer" element={
-                      <ProtectedRoute redirectTo="/buyerlogin">
-                        <BuyerLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="orders" element={<BuyerOrders />} />
-                      <Route path="price-updates" element={<BuyerPriceUpdates />} />
-                      <Route index element={<Navigate to="orders" replace />} />
-                    </Route>
-                    
-                    <Route path="/saleslogin" element={<SalesLogin />} />
-                    <Route path="/sales" element={
-                      <SalesProtectedRoute redirectTo="/saleslogin">
-                        <SalesLayout />
-                      </SalesProtectedRoute>
-                    }>
-                      <Route path="add-customer" element={<AddCustomer />} />
-                      <Route path="customers" element={<ViewCustomers />} />
-                      <Route path="shop" element={<SalesShop />} />
-                      <Route path="cart" element={<SalesCart />} />
-                      <Route path="revenue" element={<SalesRevenue />} />
-                      <Route index element={<Navigate to="add-customer" replace />} />
-                    </Route>
-                    
-                    <Route path="/driversdashboard" element={<Navigate to="/driver/dashboard" replace />} />
-                    
-                    <Route path="/" element={<LayOut />}>
-                      <Route index element={<HomePage />} /> 
-                      
-                      <Route path="/useraccount" element={
-                        <ProtectedRoute>
-                          <UserAccount />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/userprofile" element={
-                        <ProtectedRoute>
-                          <UserProfile />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/messages" element={
-                        <ProtectedRoute>
-                          <MessagesPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/userorders" element={
-                        <ProtectedRoute>
-                          <UserOrders />
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="product/:id" element={<ProductDetailPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/shared-cart" element={<SharedCartPage />} />
-                      
-                      <Route path="/checkout" element={
-                        <ProtectedRoute>
-                          <CheckoutPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/order-confirmation/:id" element={<OrderConfirmationPage />} />
-                      <Route path="/payment-cancelled/:id" element={<PaymentCancelledPage />} />
-                      <Route path="/shop" element={<StoreCategories />} />
-                      <Route path="/support" element={<SupportPage />} />
-                    </Route>
-                  </Routes>
-                </Suspense>
-              </WazeRouteProvider>
-            </CartProvider>
-          </FavoritesProvider>
+          <WazeRouteProvider>
+            <ScrollToTop />
+            {/* PWA install sheet — mounted globally; auto-shows on /order/select-store */}
+            <PWAInstallBanner />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+
+                {/* ── Public one-shot pages ─────────────────────────────── */}
+                <Route path="/register"    element={<UserRegistration />} />
+                <Route path="/login"       element={<LoginPage />} />
+                <Route path="/commandlogin" element={<CommandLogin />} />
+                <Route path="/driverlogin" element={<DriverLogin />} />
+
+                {/* ── Driver app ────────────────────────────────────────── */}
+                <Route
+                  path="/driver"
+                  element={
+                    <ProtectedRoute redirectTo="/driverlogin">
+                      <DriverLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="dashboard"             element={<DriversDash />} />
+                  <Route path="deliveries/:orderId"   element={<DriverDeliveries />} />
+                  <Route path="revenue"               element={<DriverRevenue />} />
+                </Route>
+
+                {/* Legacy redirect from old dashboard URL */}
+                <Route path="/driversdashboard" element={<Navigate to="/driver/dashboard" replace />} />
+
+                {/* ── Order journey (critical path) ─────────────────────── */}
+                <Route path="/order" element={<WholesaleLayout />}>
+                  <Route index element={<Navigate to="select-store" replace />} />
+                  <Route path="select-store"  element={<SelectStore />} />
+                  <Route path="upload-receipt" element={<UploadReceipt />} />
+                  <Route path="delivery"      element={<DeliveryPage />} />
+                  <Route path="payment"       element={<PaymentPage />} />
+                  <Route path="payment/success/:orderId"   element={<PaymentResult status="success" />} />
+                  <Route path="payment/cancelled/:orderId" element={<PaymentResult status="cancelled" />} />
+                  <Route path="payment/error/:orderId"     element={<PaymentResult status="error" />} />
+                </Route>
+
+                {/* ── Main shell (authenticated user pages) ─────────────── */}
+                <Route path="/" element={<LayOut />}>
+                  <Route index element={<Navigate to="/order/select-store" replace />} />
+                  <Route path="/useraccount" element={
+                    <ProtectedRoute><UserAccount /></ProtectedRoute>
+                  } />
+                  <Route path="/userprofile" element={
+                    <ProtectedRoute><UserProfile /></ProtectedRoute>
+                  } />
+                  <Route path="/messages" element={
+                    <ProtectedRoute><MessagesPage /></ProtectedRoute>
+                  } />
+                  <Route path="/userorders" element={
+                    <ProtectedRoute><UserOrders /></ProtectedRoute>
+                  } />
+                  <Route path="/support"     element={<SupportPage />} />
+                  <Route path="/calculator"  element={<CalculatorPage />} />
+                </Route>
+
+                {/* ── Command Centre (admin-only) ───────────────────────── */}
+                <Route
+                  path="/commandcentre"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <CommandLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="deliveries" replace />} />
+                  <Route path="dashboard"      element={<CCDashboard />} />
+                  <Route path="stores"         element={<CCStores />} />
+                  <Route path="payments"       element={<CCPayments />} />
+                  <Route path="receipts"       element={<CCReceipts />} />
+                  <Route path="deliveries"     element={<CCDeliveries />} />
+                  <Route path="drivers"        element={<CCDrivers />} />
+                  <Route path="driver-revenue" element={<CCDriverRev />} />
+                  <Route path="metrics"        element={<CCMetrics />} />
+                  <Route path="pricing"        element={<CCPricing />} />
+                </Route>
+
+              </Routes>
+            </Suspense>
+          </WazeRouteProvider>
         </AuthProvider>
       </Router>
     </>

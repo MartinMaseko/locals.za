@@ -35,30 +35,24 @@ const UserLogin = () => {
       if (!user) throw new Error('Google sign-in failed');
       const token = await user.getIdToken();
 
-      // Fetch user profile from backend
-      const response = await axios.get(`${API_URL}/api/users/me`, {
+      // Fetch user profile from backend (also seeds Cosmos doc on first login)
+      const response = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Define a type for the user profile
       type UserProfile = {
         user_type: string;
         full_name?: string;
         phone_number?: string;
-        // add other fields if needed
       };
       const profile = response.data as UserProfile;
 
       // Redirect based on user_type
-      if (profile.user_type === 'customer') {
-        if (!profile.full_name || !profile.phone_number) {
-          navigate('/');
-        } else {
-          navigate('/');
-        }
+      if (profile.user_type === 'admin') {
+        navigate('/commandcentre');
       } else if (profile.user_type === 'driver') {
         navigate('/driversdashboard');
       } else {
-        setError('Only customers and drivers can log in here.');
+        navigate('/');
       }
     } catch (err: any) {
       setError(err.message || 'Google sign-in failed');
@@ -78,27 +72,24 @@ const UserLogin = () => {
       if (!user) throw new Error('Login failed. No user returned.');
       const token = await user.getIdToken();
 
-      // Fetch user profile from backend
-      const response = await axios.get(`${API_URL}/api/users/me`, {
+      // Fetch user profile from backend (also seeds Cosmos doc on first login)
+      const response = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       type UserProfile = {
         user_type: string;
         full_name?: string;
         phone_number?: string;
-        // add other fields if needed
       };
       const profile = response.data as UserProfile;
 
       // Redirect based on user_type
-      if (profile.user_type === 'customer') {
-        if (!profile.full_name || !profile.phone_number) {
-          navigate('/');
-        } else {
-          navigate('/');
-        }
+      if (profile.user_type === 'admin') {
+        navigate('/commandcentre');
+      } else if (profile.user_type === 'driver') {
+        navigate('/driversdashboard');
       } else {
-        setError('Only customers can log in here.');
+        navigate('/');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');

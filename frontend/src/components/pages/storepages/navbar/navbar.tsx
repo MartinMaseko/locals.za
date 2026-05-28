@@ -1,122 +1,129 @@
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../../../../Auth/firebaseClient';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Logo from '../../../assets/logos/LZAWHTTRP.webp';
-import { useCart } from '../../../contexts/CartContext';
+import { useAuth } from '../../../../Auth/AuthProvider';
+import { triggerPWAInstall, usePWAInstallAvailable } from '../../../pwa/PWAInstallBanner';
 import './navstyle.css';
 
 const Navbar = () => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth(app);
-  const { cart } = useCart();
+  const { currentUser } = useAuth();
+  const canInstall = usePWAInstallAvailable();
 
-  // Calculate total items in cart
-  const totalItems = cart.reduce((total, item) => total + item.qty, 0);
+  const close = () => { setMenuOpen(false); setAccountOpen(false); };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      setDropdownOpen(false);
+      close();
       navigate('/login');
-    } catch (error) {
-      // Sign out failed
+    } catch {
+      // sign out failed — swallow
     }
-  };
-
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Force a full page reload to check for PWA updates
-    window.location.href = '/';
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-content">
-        <div className="navbar-logo">
-          <a href="/" onClick={handleLogoClick} className="appnav-icon" title="Refresh App">
-            <img src={Logo} alt="Logo" className='navbar-logo'/>
-          </a>
-        </div>
-        <div className="navbar-menu">
-          <Link to="/userorders" className="navbar-icon-orders" aria-label="Orders">
-            <img 
-              src="https://img.icons8.com/external-kmg-design-glyph-kmg-design/30/ffb803/external-logistics-shipping-delivery-kmg-design-glyph-kmg-design-2.png"
-              alt="Orders"
-            /> Orders
-          </Link>
-          <Link to="/cart" className="navbar-icon-cart" aria-label="Cart">
-            <img 
-              src="https://img.icons8.com/ios-glyphs/30/ffb803/lift-cart-here.png"
-              alt="Cart"
-            /> 
-            {totalItems > 0 && (
-                <span className="cart-counter">{totalItems}</span>
-          )}
-          </Link>
-          <Link to="/support" className="navbar-icon-support" aria-label="Support">
-            <img 
-              src="https://img.icons8.com/material-sharp/30/ffb803/ask-question.png" alt="support"
-            />
-          </Link>
-          <Link to="/useraccount" className="navbar-icon-support" aria-label="Account">
-            <img 
-              src="https://img.icons8.com/pulsar-line/30/ffb803/guest-male.png" alt="guest-male"
-            />
-          </Link>
+        {/* Left — hamburger */}
+        <div className="navbar-icon-group">
           <button
             className="navbar-icon"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            aria-label="Menu"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
           >
-            <img 
-              src="https://img.icons8.com/forma-thin-filled/40/FFB803/menu.png"
-              alt="User Menu"
-            />
+            <img src="https://img.icons8.com/forma-thin-filled/40/FFB803/menu.png" alt="" />
           </button>
         </div>
+
+        {/* Right — quick-access icons: Track, Messages, Support */}
+        <div className="navbar-menu">
+          <div className="navbar-icon-group">
+            <Link to="/support" className="navbar-icon-btn" aria-label="Support">
+              <img src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="Support" />
+            </Link>
+          </div>
+        </div>
       </div>
-      {/* Full-screen sliding menu */}
-      <div className={`navbar-fullscreen-dropdown${dropdownOpen ? ' open' : ''}`}>
-        <button
-          className="navbar-close"
-          onClick={() => setDropdownOpen(false)}
-          aria-label="Close Menu"
-        >
+
+      {/* Full-screen / side-panel sliding menu */}
+      <div
+        className={`navbar-fullscreen-dropdown${menuOpen ? ' open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+      >
+        <button className="navbar-close" onClick={close} aria-label="Close menu">
           &times;
         </button>
+
         <div className="navbar-fullscreen-items">
-          <Link to="/login" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios/35/ffb803/login-rounded-right--v1.png" alt="login-rounded-right--v1"/>
-            Login
+          {/* 1. Home */}
+          <Link to="/" className="navbar-dropdown-item" onClick={close}>
+            <img className="navbar-dropdown-icon" src="https://img.icons8.com/ios-filled/40/ffb803/home.png" alt="" />
+            Home
           </Link>
-          <Link to="/useraccount" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/pulsar-line/35/ffb803/guest-male.png" alt="guest-male"/>
+
+          {/* 2. Account (collapsible) */}
+          <button
+            className="navbar-dropdown-item navbar-dropdown-item--toggle"
+            onClick={() => setAccountOpen(o => !o)}
+            aria-expanded={accountOpen}
+          >
+            <img className="navbar-dropdown-icon" src="https://img.icons8.com/pulsar-line/40/ffb803/guest-male.png" alt="" />
             Account
+            <span className={`navbar-chevron${accountOpen ? ' navbar-chevron--open' : ''}`}>›</span>
+          </button>
+
+          {accountOpen && (
+            <div className="navbar-account-sub">
+              <Link to="/useraccount" className="navbar-dropdown-sub-item" onClick={close}>
+                Profile
+              </Link>
+              <Link to="/userorders" className="navbar-dropdown-sub-item" onClick={close}>
+                My Orders
+              </Link>
+              {currentUser ? (
+                <button
+                  className="navbar-dropdown-sub-item navbar-dropdown-sub-item--danger"
+                  onClick={handleSignOut}
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link to="/login" className="navbar-dropdown-sub-item" onClick={close}>
+                  Sign In
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* 4. Calculator */}
+          <Link to="/calculator" className="navbar-dropdown-item" onClick={close}>
+            <img className="navbar-dropdown-icon" src="https://img.icons8.com/ios-filled/40/ffb803/calculator.png" alt="" />
+            Calculator
           </Link>
-          <Link to="/userorders" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img width="35" height="35" src="https://img.icons8.com/external-kmg-design-glyph-kmg-design/35/ffb803/external-logistics-shipping-delivery-kmg-design-glyph-kmg-design-2.png" alt="orders-box"/>
-            Orders
-          </Link>
-          <Link to="/messages" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img width="35" height="35" src="https://img.icons8.com/ios-filled/35/ffb803/message-group.png" alt="message-group"/>
-            Messages
-          </Link>
-          <Link to="/cart" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/lift-cart-here.png" alt="lift-cart-here"/>
-            Cart
-          </Link>
-          <Link to="/support" className="navbar-dropdown-item" onClick={() => setDropdownOpen(false)}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="support"/>
+
+          {/* 5. Support */}
+          <Link to="/support" className="navbar-dropdown-item" onClick={close}>
+            <img className="navbar-dropdown-icon" src="https://img.icons8.com/material-sharp/40/ffb803/ask-question.png" alt="" />
             Support
           </Link>
-          <button className="navbar-logout" onClick={handleSignOut}>
-            <img className='navbar-dropdown-icon' src="https://img.icons8.com/ios-glyphs/35/ffb803/logout-rounded-left.png" alt="logout-rounded-left"/>
-            Sign Out
-          </button>
+          {/* 6. Install App — only shown when installable / on iOS */}
+          {canInstall && (
+            <button
+              className="navbar-dropdown-item"
+              onClick={() => { triggerPWAInstall(); close(); }}
+            >
+              Install App
+            </button>
+          )}
         </div>
       </div>
     </nav>

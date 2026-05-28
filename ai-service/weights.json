@@ -1,0 +1,21 @@
+{
+  "rice": 10.0, "tastic": 10.0, "spekko": 10.0,
+  "maize": 10.0, "maize meal": 10.0, "mieliemeel": 10.0,
+  "pap": 5.0, "white star": 10.0, "iwisa": 10.0, "ace": 10.0,
+  "flour": 10.0, "bread flour": 10.0,
+  "sugar": 10.0, "sunsugar": 10.0,
+  "oil": 2.0, "cooking oil": 5.0, "sunfoil": 2.0, "canola": 2.0,
+  "cold drink": 10.0, "cooldrink": 10.0, "coca cola": 10.0,
+  "coke": 10.0, "pepsi": 10.0, "sprite": 10.0, "fanta": 10.0,
+  "juice": 2.0, "water": 6.0, "still water": 6.0, "beer": 10.0,
+  "canned": 0.4, "tin": 0.4, "baked beans": 0.42,
+  "pilchards": 0.4, "tomato paste": 0.4, "condensed milk": 0.4,
+  "coffee": 0.5, "nescafe": 0.5, "cremora": 0.5,
+  "tea": 0.25, "rooibos": 0.25,
+  "salt": 1.0, "chips": 0.2, "snacks": 0.2, "biscuits": 0.4,
+  "simba": 0.2, "lays": 0.2, "bread": 0.7, "loaf": 0.7,
+  "washing powder": 2.0, "omo": 2.0, "surf": 2.0, "skip": 2.0,
+  "dishwashing": 0.75, "sunlight": 0.75, "toilet paper": 1.0,
+  "nappies": 1.5, "pampers": 1.5, "huggies": 1.5,
+  "soap": 0.1, "shampoo": 0.35, "matches": 0.1, "candles": 0.3
+}

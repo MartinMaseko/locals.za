@@ -19,7 +19,7 @@ const DriverLayout: React.FC = () => {
           const isDriver = true; 
           setIsDriverAuthenticated(isDriver);
           if (!isDriver) {
-            navigate('/login');
+            navigate('/driverlogin');
           }
         } catch (error) {
           setIsDriverAuthenticated(false);
@@ -27,7 +27,7 @@ const DriverLayout: React.FC = () => {
       } else {
         // No user logged in
         setIsDriverAuthenticated(false);
-        navigate('/login');
+        navigate('/driverlogin');
       }
       setLoading(false);
     });
@@ -49,8 +49,8 @@ const DriverLayout: React.FC = () => {
       <div className="driver-auth-required">
         <h2>Driver Access Required</h2>
         <p>Please log in with a driver account to access this area.</p>
-        <button onClick={() => navigate('/login')}>
-          Go to Login
+        <button onClick={() => navigate('/driverlogin')}>
+          Go to Driver Login
         </button>
       </div>
     );

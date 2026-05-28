@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './storepages/navbar/navbar';
-import AppNav from './storepages/appnav/appnav';
 import LoadingContext from './storepages/LoadingContext';
 import LogoAnime from '../storepages/../assets/logos/locals-svg.gif';
 
@@ -15,7 +14,6 @@ const Layout: React.FC = () => {
       <main className="main-content">
         <Outlet />
       </main>
-      {!loading && <AppNav />}
 
       {/* Global loading overlay shown when any page sets loading = true */}
       {loading && (
