@@ -1,0 +1,16 @@
+<step title="Incoming Request" date="2026-05-24T17:57:59.040" instance="1a769b" url="/api/publish?type=zip&amp;async=True" method="POST" type="request" pid="851,1,16" Accept="*/*" Host="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" User-Agent="AZURECLI/2.86.0 (MSI)" Accept-Encoding="gzip, deflate" Authorization="Bea..." Cache-Control="no-cache" Content-Type="application/octet-stream" Content-Length="56910237" x-ms-client-request-id="8c9302b2-5799-11f1-a6e1-7429af4340c0" x-ms-artifact-checksum="11debe58e85df456fb80a2008e78af9ad924e0acb517b8db7830cf0b489d45fc" X-ARR-LOG-ID="8c9302b2-5799-11f1-a6e1-7429af4340c0" CLIENT-IP="197.184.106.130:5154" X-SITE-DEPLOYMENT-ID="localsza-api" WAS-DEFAULT-HOSTNAME="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/publish?type=zip&amp;async=True" X-Client-IP="197.184.106.130" X-Client-Port="5154" >
+  <step title="OneDeploy" date="2026-05-24T17:57:59.355" >
+    <step title="None repository commit" date="2026-05-24T17:57:59.364" >
+      <step title="Commit id: a039116d-b985-40d0-92fa-46cca6b225e1" date="2026-05-24T17:57:59.368" Message="N/A" AuthorName="N/A" AuthorEmail="N/A" /><!-- duration: 3ms -->
+    </step><!-- duration: 10ms -->
+    <step title="Starting PushDeployAsync" date="2026-05-24T17:57:59.378" /><!-- duration: 6ms -->
+    <step title="Writing artifact to /tmp/zipdeploy/94a10eda-85b8-4b81-87f0-e70c71522596.zip" date="2026-05-24T17:57:59.397" >
+      <step title="Writing multipart request body to /tmp/zipdeploy/94a10eda-85b8-4b81-87f0-e70c71522596.zip" date="2026-05-24T17:57:59.401" /><!-- duration: 7ms -->
+    </step><!-- duration: 46836ms -->
+    <step title="Start deployment in the background" date="2026-05-24T17:58:46.252" >
+      <step title="Acquiring Deployment Lock" date="2026-05-24T17:58:46.267" /><!-- duration: 3ms -->
+      <step title="Acquired Deployment Lock" date="2026-05-24T17:58:46.321" /><!-- duration: 3ms -->
+    </step><!-- duration: 145ms -->
+  </step><!-- duration: 47051ms -->
+  <step title="Outgoing response" date="2026-05-24T17:58:46.423" type="response" statusCode="202" statusText="Accepted" /><!-- duration: 4ms -->
+</step><!-- duration: 47390ms -->

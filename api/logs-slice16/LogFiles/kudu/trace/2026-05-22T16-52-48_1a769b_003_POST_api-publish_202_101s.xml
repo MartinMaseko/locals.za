@@ -1,0 +1,16 @@
+<step title="Incoming Request" date="2026-05-22T16:52:48.896" instance="1a769b" url="/api/publish?type=zip&amp;async=True" method="POST" type="request" pid="851,1,21" Accept="*/*" Host="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" User-Agent="AZURECLI/2.86.0 (MSI)" Accept-Encoding="gzip, deflate" Authorization="Bea..." Cache-Control="no-cache" Content-Type="application/octet-stream" Cookie="ARRAffinity=1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c; ARRAffinitySameSite=1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c" Content-Length="56899418" x-ms-client-request-id="8a0f7ab7-55fe-11f1-9140-7429af4340c0" x-ms-artifact-checksum="e12c98d6d17dcd147cbf2ad69a876c856c2ee1fe2ef987d30b92f788f03dedae" X-ARR-LOG-ID="8a0f7ab7-55fe-11f1-9140-7429af4340c0" CLIENT-IP="197.184.106.130:48973" X-SITE-DEPLOYMENT-ID="localsza-api" WAS-DEFAULT-HOSTNAME="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/publish?type=zip&amp;async=True" X-Client-IP="197.184.106.130" X-Client-Port="48973" >
+  <step title="OneDeploy" date="2026-05-22T16:52:48.946" >
+    <step title="None repository commit" date="2026-05-22T16:52:48.956" >
+      <step title="Commit id: cbddbce8-ea4a-4c7c-93f0-4cb544770287" date="2026-05-22T16:52:48.960" Message="N/A" AuthorName="N/A" AuthorEmail="N/A" /><!-- duration: 3ms -->
+    </step><!-- duration: 17ms -->
+    <step title="Starting PushDeployAsync" date="2026-05-22T16:52:48.977" /><!-- duration: 3ms -->
+    <step title="Writing artifact to /tmp/zipdeploy/4f3ed4fc-d1f0-481e-ac72-ec5051fab240.zip" date="2026-05-22T16:52:48.996" >
+      <step title="Writing multipart request body to /tmp/zipdeploy/4f3ed4fc-d1f0-481e-ac72-ec5051fab240.zip" date="2026-05-22T16:52:49.001" /><!-- duration: 3ms -->
+    </step><!-- duration: 100880ms -->
+    <step title="Start deployment in the background" date="2026-05-22T16:54:29.892" >
+      <step title="Acquiring Deployment Lock" date="2026-05-22T16:54:29.908" /><!-- duration: 3ms -->
+      <step title="Acquired Deployment Lock" date="2026-05-22T16:54:29.946" /><!-- duration: 7ms -->
+    </step><!-- duration: 128ms -->
+  </step><!-- duration: 101082ms -->
+  <step title="Outgoing response" date="2026-05-22T16:54:30.037" type="response" statusCode="202" statusText="Accepted" /><!-- duration: 3ms -->
+</step><!-- duration: 101148ms -->

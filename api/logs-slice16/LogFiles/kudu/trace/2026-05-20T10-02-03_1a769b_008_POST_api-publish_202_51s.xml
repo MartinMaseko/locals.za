@@ -1,0 +1,13 @@
+<step title="Incoming Request" date="2026-05-20T10:02:03.389" instance="1a769b" url="/api/publish?type=zip&amp;async=True" method="POST" type="request" pid="851,1,26" Accept="*/*" Host="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" User-Agent="AZURECLI/2.86.0 (MSI)" Accept-Encoding="gzip, deflate" Authorization="Bea..." Cache-Control="no-cache" Content-Type="application/octet-stream" Cookie="ARRAffinity=1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c; ARRAffinitySameSite=1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c" Content-Length="56899139" x-ms-client-request-id="e320f234-5432-11f1-a6f6-7429af4340c0" x-ms-artifact-checksum="47c159b81864d797ca2e13aca498aa3bcd5d6f8d0d2a94bf938c64afb64f0971" X-ARR-LOG-ID="e320f234-5432-11f1-a6f6-7429af4340c0" CLIENT-IP="197.184.106.130:33312" X-SITE-DEPLOYMENT-ID="localsza-api" WAS-DEFAULT-HOSTNAME="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/publish?type=zip&amp;async=True" X-Client-IP="197.184.106.130" X-Client-Port="33312" >
+  <step title="OneDeploy" date="2026-05-20T10:02:03.399" >
+    <step title="Starting PushDeployAsync" date="2026-05-20T10:02:03.420" /><!-- duration: 4ms -->
+    <step title="Writing artifact to /tmp/zipdeploy/7e14f42b-30bc-43fc-a15d-957939b2a4e8.zip" date="2026-05-20T10:02:03.432" >
+      <step title="Writing multipart request body to /tmp/zipdeploy/7e14f42b-30bc-43fc-a15d-957939b2a4e8.zip" date="2026-05-20T10:02:03.438" /><!-- duration: 5ms -->
+    </step><!-- duration: 50675ms -->
+    <step title="Start deployment in the background" date="2026-05-20T10:02:54.127" >
+      <step title="Acquiring Deployment Lock" date="2026-05-20T10:02:54.145" /><!-- duration: 4ms -->
+      <step title="Acquired Deployment Lock" date="2026-05-20T10:02:54.175" /><!-- duration: 3ms -->
+    </step><!-- duration: 130ms -->
+  </step><!-- duration: 50867ms -->
+  <step title="Outgoing response" date="2026-05-20T10:02:54.271" type="response" statusCode="202" statusText="Accepted" /><!-- duration: 3ms -->
+</step><!-- duration: 50890ms -->

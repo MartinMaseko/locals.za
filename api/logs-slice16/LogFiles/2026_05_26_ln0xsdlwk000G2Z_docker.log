@@ -1,0 +1,165 @@
+2026-05-26T09:40:28.9230958Z State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-26T09:40:29.8068815Z State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-26T09:40:29.8090180Z Container start method called.
+2026-05-26T09:40:29.8091097Z State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.12:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod for localsza-api., DetailsLevel: INFO
+2026-05-26T09:40:29.8092860Z Establishing network.
+2026-05-26T09:40:29.8101997Z Pulling image: appsvc/dotnetcore:10.0_20260504.4.tuxprod.
+2026-05-26T09:40:30.2287908Z Container is starting.
+2026-05-26T09:40:30.2289930Z State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for localsza-api., DetailsLevel: INFO
+2026-05-26T09:40:30.2291929Z Establishing user namespace if not established already.
+2026-05-26T09:40:30.2293409Z Establishing network if not established already.
+2026-05-26T09:40:30.2295034Z Mounting volumes.
+2026-05-26T09:40:30.2297258Z Nested mountpoint 
+2026-05-26T09:40:30.2354460Z Nested mountpoint volatile/logs
+2026-05-26T09:40:30.2502913Z Nested mountpoint 
+2026-05-26T09:40:30.2524943Z Nested mountpoint 
+2026-05-26T09:40:30.2531528Z Nested mountpoint 
+2026-05-26T09:40:30.2687301Z Nested mountpoint 
+2026-05-26T09:40:30.2730848Z Nested mountpoint 
+2026-05-26T09:40:30.3688494Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for localsza-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-26T09:40:30.3691486Z Creating container.
+2026-05-26T09:40:30.3693534Z Creating pipes for streaming container io.
+2026-05-26T09:40:30.3840620Z Creating stdout named pipe at /podr/container/pipe/49e00cff76eb_localsza-api/stdout_e293ca740ca0468a983dd449f469fbeb.
+2026-05-26T09:40:30.3856517Z Successfully created stdout named pipe at: /podr/container/pipe/49e00cff76eb_localsza-api/stdout_e293ca740ca0468a983dd449f469fbeb.
+2026-05-26T09:40:30.3858376Z Opening named pipe /podr/container/pipe/49e00cff76eb_localsza-api/stdout_e293ca740ca0468a983dd449f469fbeb for reading in non-blocking mode.
+2026-05-26T09:40:30.3865354Z Successfully opened named pipe: /podr/container/pipe/49e00cff76eb_localsza-api/stdout_e293ca740ca0468a983dd449f469fbeb.
+2026-05-26T09:40:30.3867199Z Successfully removed non-blocking flag from /podr/container/pipe/49e00cff76eb_localsza-api/stdout_e293ca740ca0468a983dd449f469fbeb.
+2026-05-26T09:40:30.3868994Z Creating stderr named pipe at /podr/container/pipe/49e00cff76eb_localsza-api/stderr_ce2fce6399754085a646f7a4d93ca259.
+2026-05-26T09:40:30.3870356Z Successfully created stderr named pipe at: /podr/container/pipe/49e00cff76eb_localsza-api/stderr_ce2fce6399754085a646f7a4d93ca259.
+2026-05-26T09:40:30.3871020Z Opening named pipe /podr/container/pipe/49e00cff76eb_localsza-api/stderr_ce2fce6399754085a646f7a4d93ca259 for reading in non-blocking mode.
+2026-05-26T09:40:30.3871776Z Successfully opened named pipe: /podr/container/pipe/49e00cff76eb_localsza-api/stderr_ce2fce6399754085a646f7a4d93ca259.
+2026-05-26T09:40:30.3872473Z Successfully removed non-blocking flag from /podr/container/pipe/49e00cff76eb_localsza-api/stderr_ce2fce6399754085a646f7a4d93ca259.
+2026-05-26T09:40:30.3874003Z Creating container with image: appsvc/dotnetcore:10.0_20260504.4.tuxprod from registry: 10.1.0.12:13209 and fully qualified image name: 10.1.0.12:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod
+2026-05-26T09:40:30.5960212Z Starting container: 49e00cff76eb_localsza-api.
+2026-05-26T09:40:30.6189696Z Starting watchers and probes.
+2026-05-26T09:40:30.6193379Z Starting metrics collection.
+2026-05-26T09:40:30.6195220Z Container is running.
+2026-05-26T09:40:30.6196587Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-26T09:40:30.6380440Z Container start method finished after 828 ms.
+2026-05-26T09:40:30.6394986Z State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-26T09:40:30.6397956Z State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-26T09:40:40.1223158Z Site startup probe succeeded after 9.4805739 seconds.
+2026-05-26T09:40:40.1931530Z State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 9.4805739 seconds., DetailsLevel: INFO
+2026-05-26T09:40:40.3062690Z Site is running with deployment version: f5d761c2-87f7-4de0-985a-e417c5209c58
+2026-05-26T09:40:40.3066321Z Site started.
+2026-05-26T09:40:40.3067720Z State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/26/2026 09:40:40 (UTC), DetailsLevel: INFO
+2026-05-26T09:40:40.3070384Z Site is running with patch version DOTNETCORE 10.0.7
+2026-05-26T09:41:00.3333105Z State: Stopping, Action: StoppingSite, LastError: ContainerTimeout, LastErrorTimestamp: 05/20/2026 10:47:44, LastErrorDetails: Container did not start within expected time limit of 230s. Please inspect your container logs for more details., Details: Site started at 05/25/2026 21:30:09 (UTC), DetailsLevel: INFO
+2026-05-26T09:41:00.3338234Z State: Stopping, Action: StoppingSiteContainers, LastError: ContainerTimeout, LastErrorTimestamp: 05/20/2026 10:47:44, LastErrorDetails: Container did not start within expected time limit of 230s. Please inspect your container logs for more details., Details: Site started at 05/25/2026 21:30:09 (UTC), DetailsLevel: INFO
+2026-05-26T09:41:00.3340316Z Container is terminating. Grace period: 5 seconds.
+2026-05-26T09:41:00.3414805Z Stop and delete container. Retry count = 0
+2026-05-26T09:41:00.3416823Z Stopping container: 7d8bad7adbc2_localsza-api.
+2026-05-26T09:41:05.4077635Z Deleting container: 7d8bad7adbc2_localsza-api. Retry count = 0
+2026-05-26T09:41:05.4757131Z Container spec TerminationMessagePolicy  path 
+2026-05-26T09:41:05.4759603Z Container is terminated. Total time elapsed: 5141 ms.
+2026-05-26T09:41:05.4761770Z Site: localsza-api stopped.
+2026-05-26T10:05:09.8925654Z State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-26T10:05:10.2322527Z State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-26T10:05:10.2324635Z Container start method called.
+2026-05-26T10:05:10.2325483Z State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod for localsza-api., DetailsLevel: INFO
+2026-05-26T10:05:10.2327125Z Establishing network.
+2026-05-26T10:05:10.2328904Z Pulling image: appsvc/dotnetcore:10.0_20260504.4.tuxprod.
+2026-05-26T10:05:10.6679647Z Container is starting.
+2026-05-26T10:05:10.6680789Z State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for localsza-api., DetailsLevel: INFO
+2026-05-26T10:05:10.6682254Z Establishing user namespace if not established already.
+2026-05-26T10:05:10.6683628Z Establishing network if not established already.
+2026-05-26T10:05:10.6685189Z Mounting volumes.
+2026-05-26T10:05:10.6691814Z Nested mountpoint 
+2026-05-26T10:05:10.6702707Z Nested mountpoint volatile/logs
+2026-05-26T10:05:10.6730458Z Nested mountpoint 
+2026-05-26T10:05:10.6737191Z Nested mountpoint 
+2026-05-26T10:05:10.6743088Z Nested mountpoint 
+2026-05-26T10:05:10.6761742Z Nested mountpoint 
+2026-05-26T10:05:10.6782229Z Nested mountpoint 
+2026-05-26T10:05:10.7502820Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for localsza-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-26T10:05:10.7507468Z Creating container.
+2026-05-26T10:05:10.7508889Z Creating pipes for streaming container io.
+2026-05-26T10:05:10.7510409Z Creating stdout named pipe at /podr/container/pipe/7f1cc1dabf1d_localsza-api/stdout_9c03d77f2c83450d972b6f8e2b2788f6.
+2026-05-26T10:05:10.7512761Z Successfully created stdout named pipe at: /podr/container/pipe/7f1cc1dabf1d_localsza-api/stdout_9c03d77f2c83450d972b6f8e2b2788f6.
+2026-05-26T10:05:10.7514143Z Opening named pipe /podr/container/pipe/7f1cc1dabf1d_localsza-api/stdout_9c03d77f2c83450d972b6f8e2b2788f6 for reading in non-blocking mode.
+2026-05-26T10:05:10.7515631Z Successfully opened named pipe: /podr/container/pipe/7f1cc1dabf1d_localsza-api/stdout_9c03d77f2c83450d972b6f8e2b2788f6.
+2026-05-26T10:05:10.7517068Z Successfully removed non-blocking flag from /podr/container/pipe/7f1cc1dabf1d_localsza-api/stdout_9c03d77f2c83450d972b6f8e2b2788f6.
+2026-05-26T10:05:10.7519319Z Creating stderr named pipe at /podr/container/pipe/7f1cc1dabf1d_localsza-api/stderr_03f97ed990824cc19145f873dcb089b9.
+2026-05-26T10:05:10.7521413Z Successfully created stderr named pipe at: /podr/container/pipe/7f1cc1dabf1d_localsza-api/stderr_03f97ed990824cc19145f873dcb089b9.
+2026-05-26T10:05:10.7522950Z Opening named pipe /podr/container/pipe/7f1cc1dabf1d_localsza-api/stderr_03f97ed990824cc19145f873dcb089b9 for reading in non-blocking mode.
+2026-05-26T10:05:10.7524559Z Successfully opened named pipe: /podr/container/pipe/7f1cc1dabf1d_localsza-api/stderr_03f97ed990824cc19145f873dcb089b9.
+2026-05-26T10:05:10.7526069Z Successfully removed non-blocking flag from /podr/container/pipe/7f1cc1dabf1d_localsza-api/stderr_03f97ed990824cc19145f873dcb089b9.
+2026-05-26T10:05:10.7528051Z Creating container with image: appsvc/dotnetcore:10.0_20260504.4.tuxprod from registry: 10.1.0.11:13209 and fully qualified image name: 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod
+2026-05-26T10:05:11.8953352Z Starting container: 7f1cc1dabf1d_localsza-api.
+2026-05-26T10:05:11.9207802Z Starting watchers and probes.
+2026-05-26T10:05:11.9228278Z Starting metrics collection.
+2026-05-26T10:05:11.9240364Z Container is running.
+2026-05-26T10:05:11.9250713Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-26T10:05:11.9812048Z Container start method finished after 1748 ms.
+2026-05-26T10:05:11.9817567Z State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-26T10:05:11.9818973Z State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-26T10:05:21.4730304Z Site startup probe succeeded after 9.4825511 seconds.
+2026-05-26T10:05:21.5704210Z State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 9.4825511 seconds., DetailsLevel: INFO
+2026-05-26T10:05:21.6708099Z Site is running with deployment version: 58458a66-6754-429a-93ac-ba73bb2c4823
+2026-05-26T10:05:21.6711038Z Site started.
+2026-05-26T10:05:21.6712427Z State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/26/2026 10:05:21 (UTC), DetailsLevel: INFO
+2026-05-26T10:05:21.6715242Z Site is running with patch version DOTNETCORE 10.0.7
+2026-05-26T10:05:41.7040074Z State: Stopping, Action: StoppingSite, LastError: ContainerTimeout, LastErrorTimestamp: 05/20/2026 10:47:44, LastErrorDetails: Container did not start within expected time limit of 230s. Please inspect your container logs for more details., Details: Site started at 05/26/2026 09:40:40 (UTC), DetailsLevel: INFO
+2026-05-26T10:05:41.7044629Z State: Stopping, Action: StoppingSiteContainers, LastError: ContainerTimeout, LastErrorTimestamp: 05/20/2026 10:47:44, LastErrorDetails: Container did not start within expected time limit of 230s. Please inspect your container logs for more details., Details: Site started at 05/26/2026 09:40:40 (UTC), DetailsLevel: INFO
+2026-05-26T10:05:41.7046531Z Container is terminating. Grace period: 5 seconds.
+2026-05-26T10:05:41.7301552Z Stop and delete container. Retry count = 0
+2026-05-26T10:05:41.7303229Z Stopping container: 49e00cff76eb_localsza-api.
+2026-05-26T10:05:46.7835835Z Deleting container: 49e00cff76eb_localsza-api. Retry count = 0
+2026-05-26T10:05:46.8426113Z Container spec TerminationMessagePolicy  path 
+2026-05-26T10:05:46.8428383Z Container is terminated. Total time elapsed: 5137 ms.
+2026-05-26T10:05:46.8431726Z Site: localsza-api stopped.
+2026-05-26T11:02:40.2705029Z State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-26T11:02:40.8095386Z State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-26T11:02:40.8105302Z Container start method called.
+2026-05-26T11:02:40.8108658Z State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod for localsza-api., DetailsLevel: INFO
+2026-05-26T11:02:40.8110547Z Establishing network.
+2026-05-26T11:02:40.8112138Z Pulling image: appsvc/dotnetcore:10.0_20260504.4.tuxprod.
+2026-05-26T11:02:41.2733702Z Container is starting.
+2026-05-26T11:02:41.2735240Z State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for localsza-api., DetailsLevel: INFO
+2026-05-26T11:02:41.2736808Z Establishing user namespace if not established already.
+2026-05-26T11:02:41.2738401Z Establishing network if not established already.
+2026-05-26T11:02:41.2740082Z Mounting volumes.
+2026-05-26T11:02:41.2741908Z Nested mountpoint 
+2026-05-26T11:02:41.2756865Z Nested mountpoint volatile/logs
+2026-05-26T11:02:41.2833634Z Nested mountpoint 
+2026-05-26T11:02:41.2841279Z Nested mountpoint 
+2026-05-26T11:02:41.2847328Z Nested mountpoint 
+2026-05-26T11:02:41.3172107Z Nested mountpoint 
+2026-05-26T11:02:41.3581412Z Nested mountpoint 
+2026-05-26T11:02:41.4627958Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for localsza-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-26T11:02:41.4629915Z Creating container.
+2026-05-26T11:02:41.4631530Z Creating pipes for streaming container io.
+2026-05-26T11:02:41.4633163Z Creating stdout named pipe at /podr/container/pipe/0a9813b53c4f_localsza-api/stdout_10fd2a201d7e48c494254963565fd935.
+2026-05-26T11:02:41.4659375Z Successfully created stdout named pipe at: /podr/container/pipe/0a9813b53c4f_localsza-api/stdout_10fd2a201d7e48c494254963565fd935.
+2026-05-26T11:02:41.4664411Z Opening named pipe /podr/container/pipe/0a9813b53c4f_localsza-api/stdout_10fd2a201d7e48c494254963565fd935 for reading in non-blocking mode.
+2026-05-26T11:02:41.4669903Z Successfully opened named pipe: /podr/container/pipe/0a9813b53c4f_localsza-api/stdout_10fd2a201d7e48c494254963565fd935.
+2026-05-26T11:02:41.4675615Z Successfully removed non-blocking flag from /podr/container/pipe/0a9813b53c4f_localsza-api/stdout_10fd2a201d7e48c494254963565fd935.
+2026-05-26T11:02:41.4684347Z Creating stderr named pipe at /podr/container/pipe/0a9813b53c4f_localsza-api/stderr_b2925e321fdf4545b6aea517d7064866.
+2026-05-26T11:02:41.4687838Z Successfully created stderr named pipe at: /podr/container/pipe/0a9813b53c4f_localsza-api/stderr_b2925e321fdf4545b6aea517d7064866.
+2026-05-26T11:02:41.4689192Z Opening named pipe /podr/container/pipe/0a9813b53c4f_localsza-api/stderr_b2925e321fdf4545b6aea517d7064866 for reading in non-blocking mode.
+2026-05-26T11:02:41.4690877Z Successfully opened named pipe: /podr/container/pipe/0a9813b53c4f_localsza-api/stderr_b2925e321fdf4545b6aea517d7064866.
+2026-05-26T11:02:41.4696483Z Successfully removed non-blocking flag from /podr/container/pipe/0a9813b53c4f_localsza-api/stderr_b2925e321fdf4545b6aea517d7064866.
+2026-05-26T11:02:41.4699290Z Creating container with image: appsvc/dotnetcore:10.0_20260504.4.tuxprod from registry: 10.1.0.11:13209 and fully qualified image name: 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod
+2026-05-26T11:02:41.6724487Z Starting container: 0a9813b53c4f_localsza-api.
+2026-05-26T11:02:41.6959422Z Starting watchers and probes.
+2026-05-26T11:02:41.6963404Z Starting metrics collection.
+2026-05-26T11:02:41.6972244Z Container is running.
+2026-05-26T11:02:41.6974674Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-26T11:02:41.7730667Z Container start method finished after 962 ms.
+2026-05-26T11:02:41.7733906Z State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-26T11:02:41.7734184Z State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-26T11:02:51.2385502Z Site startup probe succeeded after 9.464319 seconds.
+2026-05-26T11:02:51.3100468Z State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 9.464319 seconds., DetailsLevel: INFO
+2026-05-26T11:02:51.4649415Z Site is running with deployment version: 9ba33402-5be3-4b7e-97d8-c17e13a1bd98
+2026-05-26T11:02:51.4657585Z Site started.
+2026-05-26T11:02:51.4658875Z State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/26/2026 11:02:51 (UTC), DetailsLevel: INFO
+2026-05-26T11:02:51.4661502Z Site is running with patch version DOTNETCORE 10.0.7
+2026-05-26T11:03:11.4814673Z State: Stopping, Action: StoppingSite, LastError: ContainerTimeout, LastErrorTimestamp: 05/20/2026 10:47:44, LastErrorDetails: Container did not start within expected time limit of 230s. Please inspect your container logs for more details., Details: Site started at 05/26/2026 10:05:21 (UTC), DetailsLevel: INFO
+2026-05-26T11:03:11.4818968Z State: Stopping, Action: StoppingSiteContainers, LastError: ContainerTimeout, LastErrorTimestamp: 05/20/2026 10:47:44, LastErrorDetails: Container did not start within expected time limit of 230s. Please inspect your container logs for more details., Details: Site started at 05/26/2026 10:05:21 (UTC), DetailsLevel: INFO
+2026-05-26T11:03:11.4820343Z Container is terminating. Grace period: 5 seconds.
+2026-05-26T11:03:11.5355717Z Stop and delete container. Retry count = 0
+2026-05-26T11:03:11.5357611Z Stopping container: 7f1cc1dabf1d_localsza-api.
+2026-05-26T11:03:16.5892325Z Deleting container: 7f1cc1dabf1d_localsza-api. Retry count = 0
+2026-05-26T11:03:16.7073340Z Container spec TerminationMessagePolicy  path 
+2026-05-26T11:03:16.7076112Z Container is terminated. Total time elapsed: 5225 ms.
+2026-05-26T11:03:16.7081847Z Site: localsza-api stopped.
