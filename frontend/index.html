@@ -1,67 +1,147 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-ZA">
   <head>
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <!-- Content Security Policy-->
+
+    <!-- ── Content Security Policy ───────────────────────────────────────────
+         Single source of truth for dev. Production CSP is in netlify.toml.
+         Keep in sync: any change here must be mirrored there.
+    ──────────────────────────────────────────────────────────────────────── -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      img-src 'self' data: https: blob: https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://www.googletagmanager.com;
+      img-src 'self' data: https: blob:;
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com https://apis.google.com https://stats.g.doubleclick.net https://ssl.google-analytics.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;
-      connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://europe-west4-localsza.cloudfunctions.net https://firebasestorage.googleapis.com https://api.ozow.com https://stagingapi.ozow.com https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://region1.analytics.google.com https://www.googletagmanager.com https://localsza-api.azurewebsites.net https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net https://atlas.microsoft.com https://*.atlas.microsoft.com;
-      worker-src blob:;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://atlas.microsoft.com;
+      font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://atlas.microsoft.com https://*.atlas.microsoft.com;
+      worker-src 'self' blob:;
+      connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://europe-west4-localsza.cloudfunctions.net https://api.ozow.com https://stagingapi.ozow.com https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://region1.analytics.google.com https://www.googletagmanager.com https://localsza-api.azurewebsites.net https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net https://atlas.microsoft.com https://*.atlas.microsoft.com;
       frame-src 'self' https://www.googletagmanager.com https://apis.google.com https://localsza.firebaseapp.com https://pay.ozow.com https://stagingpay.ozow.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self' https://pay.ozow.com https://stagingpay.ozow.com;
     ">
-    <!-- Google Tag Manager -->
+
+    <!-- ── Google Tag Manager ─────────────────────────────────────────────── -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-TGC3RZFJ');</script>
-    <!-- End Google Tag Manager -->
-     <!-- Primary Meta Tags -->
-    <meta name="description" content="Retail shop, Hair Salon and Fast Food Outlet Online Cash and Carry, buyer service and delivery for SMMEs in Ekhuruleni. Order wholesale supplies online.">
-    <meta name="keywords" content="retail shop, online wholesaler, cash and carry, SMME supplier, Ekurhuleni, Gauteng, LocalsZA, wholesale South Africa">
-    <meta name="author" content="LocalsZA">
 
-    <!-- Open Graph / Facebook -->
+    <!-- ── Primary SEO ───────────────────────────────────────────────────── -->
+    <title>LocalsZA — Wholesale Pickup & Delivery for Spaza Shops, Restaurants & Traders | South Africa</title>
+    <meta name="description" content="LocalsZA delivers your wholesale order from the cash and carry directly to your door. Built for spaza shops, fast food outlets, hair salons, mechanics, print shops and any small business that buys in bulk. Upload your receipt, pay via bank — we handle the rest. Serving Ekurhuleni, Gauteng and beyond.">
+    <meta name="keywords" content="wholesale delivery South Africa, spaza shop delivery, cash and carry pickup, informal economy logistics, township delivery service, bulk goods delivery, fast food outlet supply delivery, hair salon supplies delivery, mechanic parts delivery, printing supplies delivery, small business delivery South Africa, Uber for wholesale, micro-retailer logistics, Ekurhuleni delivery, Gauteng wholesale delivery, last mile delivery township, stock delivery service, LocalsZA, supply chain South Africa, restaurant supply delivery, bulk order delivery, furniture store delivery, online business delivery service">
+    <meta name="author" content="LocalsZA (Pty) Ltd">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="geo.region" content="ZA-GT">
+    <meta name="geo.placename" content="Ekurhuleni, Gauteng, South Africa">
+
+    <!-- ── Open Graph / Facebook ─────────────────────────────────────────── -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://locals-za.co.za/">
-    <meta property="og:title" content="LocalsZA - Online Cash & Carry for SMMEs">
-    <meta property="og:description" content="Retail shop, Hair Salon and Fast Food Outlet Online Cash and Carry, buyer service and delivery for SMMEs in Ekhuruleni.">
-    <meta property="og:image" content="https://locals-za.co.za/assets/logos/LZA ICON.png">
     <meta property="og:site_name" content="LocalsZA">
     <meta property="og:locale" content="en_ZA">
+    <meta property="og:title" content="LocalsZA — Wholesale Pickup & Delivery for Spaza Shops, Restaurants & Traders">
+    <meta property="og:description" content="Upload your cash-and-carry receipt. We pick up your bulk order and deliver it to your door. Built for spaza shops, food outlets, hair salons, mechanics and any SA small business that buys wholesale.">
+    <meta property="og:image" content="https://locals-za.co.za/assets/logos/LZA ICON.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="LocalsZA — Wholesale pickup and delivery service">
 
-    <!-- Canonical URL -->
+    <!-- ── Twitter / X Card ─────────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@LocalsZA">
+    <meta name="twitter:title" content="LocalsZA — Wholesale Pickup & Delivery | South Africa">
+    <meta name="twitter:description" content="Upload your receipt from any cash and carry. We collect and deliver your stock. Built for spaza shops, fast food, hair salons and SA micro-retailers.">
+    <meta name="twitter:image" content="https://locals-za.co.za/assets/logos/LZA ICON.png">
+
+    <!-- ── Canonical ─────────────────────────────────────────────────────── -->
     <link rel="canonical" href="https://locals-za.co.za/">
 
-    <link rel="icon" type="image/svg+xml" href="/locals-favicon.svg" />
+    <!-- ── Structured Data (JSON-LD) ─────────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "DeliveryEvent",
+      "name": "LocalsZA Wholesale Pickup & Delivery",
+      "description": "LocalsZA collects wholesale orders from cash-and-carry stores and delivers them to spaza shops, restaurants, hair salons, mechanics and other micro-retailers across South Africa.",
+      "url": "https://locals-za.co.za",
+      "organizer": {
+        "@type": "Organization",
+        "name": "LocalsZA (Pty) Ltd",
+        "url": "https://locals-za.co.za",
+        "logo": "https://locals-za.co.za/assets/logos/LZA ICON.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+27629973007",
+          "email": "martin@localsza.co.za",
+          "contactType": "customer service",
+          "areaServed": "ZA",
+          "availableLanguage": "English"
+        },
+        "areaServed": {
+          "@type": "State",
+          "name": "Gauteng",
+          "containsPlace": {
+            "@type": "City",
+            "name": "Ekurhuleni"
+          }
+        },
+        "sameAs": [
+          "https://locals-za.co.za"
+        ]
+      }
+    }
+    </script>
 
-    <!-- Fonts — Inter variable font, display=swap avoids invisible-text flash -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Wholesale Pickup and Delivery",
+      "name": "LocalsZA",
+      "provider": {
+        "@type": "Organization",
+        "name": "LocalsZA (Pty) Ltd",
+        "url": "https://locals-za.co.za"
+      },
+      "description": "On-demand wholesale pickup and delivery for spaza shops, fast food outlets, hair salons, mechanics, printing companies, furniture stores and any small business buying in bulk from South African cash-and-carry stores.",
+      "areaServed": "South Africa",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Delivery Services",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Spaza Shop Stock Delivery" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Restaurant & Fast Food Supply Delivery" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Hair Salon Supplies Delivery" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Mechanic Parts & Supplies Delivery" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Wholesale Bulk Order Pickup" } }
+        ]
+      }
+    }
+    </script>
+
+    <!-- ── Favicon & PWA ─────────────────────────────────────────────────── -->
+    <link rel="icon" type="image/svg+xml" href="/locals-favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#ffb803" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LocalsZA">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/assets/icons/icon-512x512.png">
+
+    <!-- ── Fonts ─────────────────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- PWA support -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#ffb803" />
-
-    <!-- Apple/iOS support -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="/assets/icons/icon-512x512.png">
-    
-    <!-- Google Analytics -->
+    <!-- ── Google Analytics ──────────────────────────────────────────────── -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-TKNL35ZPGD"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -69,13 +149,11 @@
       gtag('js', new Date());
       gtag('config', 'G-TKNL35ZPGD');
     </script>
-    <title>LocalsZA - Online Cash & Carry| Wholesaler buyer & delivery service for Retail & SMMEs | Ekhuruleni</title>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TGC3RZFJ"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
