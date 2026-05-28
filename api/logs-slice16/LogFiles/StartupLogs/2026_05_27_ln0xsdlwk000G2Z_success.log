@@ -1,0 +1,609 @@
+2026-05-27T19:15:33.9794687+00:00 ContainerStatus: State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-27T19:15:35.4325461+00:00 ContainerStatus: State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-27T19:15:35.4393746+00:00 ContainerStatus: Container start method called.
+2026-05-27T19:15:35.4689650+00:00 ContainerStatus: State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod for localsza-api., DetailsLevel: INFO
+2026-05-27T19:15:35.4697460+00:00 ContainerStatus: Establishing network.
+2026-05-27T19:15:35.4704243+00:00 ContainerStatus: Pulling image: appsvc/dotnetcore:10.0_20260504.4.tuxprod.
+2026-05-27T19:15:35.9461035+00:00 ContainerStatus: Container is starting.
+2026-05-27T19:15:35.9465560+00:00 ContainerStatus: State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for localsza-api., DetailsLevel: INFO
+2026-05-27T19:15:35.9473791+00:00 ContainerStatus: Establishing user namespace if not established already.
+2026-05-27T19:15:35.9478758+00:00 ContainerStatus: Establishing network if not established already.
+2026-05-27T19:15:35.9484105+00:00 ContainerStatus: Mounting volumes.
+2026-05-27T19:15:35.9524579+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T19:15:35.9637781+00:00 ContainerStatus: Nested mountpoint volatile/logs
+2026-05-27T19:15:35.9880365+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T19:15:36.0083433+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T19:15:36.0118386+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T19:15:36.0156255+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T19:15:36.0399675+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T19:15:36.3135346+00:00 ContainerStatus: State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for localsza-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-27T19:15:36.3138234+00:00 ContainerStatus: Creating container.
+2026-05-27T19:15:36.3144609+00:00 ContainerStatus: Creating pipes for streaming container io.
+2026-05-27T19:15:36.3232303+00:00 ContainerStatus: Creating stdout named pipe at /podr/container/pipe/ae9208f6b287_localsza-api/stdout_c8018fd30a1a46eea98542a1b093ee4f.
+2026-05-27T19:15:36.3252434+00:00 ContainerStatus: Successfully created stdout named pipe at: /podr/container/pipe/ae9208f6b287_localsza-api/stdout_c8018fd30a1a46eea98542a1b093ee4f.
+2026-05-27T19:15:36.3256913+00:00 ContainerStatus: Opening named pipe /podr/container/pipe/ae9208f6b287_localsza-api/stdout_c8018fd30a1a46eea98542a1b093ee4f for reading in non-blocking mode.
+2026-05-27T19:15:36.3259155+00:00 ContainerStatus: Successfully opened named pipe: /podr/container/pipe/ae9208f6b287_localsza-api/stdout_c8018fd30a1a46eea98542a1b093ee4f.
+2026-05-27T19:15:36.3260559+00:00 ContainerStatus: Successfully removed non-blocking flag from /podr/container/pipe/ae9208f6b287_localsza-api/stdout_c8018fd30a1a46eea98542a1b093ee4f.
+2026-05-27T19:15:36.3263212+00:00 ContainerStatus: Creating stderr named pipe at /podr/container/pipe/ae9208f6b287_localsza-api/stderr_80546618b7334f29a78b7ff145c5033c.
+2026-05-27T19:15:36.3274903+00:00 ContainerStatus: Successfully created stderr named pipe at: /podr/container/pipe/ae9208f6b287_localsza-api/stderr_80546618b7334f29a78b7ff145c5033c.
+2026-05-27T19:15:36.3278425+00:00 ContainerStatus: Opening named pipe /podr/container/pipe/ae9208f6b287_localsza-api/stderr_80546618b7334f29a78b7ff145c5033c for reading in non-blocking mode.
+2026-05-27T19:15:36.3280208+00:00 ContainerStatus: Successfully opened named pipe: /podr/container/pipe/ae9208f6b287_localsza-api/stderr_80546618b7334f29a78b7ff145c5033c.
+2026-05-27T19:15:36.3281459+00:00 ContainerStatus: Successfully removed non-blocking flag from /podr/container/pipe/ae9208f6b287_localsza-api/stderr_80546618b7334f29a78b7ff145c5033c.
+2026-05-27T19:15:36.3318206+00:00 ContainerStatus: Creating container with image: appsvc/dotnetcore:10.0_20260504.4.tuxprod from registry: 10.1.0.11:13209 and fully qualified image name: 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod
+2026-05-27T19:15:36.7306010+00:00 ContainerStatus: Starting container: ae9208f6b287_localsza-api.
+2026-05-27T19:15:36.8155783+00:00 ContainerStatus: Starting watchers and probes.
+2026-05-27T19:15:36.8194593+00:00 ContainerStream:    _____                               
+2026-05-27T19:15:36.8240659+00:00 ContainerStatus: Starting metrics collection.
+2026-05-27T19:15:36.8351010+00:00 ContainerStream:   /  _  \ __________ _________   ____  
+2026-05-27T19:15:36.8351602+00:00 ContainerStream:  /  /_\  \\___   /  |  \_  __ \_/ __ \ 
+2026-05-27T19:15:36.8351652+00:00 ContainerStream: /    |    \/    /|  |  /|  | \/\  ___/ 
+2026-05-27T19:15:36.8351703+00:00 ContainerStream: \____|__  /_____ \____/ |__|    \___  >
+2026-05-27T19:15:36.8351745+00:00 ContainerStream:         \/      \/                  \/ 
+2026-05-27T19:15:36.8351952+00:00 ContainerStream: A P P   S E R V I C E   O N   L I N U X
+2026-05-27T19:15:36.8351983+00:00 ContainerStream: 
+2026-05-27T19:15:36.8352027+00:00 ContainerStream: Documentation       : http://aka.ms/webapp-linux
+2026-05-27T19:15:36.8352062+00:00 ContainerStream: Dotnet quickstart   : https://aka.ms/dotnet-qs
+2026-05-27T19:15:36.8352144+00:00 ContainerStream: ASP .NETCore Version: 10.0.7
+2026-05-27T19:15:36.8352178+00:00 ContainerStream: Instance Name       : ln0xsdlwk000G2Z
+2026-05-27T19:15:36.8352298+00:00 ContainerStream: Instance Id         : 1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c
+2026-05-27T19:15:36.8352357+00:00 ContainerStream: 
+2026-05-27T19:15:36.8352391+00:00 ContainerStream: Note: Any data outside '/home' is not persisted
+2026-05-27T19:15:36.8360536+00:00 ContainerStatus: Container is running.
+2026-05-27T19:15:36.8362818+00:00 ContainerStatus: State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-27T19:15:36.9208133+00:00 ContainerStatus: Container start method finished after 1479 ms.
+2026-05-27T19:15:36.9236270+00:00 ContainerStatus: State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-27T19:15:36.9304509+00:00 ContainerStatus: State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-27T19:15:37.3460501+00:00 ContainerStream:  * Starting OpenBSD Secure Shell server sshd
+2026-05-27T19:15:37.3631964+00:00 ContainerStream:    ...done.
+2026-05-27T19:15:37.3771759+00:00 ContainerStream: WEBSITES_INCLUDE_CLOUD_CERTS is not set to true.
+2026-05-27T19:15:37.3984950+00:00 ContainerStream: Updating certificates in /etc/ssl/certs...
+2026-05-27T19:15:42.0460329+00:00 ContainerStream: rehash: warning: skipping duplicate certificate in SSLcom-TLS-Root-2022-ECC.pem
+2026-05-27T19:15:42.0515027+00:00 ContainerStream: rehash: warning: skipping duplicate certificate in SSLcom-TLS-Root-2022-RSA.pem
+2026-05-27T19:15:42.2066534+00:00 ContainerStream: rehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL
+2026-05-27T19:15:42.2378056+00:00 ContainerStream: 4 added, 0 removed; done.
+2026-05-27T19:15:42.2379596+00:00 ContainerStream: Running hooks in /etc/ca-certificates/update.d...
+2026-05-27T19:15:42.2407745+00:00 ContainerStream: done.
+2026-05-27T19:15:42.2476398+00:00 ContainerStream: CA certificates copied and updated successfully.
+2026-05-27T19:15:42.3074934+00:00 ContainerStream:  * Starting periodic command scheduler cron
+2026-05-27T19:15:42.3247513+00:00 ContainerStream:    ...done.
+2026-05-27T19:15:42.3283103+00:00 ContainerStream: Running oryx create-script -appPath /home/site/wwwroot -output /opt/startup/startup.sh -defaultAppFilePath /defaulthome/hostingstart/hostingstart.dll     -bindPort 8080 -bindPort2 '' -userStartupCommand 'dotnet LocalsZaApi.dll' 
+2026-05-27T19:15:42.4238243+00:00 ContainerStream: Could not find build manifest file at '/home/site/wwwroot/oryx-manifest.toml'
+2026-05-27T19:15:42.4350867+00:00 ContainerStream: Could not find operation ID in manifest. Generating an operation id...
+2026-05-27T19:15:42.4351374+00:00 ContainerStream: Build Operation ID: e979ad9e-7e73-4daa-8036-29ec51b4856f
+2026-05-27T19:15:43.1910961+00:00 ContainerStream: 
+2026-05-27T19:15:43.1912536+00:00 ContainerStream: Agent extension disabled
+2026-05-27T19:15:43.1912616+00:00 ContainerStream: Before if loop >> DotNet Runtime 
+2026-05-27T19:15:43.3722374+00:00 ContainerStream: DotNet Runtime 10.0Writing output script to '/opt/startup/startup.sh'
+2026-05-27T19:15:43.6440147+00:00 ContainerStream: Running user provided startup command...
+2026-05-27T19:15:46.6423268+00:00 ContainerStream: [19:15:46 INF] Now listening on: http://[::]:8080
+2026-05-27T19:15:46.6459629+00:00 ContainerStream: [19:15:46 INF] Application started. Press Ctrl+C to shut down.
+2026-05-27T19:15:46.6467362+00:00 ContainerStream: [19:15:46 INF] Hosting environment: Production
+2026-05-27T19:15:46.6470853+00:00 ContainerStream: [19:15:46 INF] Content root path: /home/site/wwwroot
+2026-05-27T19:15:47.0403776+00:00 ContainerStream: [19:15:47 INF] Request starting HTTP/1.1 GET http://169.254.129.3:8080/robots933456.txt - null null
+2026-05-27T19:15:47.3620934+00:00 ContainerStream: [19:15:47 WRN] Failed to determine the https port for redirect.
+2026-05-27T19:15:47.5973715+00:00 ContainerStream: [19:15:47 INF] Request finished HTTP/1.1 GET http://169.254.129.3:8080/robots933456.txt - 404 0 null 562.6608ms
+2026-05-27T19:15:47.6025119+00:00 ContainerStream: [19:15:47 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://169.254.129.3:8080/robots933456.txt, Response status code: 404
+2026-05-27T19:15:47.6228494+00:00 ContainerStatus: Site startup probe succeeded after 10.6676395 seconds.
+2026-05-27T19:15:47.7096468+00:00 ContainerStatus: State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 10.6676395 seconds., DetailsLevel: INFO
+2026-05-27T19:15:47.8901888+00:00 ContainerStatus: Site is running with deployment version: 73e75e55-7703-403f-bb2b-463bd790919e
+2026-05-27T19:15:47.8936723+00:00 ContainerStatus: Site started.
+2026-05-27T19:15:47.8939121+00:00 ContainerStatus: State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/27/2026 19:15:47 (UTC), DetailsLevel: INFO
+2026-05-27T19:15:47.8976943+00:00 ContainerStatus: Site is running with patch version DOTNETCORE 10.0.7
+========== New Cold Start Attempt (2026-05-27T19:15:53.7477444+00:00) ==========
+2026-05-27T19:15:53.7477444+00:00 ContainerStream: [19:15:53 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:15:53.7546570+00:00 ContainerStream: [19:15:53 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 5.0857ms
+2026-05-27T19:15:53.7547266+00:00 ContainerStream: [19:15:53 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:18:36.8751175+00:00 ContainerStream: [19:18:36 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/health - null null
+2026-05-27T19:18:36.8907308+00:00 ContainerStream: [19:18:36 INF] Executing endpoint 'HTTP: GET /health'
+2026-05-27T19:18:36.8932296+00:00 ContainerStream: [19:18:36 INF] Setting HTTP status code 200.
+2026-05-27T19:18:36.9053602+00:00 ContainerStream: [19:18:36 INF] Writing value of type '<>f__AnonymousType19`2' as Json.
+2026-05-27T19:18:36.9181066+00:00 ContainerStream: [19:18:36 INF] Executed endpoint 'HTTP: GET /health'
+2026-05-27T19:18:36.9202583+00:00 ContainerStream: [19:18:36 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/health - 200 null application/json; charset=utf-8 43.7666ms
+2026-05-27T19:19:55.2771080+00:00 ContainerStream: [19:19:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:19:55.2807943+00:00 ContainerStream: [19:19:55 INF] CORS policy execution successful.
+2026-05-27T19:19:55.2808302+00:00 ContainerStream: [19:19:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 204 null null 3.929ms
+2026-05-27T19:19:55.2962587+00:00 ContainerStream: [19:19:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:19:55.2983616+00:00 ContainerStream: [19:19:55 INF] CORS policy execution successful.
+2026-05-27T19:19:55.2987917+00:00 ContainerStream: [19:19:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 204 null null 2.5846ms
+2026-05-27T19:19:55.3352863+00:00 ContainerStream: [19:19:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:19:55.3353501+00:00 ContainerStream: [19:19:55 INF] CORS policy execution successful.
+2026-05-27T19:19:55.7716659+00:00 ContainerStream: [19:19:55 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:19:57.0342476+00:00 ContainerStream: [19:19:57 INF] Setting HTTP status code 200.
+2026-05-27T19:19:57.0350669+00:00 ContainerStream: [19:19:57 INF] Writing value of type 'List`1' as Json.
+2026-05-27T19:19:57.0393870+00:00 ContainerStream: [19:19:57 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:19:57.0401915+00:00 ContainerStream: [19:19:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 1704.808ms
+2026-05-27T19:19:57.0678136+00:00 ContainerStream: [19:19:57 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:19:57.0681071+00:00 ContainerStream: [19:19:57 INF] CORS policy execution successful.
+2026-05-27T19:19:57.0698601+00:00 ContainerStream: [19:19:57 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:19:57.1289028+00:00 ContainerStream: [19:19:57 INF] Setting HTTP status code 200.
+2026-05-27T19:19:57.1292739+00:00 ContainerStream: [19:19:57 INF] Writing value of type 'List`1' as Json.
+2026-05-27T19:19:57.1298661+00:00 ContainerStream: [19:19:57 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:19:57.1320725+00:00 ContainerStream: [19:19:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 62.6114ms
+2026-05-27T19:20:07.4708045+00:00 ContainerStream: [19:20:07 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:07.4709605+00:00 ContainerStream: [19:20:07 INF] CORS policy execution successful.
+2026-05-27T19:20:07.4709650+00:00 ContainerStream: [19:20:07 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 204 null null 0.9013ms
+2026-05-27T19:20:07.4727932+00:00 ContainerStream: [19:20:07 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:07.4732671+00:00 ContainerStream: [19:20:07 INF] CORS policy execution successful.
+2026-05-27T19:20:07.4733681+00:00 ContainerStream: [19:20:07 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 204 null null 0.767ms
+2026-05-27T19:20:07.5508636+00:00 ContainerStream: [19:20:07 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:07.5509432+00:00 ContainerStream: [19:20:07 INF] CORS policy execution successful.
+2026-05-27T19:20:07.5509482+00:00 ContainerStream: [19:20:07 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:07.6081641+00:00 ContainerStream: [19:20:07 INF] Setting HTTP status code 200.
+2026-05-27T19:20:07.6085562+00:00 ContainerStream: [19:20:07 INF] Writing value of type 'List`1' as Json.
+2026-05-27T19:20:07.6092103+00:00 ContainerStream: [19:20:07 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:07.6114589+00:00 ContainerStream: [19:20:07 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 62.903ms
+2026-05-27T19:20:07.7024358+00:00 ContainerStream: [19:20:07 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:07.7037220+00:00 ContainerStream: [19:20:07 INF] CORS policy execution successful.
+2026-05-27T19:20:07.7052257+00:00 ContainerStream: [19:20:07 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:07.7374733+00:00 ContainerStream: [19:20:07 INF] Setting HTTP status code 200.
+2026-05-27T19:20:07.7375436+00:00 ContainerStream: [19:20:07 INF] Writing value of type 'List`1' as Json.
+2026-05-27T19:20:07.7382684+00:00 ContainerStream: [19:20:07 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:07.7385661+00:00 ContainerStream: [19:20:07 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 36.1612ms
+2026-05-27T19:20:54.0786076+00:00 ContainerStream: [19:20:54 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:20:54.0787075+00:00 ContainerStream: [19:20:54 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.7537ms
+2026-05-27T19:20:54.0801945+00:00 ContainerStream: [19:20:54 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:20:55.0413233+00:00 ContainerStream: [19:20:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:55.0413835+00:00 ContainerStream: [19:20:55 INF] CORS policy execution successful.
+2026-05-27T19:20:55.0413878+00:00 ContainerStream: [19:20:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 204 null null 0.6909ms
+2026-05-27T19:20:55.0427862+00:00 ContainerStream: [19:20:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:55.0432540+00:00 ContainerStream: [19:20:55 INF] CORS policy execution successful.
+2026-05-27T19:20:55.0435818+00:00 ContainerStream: [19:20:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 204 null null 0.905ms
+2026-05-27T19:20:55.0835432+00:00 ContainerStream: [19:20:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:55.0850972+00:00 ContainerStream: [19:20:55 INF] CORS policy execution successful.
+2026-05-27T19:20:55.0874219+00:00 ContainerStream: [19:20:55 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:55.1420058+00:00 ContainerStream: [19:20:55 INF] Setting HTTP status code 200.
+2026-05-27T19:20:55.1421088+00:00 ContainerStream: [19:20:55 INF] Writing value of type 'List`1' as Json.
+2026-05-27T19:20:55.1433912+00:00 ContainerStream: [19:20:55 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:55.1438456+00:00 ContainerStream: [19:20:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 60.482ms
+2026-05-27T19:20:55.1781955+00:00 ContainerStream: [19:20:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-27T19:20:55.1786826+00:00 ContainerStream: [19:20:55 INF] CORS policy execution successful.
+2026-05-27T19:20:55.1803055+00:00 ContainerStream: [19:20:55 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:55.2106650+00:00 ContainerStream: [19:20:55 INF] Setting HTTP status code 200.
+2026-05-27T19:20:55.2108132+00:00 ContainerStream: [19:20:55 INF] Writing value of type 'List`1' as Json.
+2026-05-27T19:20:55.2110986+00:00 ContainerStream: [19:20:55 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-27T19:20:55.2118410+00:00 ContainerStream: [19:20:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 33.8151ms
+2026-05-27T19:25:54.3843860+00:00 ContainerStream: [19:25:54 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:25:54.3844502+00:00 ContainerStream: [19:25:54 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.4141ms
+2026-05-27T19:25:54.3844551+00:00 ContainerStream: [19:25:54 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:30:54.6551125+00:00 ContainerStream: [19:30:54 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:30:54.6551728+00:00 ContainerStream: [19:30:54 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.4784ms
+2026-05-27T19:30:54.6551762+00:00 ContainerStream: [19:30:54 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:35:55.0254750+00:00 ContainerStream: [19:35:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:35:55.0255348+00:00 ContainerStream: [19:35:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.6319ms
+2026-05-27T19:35:55.0255394+00:00 ContainerStream: [19:35:55 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:36:02.3381585+00:00 ContainerStream: [19:36:02 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-27T19:36:02.3411429+00:00 ContainerStream: [19:36:02 INF] CORS policy execution successful.
+2026-05-27T19:36:02.3418924+00:00 ContainerStream: [19:36:02 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 4.1397ms
+2026-05-27T19:36:02.3734489+00:00 ContainerStream: [19:36:02 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 57
+2026-05-27T19:36:02.3759078+00:00 ContainerStream: [19:36:02 INF] CORS policy execution successful.
+2026-05-27T19:36:02.3759550+00:00 ContainerStream: [19:36:02 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T19:36:02.3923147+00:00 ContainerStream: [19:36:02 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T19:36:02.3932768+00:00 ContainerStream: [19:36:02 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 200 null application/json; charset=utf-8 19.1021ms
+2026-05-27T19:36:03.4826915+00:00 ContainerStream: [19:36:03 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T19:36:03.4827552+00:00 ContainerStream: [19:36:03 INF] CORS policy execution successful.
+2026-05-27T19:36:03.4827608+00:00 ContainerStream: [19:36:03 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.5838ms
+2026-05-27T19:36:03.5180248+00:00 ContainerStream: [19:36:03 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T19:36:03.5192976+00:00 ContainerStream: [19:36:03 INF] CORS policy execution successful.
+2026-05-27T19:36:03.5198967+00:00 ContainerStream: [19:36:03 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 1.3179ms
+2026-05-27T19:36:03.5598057+00:00 ContainerStream: [19:36:03 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T19:36:03.5598758+00:00 ContainerStream: [19:36:03 INF] CORS policy execution successful.
+2026-05-27T19:36:03.5605713+00:00 ContainerStream: [19:36:03 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T19:36:03.7939935+00:00 ContainerStream: [19:36:03 INF] Setting HTTP status code 200.
+2026-05-27T19:36:03.7955144+00:00 ContainerStream: [19:36:03 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-27T19:36:03.8030016+00:00 ContainerStream: [19:36:03 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T19:36:03.8060831+00:00 ContainerStream: [19:36:03 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 244.621ms
+2026-05-27T19:36:03.8648189+00:00 ContainerStream: [19:36:03 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T19:36:03.8652050+00:00 ContainerStream: [19:36:03 INF] CORS policy execution successful.
+2026-05-27T19:36:03.8658653+00:00 ContainerStream: [19:36:03 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T19:36:03.9232949+00:00 ContainerStream: [19:36:03 INF] Setting HTTP status code 200.
+2026-05-27T19:36:03.9233737+00:00 ContainerStream: [19:36:03 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-27T19:36:03.9243740+00:00 ContainerStream: [19:36:03 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T19:36:03.9274134+00:00 ContainerStream: [19:36:03 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 59.8297ms
+2026-05-27T19:36:09.9557342+00:00 ContainerStream: [19:36:09 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T19:36:09.9575593+00:00 ContainerStream: [19:36:09 INF] CORS policy execution successful.
+2026-05-27T19:36:09.9598584+00:00 ContainerStream: [19:36:09 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 3.1148ms
+2026-05-27T19:36:09.9601877+00:00 ContainerStream: [19:36:09 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T19:36:09.9617404+00:00 ContainerStream: [19:36:09 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T19:36:09.9617620+00:00 ContainerStream: [19:36:09 INF] CORS policy execution successful.
+2026-05-27T19:36:09.9617699+00:00 ContainerStream: [19:36:09 INF] CORS policy execution successful.
+2026-05-27T19:36:09.9617743+00:00 ContainerStream: [19:36:09 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 1.1863ms
+2026-05-27T19:36:09.9617778+00:00 ContainerStream: [19:36:09 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.394ms
+2026-05-27T19:36:10.0276504+00:00 ContainerStream: [19:36:10 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T19:36:10.0289788+00:00 ContainerStream: [19:36:10 INF] CORS policy execution successful.
+2026-05-27T19:36:10.0292600+00:00 ContainerStream: [19:36:10 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T19:36:10.0306222+00:00 ContainerStream: [19:36:10 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T19:36:10.0309646+00:00 ContainerStream: [19:36:10 INF] CORS policy execution successful.
+2026-05-27T19:36:10.0310897+00:00 ContainerStream: [19:36:10 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T19:36:10.0313742+00:00 ContainerStream: [19:36:10 INF] CORS policy execution successful.
+2026-05-27T19:36:10.0319870+00:00 ContainerStream: [19:36:10 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-27T19:36:10.0335058+00:00 ContainerStream: [19:36:10 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 4.4402ms
+2026-05-27T19:36:10.2561313+00:00 ContainerStream: [19:36:10 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-27T19:36:10.2567052+00:00 ContainerStream: [19:36:10 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 227.9131ms
+2026-05-27T19:36:10.2856043+00:00 ContainerStream: [19:36:10 INF] Setting HTTP status code 200.
+2026-05-27T19:36:10.2906970+00:00 ContainerStream: [19:36:10 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-27T19:36:10.2934318+00:00 ContainerStream: [19:36:10 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T19:36:10.2935216+00:00 ContainerStream: [19:36:10 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 266.2071ms
+2026-05-27T19:36:10.2950255+00:00 ContainerStream: [19:36:10 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T19:36:10.2964395+00:00 ContainerStream: [19:36:10 INF] CORS policy execution successful.
+2026-05-27T19:36:10.2964695+00:00 ContainerStream: [19:36:10 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-27T19:36:10.3254375+00:00 ContainerStream: [19:36:10 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-27T19:36:10.3255904+00:00 ContainerStream: [19:36:10 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 30.5352ms
+2026-05-27T19:36:10.3278768+00:00 ContainerStream: [19:36:10 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T19:36:10.3282520+00:00 ContainerStream: [19:36:10 INF] CORS policy execution successful.
+2026-05-27T19:36:10.3285111+00:00 ContainerStream: [19:36:10 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T19:36:10.4047010+00:00 ContainerStream: [19:36:10 INF] Setting HTTP status code 200.
+2026-05-27T19:36:10.4047753+00:00 ContainerStream: [19:36:10 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-27T19:36:10.4051628+00:00 ContainerStream: [19:36:10 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T19:36:10.4051765+00:00 ContainerStream: [19:36:10 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 77.3669ms
+2026-05-27T19:40:55.3961374+00:00 ContainerStream: [19:40:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:40:55.3972481+00:00 ContainerStream: [19:40:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.8246ms
+2026-05-27T19:40:55.3972655+00:00 ContainerStream: [19:40:55 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:45:55.6771280+00:00 ContainerStream: [19:45:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:45:55.6772628+00:00 ContainerStream: [19:45:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.2985ms
+2026-05-27T19:45:55.6773370+00:00 ContainerStream: [19:45:55 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:50:56.0166921+00:00 ContainerStream: [19:50:56 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:50:56.0167561+00:00 ContainerStream: [19:50:56 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.2919ms
+2026-05-27T19:50:56.0167605+00:00 ContainerStream: [19:50:56 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T19:55:56.2810954+00:00 ContainerStream: [19:55:56 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T19:55:56.2813277+00:00 ContainerStream: [19:55:56 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.3039ms
+2026-05-27T19:55:56.2813356+00:00 ContainerStream: [19:55:56 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:00:56.6429771+00:00 ContainerStream: [20:00:56 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T20:00:56.6444615+00:00 ContainerStream: [20:00:56 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.616ms
+2026-05-27T20:00:56.6444830+00:00 ContainerStream: [20:00:56 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:04:25.4530064+00:00 ContainerStatus: State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-27T20:04:25.8783152+00:00 ContainerStatus: State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-27T20:04:25.8849140+00:00 ContainerStatus: Container start method called.
+2026-05-27T20:04:25.8850745+00:00 ContainerStatus: State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod for localsza-api., DetailsLevel: INFO
+2026-05-27T20:04:25.8852533+00:00 ContainerStatus: Establishing network.
+2026-05-27T20:04:25.8855134+00:00 ContainerStatus: Pulling image: appsvc/dotnetcore:10.0_20260504.4.tuxprod.
+2026-05-27T20:04:26.3754281+00:00 ContainerStatus: Container is starting.
+2026-05-27T20:04:26.3770158+00:00 ContainerStatus: State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for localsza-api., DetailsLevel: INFO
+2026-05-27T20:04:26.3779146+00:00 ContainerStatus: Establishing user namespace if not established already.
+2026-05-27T20:04:26.3781136+00:00 ContainerStatus: Establishing network if not established already.
+2026-05-27T20:04:26.3782939+00:00 ContainerStatus: Mounting volumes.
+2026-05-27T20:04:26.3830571+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:04:26.3904397+00:00 ContainerStatus: Nested mountpoint volatile/logs
+2026-05-27T20:04:26.3952616+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:04:26.3969923+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:04:26.4032848+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:04:26.4055779+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:04:26.4119297+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:04:26.6356038+00:00 ContainerStatus: State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for localsza-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-27T20:04:26.6467703+00:00 ContainerStatus: Creating container.
+2026-05-27T20:04:26.6470375+00:00 ContainerStatus: Creating pipes for streaming container io.
+2026-05-27T20:04:26.6472162+00:00 ContainerStatus: Creating stdout named pipe at /podr/container/pipe/5ff58c6a1d32_localsza-api/stdout_50c4ce8b45e54250a0eddd0a8bcbabbf.
+2026-05-27T20:04:26.6475837+00:00 ContainerStatus: Successfully created stdout named pipe at: /podr/container/pipe/5ff58c6a1d32_localsza-api/stdout_50c4ce8b45e54250a0eddd0a8bcbabbf.
+2026-05-27T20:04:26.6477125+00:00 ContainerStatus: Opening named pipe /podr/container/pipe/5ff58c6a1d32_localsza-api/stdout_50c4ce8b45e54250a0eddd0a8bcbabbf for reading in non-blocking mode.
+2026-05-27T20:04:26.6478798+00:00 ContainerStatus: Successfully opened named pipe: /podr/container/pipe/5ff58c6a1d32_localsza-api/stdout_50c4ce8b45e54250a0eddd0a8bcbabbf.
+2026-05-27T20:04:26.6479970+00:00 ContainerStatus: Successfully removed non-blocking flag from /podr/container/pipe/5ff58c6a1d32_localsza-api/stdout_50c4ce8b45e54250a0eddd0a8bcbabbf.
+2026-05-27T20:04:26.6482190+00:00 ContainerStatus: Creating stderr named pipe at /podr/container/pipe/5ff58c6a1d32_localsza-api/stderr_cf66869e089b420eb5fceb0792b5f397.
+2026-05-27T20:04:26.6483928+00:00 ContainerStatus: Successfully created stderr named pipe at: /podr/container/pipe/5ff58c6a1d32_localsza-api/stderr_cf66869e089b420eb5fceb0792b5f397.
+2026-05-27T20:04:26.6485128+00:00 ContainerStatus: Opening named pipe /podr/container/pipe/5ff58c6a1d32_localsza-api/stderr_cf66869e089b420eb5fceb0792b5f397 for reading in non-blocking mode.
+2026-05-27T20:04:26.6600055+00:00 ContainerStatus: Successfully opened named pipe: /podr/container/pipe/5ff58c6a1d32_localsza-api/stderr_cf66869e089b420eb5fceb0792b5f397.
+2026-05-27T20:04:26.6602819+00:00 ContainerStatus: Successfully removed non-blocking flag from /podr/container/pipe/5ff58c6a1d32_localsza-api/stderr_cf66869e089b420eb5fceb0792b5f397.
+2026-05-27T20:04:26.6609995+00:00 ContainerStatus: Creating container with image: appsvc/dotnetcore:10.0_20260504.4.tuxprod from registry: 10.1.0.11:13209 and fully qualified image name: 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod
+2026-05-27T20:04:27.4128057+00:00 ContainerStatus: Starting container: 5ff58c6a1d32_localsza-api.
+2026-05-27T20:04:27.4354534+00:00 ContainerStatus: Starting watchers and probes.
+2026-05-27T20:04:27.4359401+00:00 ContainerStatus: Starting metrics collection.
+2026-05-27T20:04:27.4395542+00:00 ContainerStatus: Container is running.
+2026-05-27T20:04:27.4397249+00:00 ContainerStatus: State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-27T20:04:27.4693020+00:00 ContainerStatus: Container start method finished after 1583 ms.
+2026-05-27T20:04:27.4710273+00:00 ContainerStatus: State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-27T20:04:27.4710906+00:00 ContainerStatus: State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-27T20:04:27.4786468+00:00 ContainerStream:    _____                               
+2026-05-27T20:04:27.4788814+00:00 ContainerStream:   /  _  \ __________ _________   ____  
+2026-05-27T20:04:27.4788956+00:00 ContainerStream:  /  /_\  \\___   /  |  \_  __ \_/ __ \ 
+2026-05-27T20:04:27.4788996+00:00 ContainerStream: /    |    \/    /|  |  /|  | \/\  ___/ 
+2026-05-27T20:04:27.4789065+00:00 ContainerStream: \____|__  /_____ \____/ |__|    \___  >
+2026-05-27T20:04:27.4789122+00:00 ContainerStream:         \/      \/                  \/ 
+2026-05-27T20:04:27.4789194+00:00 ContainerStream: A P P   S E R V I C E   O N   L I N U X
+2026-05-27T20:04:27.4789229+00:00 ContainerStream: 
+2026-05-27T20:04:27.4789275+00:00 ContainerStream: Documentation       : http://aka.ms/webapp-linux
+2026-05-27T20:04:27.4789315+00:00 ContainerStream: Dotnet quickstart   : https://aka.ms/dotnet-qs
+2026-05-27T20:04:27.4789358+00:00 ContainerStream: ASP .NETCore Version: 10.0.7
+2026-05-27T20:04:27.4789395+00:00 ContainerStream: Instance Name       : ln0xsdlwk000G2Z
+2026-05-27T20:04:27.4789498+00:00 ContainerStream: Instance Id         : 1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c
+2026-05-27T20:04:27.4789536+00:00 ContainerStream: 
+2026-05-27T20:04:27.4789574+00:00 ContainerStream: Note: Any data outside '/home' is not persisted
+2026-05-27T20:04:28.5009740+00:00 ContainerStream:  * Starting OpenBSD Secure Shell server sshd
+2026-05-27T20:04:28.5161337+00:00 ContainerStream:    ...done.
+2026-05-27T20:04:28.5204846+00:00 ContainerStream: WEBSITES_INCLUDE_CLOUD_CERTS is not set to true.
+2026-05-27T20:04:28.5402159+00:00 ContainerStream: Updating certificates in /etc/ssl/certs...
+2026-05-27T20:04:29.9632749+00:00 ContainerStream: [20:04:29 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T20:04:29.9652714+00:00 ContainerStream: [20:04:29 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 1.8949ms
+2026-05-27T20:04:29.9681335+00:00 ContainerStream: [20:04:29 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:04:32.8196541+00:00 ContainerStream: rehash: warning: skipping duplicate certificate in SSLcom-TLS-Root-2022-ECC.pem
+2026-05-27T20:04:32.8199893+00:00 ContainerStream: rehash: warning: skipping duplicate certificate in SSLcom-TLS-Root-2022-RSA.pem
+2026-05-27T20:04:32.9516022+00:00 ContainerStream: rehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL
+2026-05-27T20:04:32.9793724+00:00 ContainerStream: 4 added, 0 removed; done.
+2026-05-27T20:04:32.9794697+00:00 ContainerStream: Running hooks in /etc/ca-certificates/update.d...
+2026-05-27T20:04:32.9877552+00:00 ContainerStream: done.
+2026-05-27T20:04:33.0021340+00:00 ContainerStream: CA certificates copied and updated successfully.
+2026-05-27T20:04:33.1014548+00:00 ContainerStream:  * Starting periodic command scheduler cron
+2026-05-27T20:04:33.1090967+00:00 ContainerStream:    ...done.
+2026-05-27T20:04:33.1128047+00:00 ContainerStream: Running oryx create-script -appPath /home/site/wwwroot -output /opt/startup/startup.sh -defaultAppFilePath /defaulthome/hostingstart/hostingstart.dll     -bindPort 8080 -bindPort2 '' -userStartupCommand 'dotnet LocalsZaApi.dll' 
+2026-05-27T20:04:33.2268096+00:00 ContainerStream: Could not find build manifest file at '/home/site/wwwroot/oryx-manifest.toml'
+2026-05-27T20:04:33.2297119+00:00 ContainerStream: Could not find operation ID in manifest. Generating an operation id...
+2026-05-27T20:04:33.2297689+00:00 ContainerStream: Build Operation ID: 6a57de20-3353-4908-8acc-96c196386216
+2026-05-27T20:04:33.8936294+00:00 ContainerStream: 
+2026-05-27T20:04:33.8938205+00:00 ContainerStream: Agent extension disabled
+2026-05-27T20:04:33.8938907+00:00 ContainerStream: Before if loop >> DotNet Runtime 
+2026-05-27T20:04:34.0761642+00:00 ContainerStream: DotNet Runtime 10.0Writing output script to '/opt/startup/startup.sh'
+2026-05-27T20:04:34.2651776+00:00 ContainerStream: Running user provided startup command...
+2026-05-27T20:04:36.1827136+00:00 ContainerStream: [20:04:36 INF] Now listening on: http://[::]:8080
+2026-05-27T20:04:36.1859414+00:00 ContainerStream: [20:04:36 INF] Application started. Press Ctrl+C to shut down.
+2026-05-27T20:04:36.1866975+00:00 ContainerStream: [20:04:36 INF] Hosting environment: Production
+2026-05-27T20:04:36.1868692+00:00 ContainerStream: [20:04:36 INF] Content root path: /home/site/wwwroot
+2026-05-27T20:04:36.5726023+00:00 ContainerStream: [20:04:36 INF] Request starting HTTP/1.1 GET http://169.254.129.2:8080/robots933456.txt - null null
+2026-05-27T20:04:36.8261087+00:00 ContainerStream: [20:04:36 WRN] Failed to determine the https port for redirect.
+2026-05-27T20:04:36.9944033+00:00 ContainerStatus: Site startup probe succeeded after 9.5224282 seconds.
+2026-05-27T20:04:36.9971273+00:00 ContainerStream: [20:04:36 INF] Request finished HTTP/1.1 GET http://169.254.129.2:8080/robots933456.txt - 404 0 null 430.1464ms
+2026-05-27T20:04:37.0067374+00:00 ContainerStream: [20:04:37 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://169.254.129.2:8080/robots933456.txt, Response status code: 404
+2026-05-27T20:04:37.0645428+00:00 ContainerStatus: State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 9.5224282 seconds., DetailsLevel: INFO
+2026-05-27T20:04:37.1747056+00:00 ContainerStatus: Site is running with deployment version: 418ebd70-fa75-4fec-86fc-00b5f6fd3278
+2026-05-27T20:04:37.1751914+00:00 ContainerStatus: Site started.
+2026-05-27T20:04:37.1756970+00:00 ContainerStatus: State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/27/2026 20:04:37 (UTC), DetailsLevel: INFO
+========== New Cold Start Attempt (2026-05-27T20:04:57.2614500+00:00) ==========
+2026-05-27T20:04:57.2614500+00:00 ContainerStatus: State: Stopping, Action: StoppingSite, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/27/2026 19:15:47 (UTC), DetailsLevel: INFO
+2026-05-27T20:04:57.2632977+00:00 ContainerStatus: State: Stopping, Action: StoppingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/27/2026 19:15:47 (UTC), DetailsLevel: INFO
+2026-05-27T20:04:57.2634984+00:00 ContainerStatus: Container is terminating. Grace period: 5 seconds.
+2026-05-27T20:04:57.2682000+00:00 ContainerStatus: Stop and delete container. Retry count = 0
+2026-05-27T20:04:57.2683717+00:00 ContainerStatus: Stopping container: ae9208f6b287_localsza-api.
+2026-05-27T20:05:02.8715025+00:00 ContainerStatus: Deleting container: ae9208f6b287_localsza-api. Retry count = 0
+2026-05-27T20:05:02.9576733+00:00 ContainerStatus: Container spec TerminationMessagePolicy  path 
+2026-05-27T20:05:02.9582080+00:00 ContainerStatus: Container is terminated. Total time elapsed: 5694 ms.
+2026-05-27T20:05:02.9590870+00:00 ContainerStatus: Site: localsza-api stopped.
+2026-05-27T20:05:09.5662117+00:00 ContainerStream: [20:05:09 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/health - null null
+2026-05-27T20:05:09.5676799+00:00 ContainerStream: [20:05:09 INF] Executing endpoint 'HTTP: GET /health'
+2026-05-27T20:05:09.5715334+00:00 ContainerStream: [20:05:09 INF] Setting HTTP status code 200.
+2026-05-27T20:05:09.5791435+00:00 ContainerStream: [20:05:09 INF] Writing value of type '<>f__AnonymousType23`2' as Json.
+2026-05-27T20:05:09.5842324+00:00 ContainerStream: [20:05:09 INF] Executed endpoint 'HTTP: GET /health'
+2026-05-27T20:05:09.5852400+00:00 ContainerStream: [20:05:09 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/health - 200 null application/json; charset=utf-8 22.2167ms
+2026-05-27T20:05:56.9847806+00:00 ContainerStream: [20:05:56 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T20:05:56.9902789+00:00 ContainerStream: [20:05:56 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 5.94ms
+2026-05-27T20:05:56.9916947+00:00 ContainerStream: [20:05:56 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:10:57.2967356+00:00 ContainerStream: [20:10:57 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T20:10:57.2983561+00:00 ContainerStream: [20:10:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 1.8937ms
+2026-05-27T20:10:57.2997267+00:00 ContainerStream: [20:10:57 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:12:36.7052925+00:00 ContainerStream: [20:12:36 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-27T20:12:36.7100581+00:00 ContainerStream: [20:12:36 INF] CORS policy execution successful.
+2026-05-27T20:12:36.7125735+00:00 ContainerStream: [20:12:36 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 7.3263ms
+2026-05-27T20:12:36.7656902+00:00 ContainerStream: [20:12:36 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 57
+2026-05-27T20:12:36.7696818+00:00 ContainerStream: [20:12:36 INF] CORS policy execution successful.
+2026-05-27T20:12:36.7701328+00:00 ContainerStream: [20:12:36 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T20:12:36.7983179+00:00 ContainerStream: [20:12:36 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T20:12:36.7995521+00:00 ContainerStream: [20:12:36 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 200 null application/json; charset=utf-8 33.9299ms
+2026-05-27T20:12:37.3586019+00:00 ContainerStream: [20:12:37 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:12:37.3586757+00:00 ContainerStream: [20:12:37 INF] CORS policy execution successful.
+2026-05-27T20:12:37.3586804+00:00 ContainerStream: [20:12:37 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 1.3181ms
+2026-05-27T20:12:37.4165272+00:00 ContainerStream: [20:12:37 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:12:37.4165954+00:00 ContainerStream: [20:12:37 INF] CORS policy execution successful.
+2026-05-27T20:12:37.4171441+00:00 ContainerStream: [20:12:37 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 1.3129ms
+2026-05-27T20:12:37.4685817+00:00 ContainerStream: [20:12:37 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:12:37.4691642+00:00 ContainerStream: [20:12:37 INF] CORS policy execution successful.
+2026-05-27T20:12:37.4718267+00:00 ContainerStream: [20:12:37 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:12:38.8992093+00:00 ContainerStream: [20:12:38 INF] Setting HTTP status code 200.
+2026-05-27T20:12:38.9011850+00:00 ContainerStream: [20:12:38 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-27T20:12:38.9117327+00:00 ContainerStream: [20:12:38 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:12:38.9149498+00:00 ContainerStream: [20:12:38 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 1444.8152ms
+2026-05-27T20:12:38.9679235+00:00 ContainerStream: [20:12:38 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:12:38.9686889+00:00 ContainerStream: [20:12:38 INF] CORS policy execution successful.
+2026-05-27T20:12:38.9692107+00:00 ContainerStream: [20:12:38 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:12:39.0428545+00:00 ContainerStream: [20:12:39 INF] Setting HTTP status code 200.
+2026-05-27T20:12:39.0431717+00:00 ContainerStream: [20:12:39 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-27T20:12:39.0449798+00:00 ContainerStream: [20:12:39 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:12:39.0461548+00:00 ContainerStream: [20:12:39 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 77.3226ms
+2026-05-27T20:12:39.8915336+00:00 ContainerStream: [20:12:39 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:12:39.8924532+00:00 ContainerStream: [20:12:39 INF] CORS policy execution successful.
+2026-05-27T20:12:39.8949137+00:00 ContainerStream: [20:12:39 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:12:39.8949575+00:00 ContainerStream: [20:12:39 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 3.0881ms
+2026-05-27T20:12:39.8949619+00:00 ContainerStream: [20:12:39 INF] CORS policy execution successful.
+2026-05-27T20:12:39.8949647+00:00 ContainerStream: [20:12:39 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.4481ms
+2026-05-27T20:12:39.8949673+00:00 ContainerStream: [20:12:39 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:12:39.8957210+00:00 ContainerStream: [20:12:39 INF] CORS policy execution successful.
+2026-05-27T20:12:39.8959622+00:00 ContainerStream: [20:12:39 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 3.0054ms
+2026-05-27T20:12:39.9325675+00:00 ContainerStream: [20:12:39 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:12:39.9333186+00:00 ContainerStream: [20:12:39 INF] CORS policy execution successful.
+2026-05-27T20:12:39.9333345+00:00 ContainerStream: [20:12:39 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.7854ms
+2026-05-27T20:12:39.9351673+00:00 ContainerStream: [20:12:39 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:12:39.9351900+00:00 ContainerStream: [20:12:39 INF] CORS policy execution successful.
+2026-05-27T20:12:39.9357499+00:00 ContainerStream: [20:12:39 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:12:39.9532284+00:00 ContainerStream: [20:12:39 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:12:39.9539393+00:00 ContainerStream: [20:12:39 INF] CORS policy execution successful.
+2026-05-27T20:12:39.9565888+00:00 ContainerStream: [20:12:39 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:12:40.1178970+00:00 ContainerStream: [20:12:40 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:12:40.1179668+00:00 ContainerStream: [20:12:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 163.32ms
+2026-05-27T20:12:40.1550237+00:00 ContainerStream: [20:12:40 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:12:40.1557360+00:00 ContainerStream: [20:12:40 INF] CORS policy execution successful.
+2026-05-27T20:12:40.1557598+00:00 ContainerStream: [20:12:40 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:12:40.1899706+00:00 ContainerStream: [20:12:40 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:12:40.1913983+00:00 ContainerStream: [20:12:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 35.1843ms
+2026-05-27T20:12:40.2415361+00:00 ContainerStream: [20:12:40 INF] Setting HTTP status code 200.
+2026-05-27T20:12:40.2459039+00:00 ContainerStream: [20:12:40 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-27T20:12:40.2529766+00:00 ContainerStream: [20:12:40 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:12:40.2543103+00:00 ContainerStream: [20:12:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 318.0629ms
+2026-05-27T20:12:40.2896019+00:00 ContainerStream: [20:12:40 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:12:40.2896694+00:00 ContainerStream: [20:12:40 INF] CORS policy execution successful.
+2026-05-27T20:12:40.2896741+00:00 ContainerStream: [20:12:40 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:12:40.4070210+00:00 ContainerStream: [20:12:40 INF] Setting HTTP status code 200.
+2026-05-27T20:12:40.4071480+00:00 ContainerStream: [20:12:40 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-27T20:12:40.4071527+00:00 ContainerStream: [20:12:40 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:12:40.4071564+00:00 ContainerStream: [20:12:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 118.946ms
+2026-05-27T20:12:43.8439850+00:00 ContainerStream: [20:12:43 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/ - null null
+2026-05-27T20:12:43.8468251+00:00 ContainerStream: [20:12:43 INF] CORS policy execution successful.
+2026-05-27T20:12:43.8469066+00:00 ContainerStream: [20:12:43 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/ - 204 null null 2.2856ms
+2026-05-27T20:12:43.8857339+00:00 ContainerStream: [20:12:43 INF] Request starting HTTP/1.1 DELETE http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/ - null null
+2026-05-27T20:12:43.8857904+00:00 ContainerStream: [20:12:43 INF] CORS policy execution successful.
+2026-05-27T20:12:43.8858037+00:00 ContainerStream: [20:12:43 INF] Executing endpoint '405 HTTP Method Not Supported'
+2026-05-27T20:12:43.8858063+00:00 ContainerStream: [20:12:43 INF] Executed endpoint '405 HTTP Method Not Supported'
+2026-05-27T20:12:43.8863891+00:00 ContainerStream: [20:12:43 INF] Request finished HTTP/1.1 DELETE https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/ - 405 0 null 1.2582ms
+2026-05-27T20:13:02.3267529+00:00 ContainerStream: [20:13:02 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-27T20:13:02.3268150+00:00 ContainerStream: [20:13:02 INF] CORS policy execution successful.
+2026-05-27T20:13:02.3268192+00:00 ContainerStream: [20:13:02 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 0.8325ms
+2026-05-27T20:13:02.3722997+00:00 ContainerStream: [20:13:02 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 52
+2026-05-27T20:13:02.3728362+00:00 ContainerStream: [20:13:02 INF] CORS policy execution successful.
+2026-05-27T20:13:02.3728669+00:00 ContainerStream: [20:13:02 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T20:13:02.3762526+00:00 ContainerStream: [20:13:02 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T20:13:02.3769461+00:00 ContainerStream: [20:13:02 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 401 null application/json; charset=utf-8 4.2223ms
+2026-05-27T20:13:10.7466700+00:00 ContainerStream: [20:13:10 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-27T20:13:10.7467222+00:00 ContainerStream: [20:13:10 INF] CORS policy execution successful.
+2026-05-27T20:13:10.7476916+00:00 ContainerStream: [20:13:10 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 0.7494ms
+2026-05-27T20:13:10.7815390+00:00 ContainerStream: [20:13:10 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 57
+2026-05-27T20:13:10.7820526+00:00 ContainerStream: [20:13:10 INF] CORS policy execution successful.
+2026-05-27T20:13:10.7820650+00:00 ContainerStream: [20:13:10 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T20:13:10.7828701+00:00 ContainerStream: [20:13:10 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-27T20:13:10.7831324+00:00 ContainerStream: [20:13:10 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 200 null application/json; charset=utf-8 1.5834ms
+2026-05-27T20:13:11.0203151+00:00 ContainerStream: [20:13:11 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:13:11.0203695+00:00 ContainerStream: [20:13:11 INF] CORS policy execution successful.
+2026-05-27T20:13:11.0203743+00:00 ContainerStream: [20:13:11 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.5592ms
+2026-05-27T20:13:11.0218748+00:00 ContainerStream: [20:13:11 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:13:11.0219034+00:00 ContainerStream: [20:13:11 INF] CORS policy execution successful.
+2026-05-27T20:13:11.0219070+00:00 ContainerStream: [20:13:11 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.3409ms
+2026-05-27T20:13:11.0641117+00:00 ContainerStream: [20:13:11 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:13:11.0641736+00:00 ContainerStream: [20:13:11 INF] CORS policy execution successful.
+2026-05-27T20:13:11.0641775+00:00 ContainerStream: [20:13:11 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:13:11.1545233+00:00 ContainerStream: [20:13:11 INF] Setting HTTP status code 200.
+2026-05-27T20:13:11.1559141+00:00 ContainerStream: [20:13:11 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-27T20:13:11.1616470+00:00 ContainerStream: [20:13:11 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:13:11.1627496+00:00 ContainerStream: [20:13:11 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 100.568ms
+2026-05-27T20:13:11.2120815+00:00 ContainerStream: [20:13:11 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-27T20:13:11.2121532+00:00 ContainerStream: [20:13:11 INF] CORS policy execution successful.
+2026-05-27T20:13:11.2144553+00:00 ContainerStream: [20:13:11 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:13:11.2748088+00:00 ContainerStream: [20:13:11 INF] Setting HTTP status code 200.
+2026-05-27T20:13:11.2748805+00:00 ContainerStream: [20:13:11 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-27T20:13:11.2765290+00:00 ContainerStream: [20:13:11 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-27T20:13:11.2770686+00:00 ContainerStream: [20:13:11 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 65.3545ms
+2026-05-27T20:13:12.4710384+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:13:12.4719361+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.4719738+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 1.0602ms
+2026-05-27T20:13:12.4767013+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:13:12.4772409+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.4776985+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 1.0966ms
+2026-05-27T20:13:12.4798573+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:13:12.4798973+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.4799006+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.5294ms
+2026-05-27T20:13:12.4936370+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:13:12.4938327+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.4940660+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.579ms
+2026-05-27T20:13:12.5142093+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:13:12.5149427+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.5150314+00:00 ContainerStream: [20:13:12 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:13:12.5203894+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:13:12.5204294+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.5204337+00:00 ContainerStream: [20:13:12 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:13:12.5528950+00:00 ContainerStream: [20:13:12 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:13:12.5540916+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 40.0122ms
+2026-05-27T20:13:12.6041331+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-27T20:13:12.6046493+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.6046658+00:00 ContainerStream: [20:13:12 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:13:12.6617516+00:00 ContainerStream: [20:13:12 INF] Setting HTTP status code 200.
+2026-05-27T20:13:12.6628998+00:00 ContainerStream: [20:13:12 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-27T20:13:12.6629298+00:00 ContainerStream: [20:13:12 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:13:12.6629342+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 143.7316ms
+2026-05-27T20:13:12.6862541+00:00 ContainerStream: [20:13:12 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-27T20:13:12.6909094+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 86.7898ms
+2026-05-27T20:13:12.7143382+00:00 ContainerStream: [20:13:12 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-27T20:13:12.7155412+00:00 ContainerStream: [20:13:12 INF] CORS policy execution successful.
+2026-05-27T20:13:12.7191897+00:00 ContainerStream: [20:13:12 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:13:12.8347211+00:00 ContainerStream: [20:13:12 INF] Setting HTTP status code 200.
+2026-05-27T20:13:12.8371165+00:00 ContainerStream: [20:13:12 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-27T20:13:12.8371600+00:00 ContainerStream: [20:13:12 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-27T20:13:12.8371664+00:00 ContainerStream: [20:13:12 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 124.0255ms
+2026-05-27T20:15:57.6734244+00:00 ContainerStream: [20:15:57 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T20:15:57.6734927+00:00 ContainerStream: [20:15:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.4357ms
+2026-05-27T20:15:57.6746079+00:00 ContainerStream: [20:15:57 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:20:55.9363985+00:00 ContainerStatus: State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-27T20:20:56.3760795+00:00 ContainerStatus: State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-27T20:20:56.3763020+00:00 ContainerStatus: Container start method called.
+2026-05-27T20:20:56.3764135+00:00 ContainerStatus: State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod for localsza-api., DetailsLevel: INFO
+2026-05-27T20:20:56.3765583+00:00 ContainerStatus: Establishing network.
+2026-05-27T20:20:56.3767206+00:00 ContainerStatus: Pulling image: appsvc/dotnetcore:10.0_20260504.4.tuxprod.
+2026-05-27T20:20:56.8394818+00:00 ContainerStatus: Container is starting.
+2026-05-27T20:20:56.8405696+00:00 ContainerStatus: State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for localsza-api., DetailsLevel: INFO
+2026-05-27T20:20:56.8410370+00:00 ContainerStatus: Establishing user namespace if not established already.
+2026-05-27T20:20:56.8412940+00:00 ContainerStatus: Establishing network if not established already.
+2026-05-27T20:20:56.8425543+00:00 ContainerStatus: Mounting volumes.
+2026-05-27T20:20:56.8434942+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:20:56.8451398+00:00 ContainerStatus: Nested mountpoint volatile/logs
+2026-05-27T20:20:56.8647036+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:20:56.8671057+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:20:56.8703289+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:20:56.8733612+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:20:56.8768367+00:00 ContainerStatus: Nested mountpoint 
+2026-05-27T20:20:57.1552825+00:00 ContainerStatus: State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for localsza-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-27T20:20:57.1556662+00:00 ContainerStatus: Creating container.
+2026-05-27T20:20:57.1558372+00:00 ContainerStatus: Creating pipes for streaming container io.
+2026-05-27T20:20:57.1559798+00:00 ContainerStatus: Creating stdout named pipe at /podr/container/pipe/494672489779_localsza-api/stdout_52240fdcd2ac402da3c23fff676d6759.
+2026-05-27T20:20:57.1563450+00:00 ContainerStatus: Successfully created stdout named pipe at: /podr/container/pipe/494672489779_localsza-api/stdout_52240fdcd2ac402da3c23fff676d6759.
+2026-05-27T20:20:57.1564699+00:00 ContainerStatus: Opening named pipe /podr/container/pipe/494672489779_localsza-api/stdout_52240fdcd2ac402da3c23fff676d6759 for reading in non-blocking mode.
+2026-05-27T20:20:57.1566179+00:00 ContainerStatus: Successfully opened named pipe: /podr/container/pipe/494672489779_localsza-api/stdout_52240fdcd2ac402da3c23fff676d6759.
+2026-05-27T20:20:57.1567597+00:00 ContainerStatus: Successfully removed non-blocking flag from /podr/container/pipe/494672489779_localsza-api/stdout_52240fdcd2ac402da3c23fff676d6759.
+2026-05-27T20:20:57.1742056+00:00 ContainerStatus: Creating stderr named pipe at /podr/container/pipe/494672489779_localsza-api/stderr_00180a7b878440e084cf18e1fba6e0eb.
+2026-05-27T20:20:57.1749034+00:00 ContainerStatus: Successfully created stderr named pipe at: /podr/container/pipe/494672489779_localsza-api/stderr_00180a7b878440e084cf18e1fba6e0eb.
+2026-05-27T20:20:57.1750679+00:00 ContainerStatus: Opening named pipe /podr/container/pipe/494672489779_localsza-api/stderr_00180a7b878440e084cf18e1fba6e0eb for reading in non-blocking mode.
+2026-05-27T20:20:57.1752746+00:00 ContainerStatus: Successfully opened named pipe: /podr/container/pipe/494672489779_localsza-api/stderr_00180a7b878440e084cf18e1fba6e0eb.
+2026-05-27T20:20:57.1754267+00:00 ContainerStatus: Successfully removed non-blocking flag from /podr/container/pipe/494672489779_localsza-api/stderr_00180a7b878440e084cf18e1fba6e0eb.
+2026-05-27T20:20:57.1757130+00:00 ContainerStatus: Creating container with image: appsvc/dotnetcore:10.0_20260504.4.tuxprod from registry: 10.1.0.11:13209 and fully qualified image name: 10.1.0.11:13209/appsvc/dotnetcore:10.0_20260504.4.tuxprod
+2026-05-27T20:20:57.3883909+00:00 ContainerStatus: Starting container: 494672489779_localsza-api.
+2026-05-27T20:20:57.4206723+00:00 ContainerStatus: Starting watchers and probes.
+2026-05-27T20:20:57.4232926+00:00 ContainerStatus: Starting metrics collection.
+2026-05-27T20:20:57.4261394+00:00 ContainerStatus: Container is running.
+2026-05-27T20:20:57.4275456+00:00 ContainerStatus: State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-27T20:20:57.4934996+00:00 ContainerStream:    _____                               
+2026-05-27T20:20:57.4937241+00:00 ContainerStream:   /  _  \ __________ _________   ____  
+2026-05-27T20:20:57.4937329+00:00 ContainerStream:  /  /_\  \\___   /  |  \_  __ \_/ __ \ 
+2026-05-27T20:20:57.4937364+00:00 ContainerStream: /    |    \/    /|  |  /|  | \/\  ___/ 
+2026-05-27T20:20:57.4937397+00:00 ContainerStream: \____|__  /_____ \____/ |__|    \___  >
+2026-05-27T20:20:57.4937439+00:00 ContainerStream:         \/      \/                  \/ 
+2026-05-27T20:20:57.4937511+00:00 ContainerStream: A P P   S E R V I C E   O N   L I N U X
+2026-05-27T20:20:57.4937550+00:00 ContainerStream: 
+2026-05-27T20:20:57.4937595+00:00 ContainerStream: Documentation       : http://aka.ms/webapp-linux
+2026-05-27T20:20:57.4937634+00:00 ContainerStream: Dotnet quickstart   : https://aka.ms/dotnet-qs
+2026-05-27T20:20:57.4937671+00:00 ContainerStream: ASP .NETCore Version: 10.0.7
+2026-05-27T20:20:57.4937704+00:00 ContainerStream: Instance Name       : ln0xsdlwk000G2Z
+2026-05-27T20:20:57.4937780+00:00 ContainerStream: Instance Id         : 1a769beec0849a4fb3b90993032464fec97ac38858e8351ff7292614b8143a4c
+2026-05-27T20:20:57.4937814+00:00 ContainerStream: 
+2026-05-27T20:20:57.4937850+00:00 ContainerStream: Note: Any data outside '/home' is not persisted
+2026-05-27T20:20:57.5052862+00:00 ContainerStatus: Container start method finished after 1128 ms.
+2026-05-27T20:20:57.5056819+00:00 ContainerStatus: State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container localsza-api successfully created and is running., DetailsLevel: INFO
+2026-05-27T20:20:57.5057366+00:00 ContainerStatus: State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-27T20:20:57.7534978+00:00 ContainerStream: [20:20:57 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:20:57.9046778+00:00 ContainerStream: [20:20:57 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-27T20:20:57.9053760+00:00 ContainerStream: [20:20:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.7872ms
+2026-05-27T20:20:57.9054857+00:00 ContainerStream: [20:20:57 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-27T20:20:58.1862514+00:00 ContainerStream:  * Starting OpenBSD Secure Shell server sshd
+2026-05-27T20:20:58.2007511+00:00 ContainerStream:    ...done.
+2026-05-27T20:20:58.2082056+00:00 ContainerStream: WEBSITES_INCLUDE_CLOUD_CERTS is not set to true.
+2026-05-27T20:20:58.2292431+00:00 ContainerStream: Updating certificates in /etc/ssl/certs...
+2026-05-27T20:21:02.7952609+00:00 ContainerStream: rehash: warning: skipping duplicate certificate in SSLcom-TLS-Root-2022-ECC.pem
+2026-05-27T20:21:02.7957352+00:00 ContainerStream: rehash: warning: skipping duplicate certificate in SSLcom-TLS-Root-2022-RSA.pem
+2026-05-27T20:21:02.9227089+00:00 ContainerStream: rehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL
+2026-05-27T20:21:02.9333417+00:00 ContainerStream: 4 added, 0 removed; done.
+2026-05-27T20:21:02.9339249+00:00 ContainerStream: Running hooks in /etc/ca-certificates/update.d...
+2026-05-27T20:21:02.9374953+00:00 ContainerStream: done.
+2026-05-27T20:21:02.9436361+00:00 ContainerStream: CA certificates copied and updated successfully.
+2026-05-27T20:21:02.9943250+00:00 ContainerStream:  * Starting periodic command scheduler cron
+2026-05-27T20:21:03.0015815+00:00 ContainerStream:    ...done.
+2026-05-27T20:21:03.0031477+00:00 ContainerStream: Running oryx create-script -appPath /home/site/wwwroot -output /opt/startup/startup.sh -defaultAppFilePath /defaulthome/hostingstart/hostingstart.dll     -bindPort 8080 -bindPort2 '' -userStartupCommand 'dotnet LocalsZaApi.dll' 
+2026-05-27T20:21:03.0228513+00:00 ContainerStream: Could not find build manifest file at '/home/site/wwwroot/oryx-manifest.toml'
+2026-05-27T20:21:03.0233968+00:00 ContainerStream: Could not find operation ID in manifest. Generating an operation id...
+2026-05-27T20:21:03.0239045+00:00 ContainerStream: Build Operation ID: 0563ce1b-d445-4991-bfea-2d2be9b1f8d4
+2026-05-27T20:21:03.6324787+00:00 ContainerStream: 
+2026-05-27T20:21:03.6333277+00:00 ContainerStream: Agent extension disabled
+2026-05-27T20:21:03.6334056+00:00 ContainerStream: Before if loop >> DotNet Runtime 
+2026-05-27T20:21:03.8073277+00:00 ContainerStream: DotNet Runtime 10.0Writing output script to '/opt/startup/startup.sh'
+2026-05-27T20:21:03.9899518+00:00 ContainerStream: Running user provided startup command...
+2026-05-27T20:21:05.9488336+00:00 ContainerStream: [20:21:05 INF] Now listening on: http://[::]:8080
+2026-05-27T20:21:05.9537757+00:00 ContainerStream: [20:21:05 INF] Application started. Press Ctrl+C to shut down.
+2026-05-27T20:21:05.9538253+00:00 ContainerStream: [20:21:05 INF] Hosting environment: Production
+2026-05-27T20:21:05.9538307+00:00 ContainerStream: [20:21:05 INF] Content root path: /home/site/wwwroot
+2026-05-27T20:21:06.6066331+00:00 ContainerStream: [20:21:06 INF] Request starting HTTP/1.1 GET http://169.254.129.3:8080/robots933456.txt - null null
+2026-05-27T20:21:06.9239675+00:00 ContainerStream: [20:21:06 WRN] Failed to determine the https port for redirect.
+2026-05-27T20:21:07.1191167+00:00 ContainerStatus: Site startup probe succeeded after 9.6035792 seconds.
+2026-05-27T20:21:07.1275256+00:00 ContainerStream: [20:21:07 INF] Request finished HTTP/1.1 GET http://169.254.129.3:8080/robots933456.txt - 404 0 null 517.9257ms
+2026-05-27T20:21:07.1342581+00:00 ContainerStream: [20:21:07 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://169.254.129.3:8080/robots933456.txt, Response status code: 404
+2026-05-27T20:21:07.2296173+00:00 ContainerStatus: State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 9.6035792 seconds., DetailsLevel: INFO
+2026-05-27T20:21:07.5432586+00:00 ContainerStatus: Site is running with deployment version: 1179f7da-6330-4be6-9876-ce86f486231b
+2026-05-27T20:21:07.5450065+00:00 ContainerStatus: Site started.
+2026-05-27T20:21:07.5476628+00:00 ContainerStatus: State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/27/2026 20:21:07 (UTC), DetailsLevel: INFO
+2026-05-27T20:21:07.5486850+00:00 ContainerStatus: Site is running with patch version DOTNETCORE 10.0.7

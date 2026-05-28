@@ -1,0 +1,6 @@
+<step title="Incoming Request" date="2026-05-20T09:28:10.801" instance="1a769b" url="/api/deployments/4e69e544-5366-4fcd-a098-52756ab5cd33/log" method="GET" type="request" pid="851,1,50" Accept="*/*" Host="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" User-Agent="AZURECLI/2.86.0 (MSI)" Accept-Encoding="gzip, deflate" Authorization="Bea..." x-ms-client-request-id="2b910039-542e-11f1-9207-7429af4340c0" X-ARR-LOG-ID="2b910039-542e-11f1-9207-7429af4340c0" CLIENT-IP="197.184.106.130:34030" X-SITE-DEPLOYMENT-ID="localsza-api" WAS-DEFAULT-HOSTNAME="localsza-api-a7eegch0fxfjh3at.scm.southafricanorth-01.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/deployments/4e69e544-5366-4fcd-a098-52756ab5cd33/log" X-Client-IP="197.184.106.130" X-Client-Port="34030" >
+  <step title="DeploymentService.GetLogEntry" date="2026-05-20T09:28:10.819" >
+    <step title="DeploymentManager.GetLogEntries(id:4e69e544-5366-4fcd-a098-52756ab5cd33)" date="2026-05-20T09:28:10.823" /><!-- duration: 44ms -->
+  </step><!-- duration: 64ms -->
+  <step title="Outgoing response" date="2026-05-20T09:28:10.904" type="response" statusCode="200" statusText="OK" /><!-- duration: 4ms -->
+</step><!-- duration: 110ms -->

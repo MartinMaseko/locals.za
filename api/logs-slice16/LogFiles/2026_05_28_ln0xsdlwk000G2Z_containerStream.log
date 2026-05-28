@@ -1,0 +1,660 @@
+2026-05-28T10:32:41.7200082Z [10:32:41 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - null null
+2026-05-28T10:32:41.7283349Z [10:32:41 INF] Executing endpoint 'HTTP: GET /api/stores'
+2026-05-28T10:32:43.0923974Z [10:32:43 INF] Setting HTTP status code 200.
+2026-05-28T10:32:43.0953978Z [10:32:43 INF] Writing value of type 'List`1' as Json.
+2026-05-28T10:32:43.1030674Z [10:32:43 INF] Executed endpoint 'HTTP: GET /api/stores'
+2026-05-28T10:32:43.1057589Z [10:32:43 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/stores - 200 null application/json; charset=utf-8 1385.3836ms
+2026-05-28T10:34:28.5603121Z [10:34:28 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-28T10:34:28.5652178Z [10:34:28 INF] CORS policy execution successful.
+2026-05-28T10:34:28.5667569Z [10:34:28 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 6.6258ms
+2026-05-28T10:34:28.5919104Z [10:34:28 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 57
+2026-05-28T10:34:28.5950138Z [10:34:28 INF] CORS policy execution successful.
+2026-05-28T10:34:28.5958345Z [10:34:28 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-28T10:34:28.6165434Z [10:34:28 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-28T10:34:28.6166661Z [10:34:28 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 200 null application/json; charset=utf-8 25.0097ms
+2026-05-28T10:34:28.9866111Z [10:34:28 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:28.9883291Z [10:34:28 INF] CORS policy execution successful.
+2026-05-28T10:34:28.9883477Z [10:34:28 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 1.4911ms
+2026-05-28T10:34:29.0170596Z [10:34:29 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:29.0186597Z [10:34:29 INF] CORS policy execution successful.
+2026-05-28T10:34:29.0203037Z [10:34:29 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 3.0979ms
+2026-05-28T10:34:29.0477969Z [10:34:29 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:29.0478413Z [10:34:29 INF] CORS policy execution successful.
+2026-05-28T10:34:29.0509915Z [10:34:29 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:29.3013914Z [10:34:29 INF] Setting HTTP status code 200.
+2026-05-28T10:34:29.3032808Z [10:34:29 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:34:29.3146157Z [10:34:29 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:29.3146762Z [10:34:29 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 267.4912ms
+2026-05-28T10:34:29.3603932Z [10:34:29 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:29.3604515Z [10:34:29 INF] CORS policy execution successful.
+2026-05-28T10:34:29.3604556Z [10:34:29 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:29.4586633Z [10:34:29 INF] Setting HTTP status code 200.
+2026-05-28T10:34:29.4587657Z [10:34:29 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:34:29.4614006Z [10:34:29 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:29.4629531Z [10:34:29 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 102.6006ms
+2026-05-28T10:34:34.2122834Z [10:34:34 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:34.2134992Z [10:34:34 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:34.2160056Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.2160576Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.2160617Z [10:34:34 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:34.2167099Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.2174688Z [10:34:34 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 6.3932ms
+2026-05-28T10:34:34.2189042Z [10:34:34 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 6.1791ms
+2026-05-28T10:34:34.2189445Z [10:34:34 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.7654ms
+2026-05-28T10:34:34.2616974Z [10:34:34 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:34.2617742Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.2635302Z [10:34:34 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.9077ms
+2026-05-28T10:34:34.2839202Z [10:34:34 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:34.2843935Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.2853883Z [10:34:34 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:34.2859319Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.2862337Z [10:34:34 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:34.2864513Z [10:34:34 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:34.4622314Z [10:34:34 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:34.4630323Z [10:34:34 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 178.4999ms
+2026-05-28T10:34:34.4963749Z [10:34:34 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:34.5022934Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.5023241Z [10:34:34 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:34.5315134Z [10:34:34 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:34.5322725Z [10:34:34 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 35.4684ms
+2026-05-28T10:34:34.6000544Z [10:34:34 INF] Setting HTTP status code 200.
+2026-05-28T10:34:34.6036497Z [10:34:34 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:34:34.6086467Z [10:34:34 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:34.6087993Z [10:34:34 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 323.4343ms
+2026-05-28T10:34:34.6322192Z [10:34:34 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:34.6328043Z [10:34:34 INF] CORS policy execution successful.
+2026-05-28T10:34:34.6334133Z [10:34:34 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:34.7585978Z [10:34:34 INF] Setting HTTP status code 200.
+2026-05-28T10:34:34.7586555Z [10:34:34 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:34:34.7586602Z [10:34:34 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:34.7586760Z [10:34:34 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 125.7559ms
+2026-05-28T10:34:37.8061498Z [10:34:37 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - null null
+2026-05-28T10:34:37.8068782Z [10:34:37 INF] CORS policy execution successful.
+2026-05-28T10:34:37.8069676Z [10:34:37 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - 204 null null 0.8715ms
+2026-05-28T10:34:37.8449151Z [10:34:37 INF] Request starting HTTP/1.1 DELETE http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - null null
+2026-05-28T10:34:37.8467544Z [10:34:37 INF] CORS policy execution successful.
+2026-05-28T10:34:37.8473568Z [10:34:37 INF] Executing endpoint 'HTTP: DELETE /api/admin/drivers/{driverId}'
+2026-05-28T10:34:37.9469349Z [10:34:37 INF] Executed endpoint 'HTTP: DELETE /api/admin/drivers/{driverId}'
+2026-05-28T10:34:38.0037020Z [10:34:37 ERR] Unhandled exception on DELETE /api/admin/drivers/driver-dlamini-002
+2026-05-28T10:34:38.0037745Z Microsoft.Azure.Cosmos.CosmosException: Response status code does not indicate success: NotFound (404); Substatus: 0; ActivityId: 1153676d-6548-41b9-aa76-55b96736acdc; Reason: (
+2026-05-28T10:34:38.0037790Z Errors : [
+2026-05-28T10:34:38.0037831Z   "Resource Not Found. Learn more: https://aka.ms/cosmosdb-tsg-not-found"
+2026-05-28T10:34:38.0037855Z ]
+2026-05-28T10:34:38.0037882Z );
+2026-05-28T10:34:38.0037965Z    at Microsoft.Azure.Cosmos.ClientContextCore.RunWithDiagnosticsHelperAsync[TResult](String containerName, String databaseName, OperationType operationType, ITrace trace, Func`2 task, Nullable`1 openTelemetry, RequestOptions requestOptions, Nullable`1 resourceType)
+2026-05-28T10:34:38.0038158Z    at Microsoft.Azure.Cosmos.ClientContextCore.OperationHelperWithRootTraceAsync[TResult](String operationName, String containerName, String databaseName, OperationType operationType, RequestOptions requestOptions, Func`2 task, Nullable`1 openTelemetry, TraceComponent traceComponent, TraceLevel traceLevel, Nullable`1 resourceType)
+2026-05-28T10:34:38.0038192Z    at LocalsZaApi.Services.CosmosService.DeleteAsync(String container, String id, String partitionKey) in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Services\CosmoService.cs:line 57
+2026-05-28T10:34:38.0038220Z    at LocalsZaApi.Endpoints.AdminEndpoints.<>c.<<MapAdminEndpoints>b__3_10>d.MoveNext() in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Endpoints\AdminEndpoints.cs:line 301
+2026-05-28T10:34:38.0038244Z --- End of stack trace from previous location ---
+2026-05-28T10:34:38.0038270Z    at Microsoft.AspNetCore.Http.RequestDelegateFactory.ExecuteTaskResult[T](Task`1 task, HttpContext httpContext)
+2026-05-28T10:34:38.0038298Z    at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+2026-05-28T10:34:38.0038330Z    at LocalsZaApi.Middleware.FirebaseAuthMiddleware.InvokeAsync(HttpContext context, FirebaseAuthService authService, IConfiguration config) in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Middleware\FirebaseAuthMiddleware.cs:line 60
+2026-05-28T10:34:38.0038358Z    at Program.<>c.<<<Main>$>b__0_3>d.MoveNext() in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Program.cs:line 65
+2026-05-28T10:34:38.0039462Z --- Cosmos Diagnostics ---{"Summary":{"DirectCalls":{"(404, 0)":1}},"name":"DeleteItemAsync","start datetime":"2026-05-28T10:34:37.887Z","duration in milliseconds":58.0957,"data":{"Client Configuration":{"Client Created Time Utc":"2026-05-28T10:32:42.0162231Z","MachineId":"hashedMachineName:99be40ad-0473-f0f6-67e2-3867669245dd","NumberOfClientsCreated":1,"NumberOfActiveClients":1,"ConnectionMode":"Direct","User Agent":"cosmos-netstandard-sdk/3.59.0|1|X64|Ubuntu 24.04.4 LTS|.NET 10.0.7|N|","ConnectionConfig":{"gw":"(cps:50, urto:6, p:False, httpf: False)","rntbd":"(cto: 5, icto: -1, mrpc: 30, mcpe: 65535, erd: True, pr: ReuseUnicastPort)","other":"(ed:False, be:False)"},"ConsistencyConfig":"(consistency: NotSet, readStrategy: NotSet, prgns:[], apprgn: )","ProcessorCount":2}},"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.RequestInvokerHandler","duration in milliseconds":52.304,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.DiagnosticsHandler","duration in milliseconds":48.2787,"data":{"System Info":{"systemHistory":[{"dateUtc":"2026-05-28T10:33:42.1258724Z","cpu":4.873,"memory":2658988.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1071,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":1},{"dateUtc":"2026-05-28T10:33:52.1276735Z","cpu":6.589,"memory":2656868.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.16,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":1},{"dateUtc":"2026-05-28T10:34:02.1283049Z","cpu":8.897,"memory":2648660.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1159,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":1},{"dateUtc":"2026-05-28T10:34:12.1289061Z","cpu":4.388,"memory":2643596.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1416,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":1},{"dateUtc":"2026-05-28T10:34:22.1295624Z","cpu":5.742,"memory":2643316.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1236,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":1},{"dateUtc":"2026-05-28T10:34:32.1302382Z","cpu":13.848,"memory":2633520.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1423,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":3}]}},"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.TelemetryHandler","duration in milliseconds":48.2568,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.RetryHandler","duration in milliseconds":48.2421,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.RouterHandler","duration in milliseconds":43.3848,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.TransportHandler","duration in milliseconds":43.3758,"children":[{"name":"Microsoft.Azure.Documents.ServerStoreModel Transport Request","duration in milliseconds":42.9029,"data":{"Client Side Request Stats":{"Id":"AggregatedClientSideRequestStatistics","ContactedReplicas":[{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14361/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735793p"},{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14068/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735794s"},{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14086/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831009815105s"},{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14306/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735792s"}],"RegionsContacted":[],"FailedReplicas":[],"AddressResolutionStatistics":[],"StoreResponseStatistics":[{"ResponseTimeUTC":"2026-05-28T10:34:37.9296775Z","DurationInMs":24.6352,"ResourceType":"Document","OperationType":"Delete","LocationEndpoint":"https://localsza-cosmos-southafricanorth.documents.azure.com/","StoreResult":{"ActivityId":"1153676d-6548-41b9-aa76-55b96736acdc","StatusCode":"NotFound","SubStatusCode":"Unknown","LSN":28,"PartitionKeyRangeId":"0","GlobalCommittedLSN":28,"GlobalNRegionCommittedGLSN":-1,"ItemLSN":-1,"UsingLocalLSN":false,"QuorumAckedLSN":28,"SessionToken":"-1#28","CurrentWriteQuorum":3,"CurrentReplicaSetSize":4,"NumberOfReadRegions":0,"IsValid":true,"StorePhysicalAddress":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14361/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735793p","RequestCharge":1.24,"RetryAfterInMs":null,"BELatencyInMs":"0.356","ReplicaHealthStatuses":["(port: 14361 | status: Connected | lkt: 05/28/2026 10:34:37)"],"transportRequestTimeline":{"requestTimeline":[{"event": "Created", "startTimeUtc": "2026-05-28T10:34:37.9050509Z", "durationInMs": 0.0504},{"event": "ChannelAcquisitionStarted", "startTimeUtc": "2026-05-28T10:34:37.9051013Z", "durationInMs": 18.9287},{"event": "Pipelined", "startTimeUtc": "2026-05-28T10:34:37.9240300Z", "durationInMs": 0.3612},{"event": "Transit Time", "startTimeUtc": "2026-05-28T10:34:37.9243912Z", "durationInMs": 2.3571},{"event": "Received", "startTimeUtc": "2026-05-28T10:34:37.9267483Z", "durationInMs": 0.211},{"event": "Completed", "startTimeUtc": "2026-05-28T10:34:37.9269593Z", "durationInMs": 0}],"serviceEndpointStats":{"inflightRequests":1,"openConnections":1},"connectionStats":{"waitforConnectionInit":"True","callsPendingReceive":0,"lastSendAttempt":"2026-05-28T10:34:37.9220353Z","lastSend":"2026-05-28T10:34:37.9221533Z","lastReceive":"2026-05-28T10:34:37.9226712Z"},"requestSizeInBytes":449,"responseMetadataSizeInBytes":183,"responseBodySizeInBytes":84},"TransportException":null}}]}}}]}]}]}]}]}]}]}
+2026-05-28T10:34:38.0066310Z [10:34:38 INF] Request finished HTTP/1.1 DELETE https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - 500 null application/json; charset=utf-8 161.6719ms
+2026-05-28T10:34:40.1381463Z [10:34:40 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:34:40.1382169Z [10:34:40 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:34:40.1382212Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.1382243Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.1382281Z [10:34:40 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.8071ms
+2026-05-28T10:34:40.1382320Z [10:34:40 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.8071ms
+2026-05-28T10:34:40.1382362Z [10:34:40 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:40.1382468Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.1382503Z [10:34:40 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.3049ms
+2026-05-28T10:34:40.1401869Z [10:34:40 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:40.1405026Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.1416959Z [10:34:40 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.8658ms
+2026-05-28T10:34:40.1906159Z [10:34:40 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:34:40.1906870Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.1912264Z [10:34:40 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:34:40.1912468Z [10:34:40 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:40.1912496Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.1912520Z [10:34:40 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:40.2529725Z [10:34:40 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:40.2535620Z [10:34:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 65.5032ms
+2026-05-28T10:34:40.3068563Z [10:34:40 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:40.3069214Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.3085621Z [10:34:40 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:40.3385691Z [10:34:40 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:40.3390572Z [10:34:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 32.5957ms
+2026-05-28T10:34:40.3543878Z [10:34:40 INF] Setting HTTP status code 200.
+2026-05-28T10:34:40.3675741Z [10:34:40 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:34:40.3742773Z [10:34:40 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:34:40.3743772Z [10:34:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 188.2649ms
+2026-05-28T10:34:40.4156855Z [10:34:40 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:34:40.4162763Z [10:34:40 INF] CORS policy execution successful.
+2026-05-28T10:34:40.4162921Z [10:34:40 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:34:40.4664096Z [10:34:40 INF] Setting HTTP status code 200.
+2026-05-28T10:34:40.4665622Z [10:34:40 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:34:40.4675350Z [10:34:40 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:34:40.4676404Z [10:34:40 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 52.1117ms
+2026-05-28T10:34:41.2663060Z [10:34:41 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:41.2704314Z [10:34:41 INF] CORS policy execution successful.
+2026-05-28T10:34:41.2705291Z [10:34:41 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 2.616ms
+2026-05-28T10:34:41.2732872Z [10:34:41 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:41.2733408Z [10:34:41 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:41.2733437Z [10:34:41 INF] CORS policy execution successful.
+2026-05-28T10:34:41.2733459Z [10:34:41 INF] CORS policy execution successful.
+2026-05-28T10:34:41.2733486Z [10:34:41 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.4325ms
+2026-05-28T10:34:41.2733508Z [10:34:41 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:41.3020648Z [10:34:41 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:41.3029804Z [10:34:41 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 30.2413ms
+2026-05-28T10:34:41.3061071Z [10:34:41 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:41.3065549Z [10:34:41 INF] CORS policy execution successful.
+2026-05-28T10:34:41.3068037Z [10:34:41 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:41.3405225Z [10:34:41 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:34:41.3409630Z [10:34:41 INF] CORS policy execution successful.
+2026-05-28T10:34:41.3410348Z [10:34:41 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:41.3675540Z [10:34:41 INF] Setting HTTP status code 200.
+2026-05-28T10:34:41.3676648Z [10:34:41 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:34:41.3680947Z [10:34:41 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:41.3684166Z [10:34:41 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 62.2508ms
+2026-05-28T10:34:41.3791722Z [10:34:41 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:34:41.3792422Z [10:34:41 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 37.554ms
+2026-05-28T10:34:41.4201656Z [10:34:41 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:34:41.4202447Z [10:34:41 INF] CORS policy execution successful.
+2026-05-28T10:34:41.4202496Z [10:34:41 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:41.4749007Z [10:34:41 INF] Setting HTTP status code 200.
+2026-05-28T10:34:41.4749718Z [10:34:41 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:34:41.4798994Z [10:34:41 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:34:41.4799670Z [10:34:41 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 70.926ms
+2026-05-28T10:34:44.9376660Z [10:34:44 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:44.9377405Z [10:34:44 INF] CORS policy execution successful.
+2026-05-28T10:34:44.9383696Z [10:34:44 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.9666ms
+2026-05-28T10:34:44.9405426Z [10:34:44 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:44.9411642Z [10:34:44 INF] CORS policy execution successful.
+2026-05-28T10:34:44.9411816Z [10:34:44 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.5096ms
+2026-05-28T10:34:44.9757607Z [10:34:44 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:44.9759033Z [10:34:44 INF] CORS policy execution successful.
+2026-05-28T10:34:44.9777220Z [10:34:44 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:45.0064306Z [10:34:45 INF] Setting HTTP status code 200.
+2026-05-28T10:34:45.0065536Z [10:34:45 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:34:45.0077127Z [10:34:45 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:45.0077558Z [10:34:45 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 32.1747ms
+2026-05-28T10:34:45.0558286Z [10:34:45 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:34:45.0563951Z [10:34:45 INF] CORS policy execution successful.
+2026-05-28T10:34:45.0564095Z [10:34:45 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:45.0857741Z [10:34:45 INF] Setting HTTP status code 200.
+2026-05-28T10:34:45.0858608Z [10:34:45 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:34:45.0869585Z [10:34:45 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:34:45.0870890Z [10:34:45 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 31.3499ms
+2026-05-28T10:34:53.7963517Z [10:34:53 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - null null
+2026-05-28T10:34:53.7968243Z [10:34:53 INF] CORS policy execution successful.
+2026-05-28T10:34:53.7968408Z [10:34:53 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - 204 null null 0.5125ms
+2026-05-28T10:34:53.8565767Z [10:34:53 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - application/json 29
+2026-05-28T10:34:53.8567363Z [10:34:53 INF] CORS policy execution successful.
+2026-05-28T10:34:53.8570991Z [10:34:53 INF] Executing endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:34:53.9278162Z [10:34:53 INF] Setting HTTP status code 404.
+2026-05-28T10:34:53.9278841Z [10:34:53 INF] Executed endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:34:53.9279680Z [10:34:53 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - 404 0 null 71.4901ms
+2026-05-28T10:35:07.5776052Z [10:35:07 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - null null
+2026-05-28T10:35:07.5776487Z [10:35:07 INF] CORS policy execution successful.
+2026-05-28T10:35:07.5776534Z [10:35:07 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - 204 null null 0.7684ms
+2026-05-28T10:35:07.5776661Z [10:35:07 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - null null
+2026-05-28T10:35:07.5776686Z [10:35:07 INF] CORS policy execution successful.
+2026-05-28T10:35:07.5776715Z [10:35:07 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - 204 null null 0.1815ms
+2026-05-28T10:35:07.6212343Z [10:35:07 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - null null
+2026-05-28T10:35:07.6218779Z [10:35:07 INF] CORS policy execution successful.
+2026-05-28T10:35:07.6218939Z [10:35:07 INF] Executing endpoint 'HTTP: GET /api/admin/pricing'
+2026-05-28T10:35:07.8001458Z [10:35:07 INF] Setting HTTP status code 200.
+2026-05-28T10:35:07.8017907Z [10:35:07 INF] Writing value of type 'PricingConfig' as Json.
+2026-05-28T10:35:07.8060751Z [10:35:07 INF] Executed endpoint 'HTTP: GET /api/admin/pricing'
+2026-05-28T10:35:07.8066305Z [10:35:07 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - 200 null application/json; charset=utf-8 185.524ms
+2026-05-28T10:35:07.8355802Z [10:35:07 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - null null
+2026-05-28T10:35:07.8361184Z [10:35:07 INF] CORS policy execution successful.
+2026-05-28T10:35:07.8361351Z [10:35:07 INF] Executing endpoint 'HTTP: GET /api/admin/pricing'
+2026-05-28T10:35:07.9063669Z [10:35:07 INF] Setting HTTP status code 200.
+2026-05-28T10:35:07.9064329Z [10:35:07 INF] Writing value of type 'PricingConfig' as Json.
+2026-05-28T10:35:07.9066279Z [10:35:07 INF] Executed endpoint 'HTTP: GET /api/admin/pricing'
+2026-05-28T10:35:07.9071343Z [10:35:07 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - 200 null application/json; charset=utf-8 71.2519ms
+2026-05-28T10:35:14.1860101Z [10:35:14 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - null null
+2026-05-28T10:35:14.1867621Z [10:35:14 INF] CORS policy execution successful.
+2026-05-28T10:35:14.1867840Z [10:35:14 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - 204 null null 0.5084ms
+2026-05-28T10:35:14.2160767Z [10:35:14 INF] Request starting HTTP/1.1 PUT http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - application/json 395
+2026-05-28T10:35:14.2165073Z [10:35:14 INF] CORS policy execution successful.
+2026-05-28T10:35:14.2167977Z [10:35:14 INF] Executing endpoint 'HTTP: PUT /api/admin/pricing'
+2026-05-28T10:35:14.3226332Z [10:35:14 INF] Setting HTTP status code 200.
+2026-05-28T10:35:14.3227351Z [10:35:14 INF] Writing value of type 'PricingConfig' as Json.
+2026-05-28T10:35:14.3239672Z [10:35:14 INF] Executed endpoint 'HTTP: PUT /api/admin/pricing'
+2026-05-28T10:35:14.3239931Z [10:35:14 INF] Request finished HTTP/1.1 PUT https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/pricing - 200 null application/json; charset=utf-8 107.2694ms
+2026-05-28T10:35:18.5557476Z [10:35:18 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:35:18.5561311Z [10:35:18 INF] CORS policy execution successful.
+2026-05-28T10:35:18.5561449Z [10:35:18 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.4349ms
+2026-05-28T10:35:18.5590172Z [10:35:18 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:35:18.5602594Z [10:35:18 INF] CORS policy execution successful.
+2026-05-28T10:35:18.5602749Z [10:35:18 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.718ms
+2026-05-28T10:35:18.6005328Z [10:35:18 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:35:18.6029219Z [10:35:18 INF] CORS policy execution successful.
+2026-05-28T10:35:18.6029431Z [10:35:18 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:35:18.6344230Z [10:35:18 INF] Setting HTTP status code 200.
+2026-05-28T10:35:18.6345996Z [10:35:18 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:35:18.6356541Z [10:35:18 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:35:18.6374972Z [10:35:18 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 37.1572ms
+2026-05-28T10:35:18.7024580Z [10:35:18 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:35:18.7025990Z [10:35:18 INF] CORS policy execution successful.
+2026-05-28T10:35:18.7026033Z [10:35:18 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:35:18.7361317Z [10:35:18 INF] Setting HTTP status code 200.
+2026-05-28T10:35:18.7371528Z [10:35:18 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:35:18.7382416Z [10:35:18 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:35:18.7388201Z [10:35:18 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 38.2882ms
+2026-05-28T10:35:27.0809488Z [10:35:27 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - null null
+2026-05-28T10:35:27.0823635Z [10:35:27 INF] CORS policy execution successful.
+2026-05-28T10:35:27.0823827Z [10:35:27 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - 204 null null 0.3397ms
+2026-05-28T10:35:27.1262942Z [10:35:27 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - application/json 29
+2026-05-28T10:35:27.1263942Z [10:35:27 INF] CORS policy execution successful.
+2026-05-28T10:35:27.1288787Z [10:35:27 INF] Executing endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:35:27.1588591Z [10:35:27 INF] Setting HTTP status code 404.
+2026-05-28T10:35:27.1589254Z [10:35:27 INF] Executed endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:35:27.1589313Z [10:35:27 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - 404 0 null 32.0327ms
+2026-05-28T10:35:30.2427436Z [10:35:30 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:30.2450578Z [10:35:30 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:35:30.2450935Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.2450973Z [10:35:30 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.2699ms
+2026-05-28T10:35:30.2459649Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.2466132Z [10:35:30 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 4.1208ms
+2026-05-28T10:35:30.2531768Z [10:35:30 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:30.2546644Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.2546913Z [10:35:30 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.3368ms
+2026-05-28T10:35:30.2570980Z [10:35:30 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:35:30.2574876Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.2575000Z [10:35:30 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.3374ms
+2026-05-28T10:35:30.5626921Z [10:35:30 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:30.5627572Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.5627607Z [10:35:30 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:30.5905976Z [10:35:30 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:30.5926512Z [10:35:30 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 31.2124ms
+2026-05-28T10:35:30.6020178Z [10:35:30 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:35:30.6020726Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.6020778Z [10:35:30 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:35:30.6579302Z [10:35:30 INF] Setting HTTP status code 200.
+2026-05-28T10:35:30.6580765Z [10:35:30 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:35:30.6590173Z [10:35:30 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:35:30.6590649Z [10:35:30 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 58.0319ms
+2026-05-28T10:35:30.6863380Z [10:35:30 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:35:30.6872946Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.6873142Z [10:35:30 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:35:30.7057459Z [10:35:30 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:30.7074484Z [10:35:30 INF] CORS policy execution successful.
+2026-05-28T10:35:30.7074730Z [10:35:30 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:30.7354977Z [10:35:30 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:30.7355746Z [10:35:30 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 29.8174ms
+2026-05-28T10:35:30.7405186Z [10:35:30 INF] Setting HTTP status code 200.
+2026-05-28T10:35:30.7405937Z [10:35:30 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:35:30.7417275Z [10:35:30 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:35:30.7417778Z [10:35:30 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 55.1733ms
+2026-05-28T10:35:51.2824220Z [10:35:51 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:51.2825168Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.2825212Z [10:35:51 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.3856ms
+2026-05-28T10:35:51.2841839Z [10:35:51 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:35:51.2842759Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.2852156Z [10:35:51 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 1.0685ms
+2026-05-28T10:35:51.2855972Z [10:35:51 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:35:51.2856857Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.2857509Z [10:35:51 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.2031ms
+2026-05-28T10:35:51.3014677Z [10:35:51 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:51.3026297Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.3026516Z [10:35:51 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.4024ms
+2026-05-28T10:35:51.3213530Z [10:35:51 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:35:51.3219044Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.3219183Z [10:35:51 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:35:51.3411883Z [10:35:51 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:51.3415680Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.3425295Z [10:35:51 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:51.3805847Z [10:35:51 INF] Setting HTTP status code 200.
+2026-05-28T10:35:51.3829121Z [10:35:51 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:35:51.3880738Z [10:35:51 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:51.3892461Z [10:35:51 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 48.056ms
+2026-05-28T10:35:51.3924103Z [10:35:51 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:35:51.3924699Z [10:35:51 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 70.217ms
+2026-05-28T10:35:51.4213168Z [10:35:51 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:35:51.4215014Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.4222926Z [10:35:51 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:35:51.5458908Z [10:35:51 INF] Setting HTTP status code 200.
+2026-05-28T10:35:51.5477823Z [10:35:51 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:35:51.5478065Z [10:35:51 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:35:51.5478150Z [10:35:51 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 125.8256ms
+2026-05-28T10:35:51.7318970Z [10:35:51 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:35:51.7330350Z [10:35:51 INF] CORS policy execution successful.
+2026-05-28T10:35:51.7339600Z [10:35:51 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:51.7635442Z [10:35:51 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:35:51.7647139Z [10:35:51 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 33.0236ms
+2026-05-28T10:35:57.9103576Z [10:35:57 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-004 - null null
+2026-05-28T10:35:57.9111085Z [10:35:57 INF] CORS policy execution successful.
+2026-05-28T10:35:57.9111714Z [10:35:57 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-004 - 204 null null 1.1361ms
+2026-05-28T10:35:57.9563086Z [10:35:57 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-004 - application/json 884
+2026-05-28T10:35:57.9568041Z [10:35:57 INF] CORS policy execution successful.
+2026-05-28T10:35:57.9588514Z [10:35:57 INF] Executing endpoint 'HTTP: PATCH /api/admin/receipts/{id}'
+2026-05-28T10:35:58.0632820Z [10:35:58 INF] Setting HTTP status code 200.
+2026-05-28T10:35:58.0633555Z [10:35:58 INF] Writing value of type 'Receipt' as Json.
+2026-05-28T10:35:58.0647733Z [10:35:58 INF] Executed endpoint 'HTTP: PATCH /api/admin/receipts/{id}'
+2026-05-28T10:35:58.0650868Z [10:35:58 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-004 - 200 null application/json; charset=utf-8 108.9508ms
+2026-05-28T10:35:58.1562777Z [10:35:58 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-004/assign - null null
+2026-05-28T10:35:58.1563922Z [10:35:58 INF] CORS policy execution successful.
+2026-05-28T10:35:58.1572740Z [10:35:58 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-004/assign - 204 null null 0.797ms
+2026-05-28T10:35:58.2016980Z [10:35:58 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-004/assign - application/json 29
+2026-05-28T10:35:58.2022657Z [10:35:58 INF] CORS policy execution successful.
+2026-05-28T10:35:58.2022793Z [10:35:58 INF] Executing endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:35:58.2354567Z [10:35:58 INF] Setting HTTP status code 404.
+2026-05-28T10:35:58.2355273Z [10:35:58 INF] Executed endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:35:58.2355334Z [10:35:58 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-004/assign - 404 0 null 32.5113ms
+2026-05-28T10:36:27.2107816Z [10:36:27 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:27.2108540Z [10:36:27 INF] CORS policy execution successful.
+2026-05-28T10:36:27.2108589Z [10:36:27 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.4071ms
+2026-05-28T10:36:27.2147835Z [10:36:27 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:27.2148175Z [10:36:27 INF] CORS policy execution successful.
+2026-05-28T10:36:27.2148218Z [10:36:27 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.2986ms
+2026-05-28T10:36:27.2456219Z [10:36:27 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:27.2457231Z [10:36:27 INF] CORS policy execution successful.
+2026-05-28T10:36:27.2461173Z [10:36:27 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:27.3029724Z [10:36:27 INF] Setting HTTP status code 200.
+2026-05-28T10:36:27.3050180Z [10:36:27 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:36:27.3053259Z [10:36:27 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:27.3053590Z [10:36:27 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 58.7049ms
+2026-05-28T10:36:27.3565842Z [10:36:27 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:27.3571785Z [10:36:27 INF] CORS policy execution successful.
+2026-05-28T10:36:27.3571973Z [10:36:27 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:27.3884281Z [10:36:27 INF] Setting HTTP status code 200.
+2026-05-28T10:36:27.3884992Z [10:36:27 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:36:27.3890587Z [10:36:27 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:27.3893594Z [10:36:27 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 32.8608ms
+2026-05-28T10:36:48.7928838Z [10:36:48 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-28T10:36:48.7929476Z [10:36:48 INF] CORS policy execution successful.
+2026-05-28T10:36:48.7929509Z [10:36:48 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 0.2147ms
+2026-05-28T10:36:48.8724709Z [10:36:48 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 57
+2026-05-28T10:36:48.8725419Z [10:36:48 INF] CORS policy execution successful.
+2026-05-28T10:36:48.8725471Z [10:36:48 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-28T10:36:48.8732019Z [10:36:48 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-28T10:36:48.8743160Z [10:36:48 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 200 null application/json; charset=utf-8 3.1636ms
+2026-05-28T10:36:49.1258983Z [10:36:49 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:49.1259965Z [10:36:49 INF] CORS policy execution successful.
+2026-05-28T10:36:49.1267833Z [10:36:49 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.7168ms
+2026-05-28T10:36:49.1278328Z [10:36:49 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:49.1278466Z [10:36:49 INF] CORS policy execution successful.
+2026-05-28T10:36:49.1281188Z [10:36:49 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 1.5775ms
+2026-05-28T10:36:49.1759578Z [10:36:49 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:49.1760233Z [10:36:49 INF] CORS policy execution successful.
+2026-05-28T10:36:49.1771302Z [10:36:49 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:49.2330081Z [10:36:49 INF] Setting HTTP status code 200.
+2026-05-28T10:36:49.2338539Z [10:36:49 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:36:49.2358908Z [10:36:49 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:49.2359226Z [10:36:49 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 59.1055ms
+2026-05-28T10:36:49.2659189Z [10:36:49 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:36:49.2665256Z [10:36:49 INF] CORS policy execution successful.
+2026-05-28T10:36:49.2665450Z [10:36:49 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:49.3069008Z [10:36:49 INF] Setting HTTP status code 200.
+2026-05-28T10:36:49.3069712Z [10:36:49 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:36:49.3108809Z [10:36:49 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:36:49.3109088Z [10:36:49 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 41.779ms
+2026-05-28T10:36:52.2137030Z [10:36:52 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-28T10:36:52.2137699Z [10:36:52 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.4071ms
+2026-05-28T10:36:52.2137751Z [10:36:52 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-28T10:37:13.1838313Z [10:37:13 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - null null
+2026-05-28T10:37:13.1838919Z [10:37:13 INF] CORS policy execution successful.
+2026-05-28T10:37:13.1839055Z [10:37:13 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - 204 null null 0.2807ms
+2026-05-28T10:37:13.2160745Z [10:37:13 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - application/json 29
+2026-05-28T10:37:13.2191309Z [10:37:13 INF] CORS policy execution successful.
+2026-05-28T10:37:13.2192002Z [10:37:13 INF] Executing endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:37:13.2689137Z [10:37:13 INF] Setting HTTP status code 404.
+2026-05-28T10:37:13.2689903Z [10:37:13 INF] Executed endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:37:13.2690380Z [10:37:13 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-049/assign - 404 0 null 53.0739ms
+2026-05-28T10:37:32.9814314Z [10:37:32 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:37:32.9825428Z [10:37:32 INF] CORS policy execution successful.
+2026-05-28T10:37:32.9826258Z [10:37:32 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.2102ms
+2026-05-28T10:37:32.9837098Z [10:37:32 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:32.9837622Z [10:37:32 INF] CORS policy execution successful.
+2026-05-28T10:37:32.9837665Z [10:37:32 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.2754ms
+2026-05-28T10:37:32.9882731Z [10:37:32 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:32.9883308Z [10:37:32 INF] CORS policy execution successful.
+2026-05-28T10:37:32.9883351Z [10:37:32 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.3148ms
+2026-05-28T10:37:32.9897742Z [10:37:32 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:37:32.9901375Z [10:37:32 INF] CORS policy execution successful.
+2026-05-28T10:37:32.9903687Z [10:37:32 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.6989ms
+2026-05-28T10:37:33.0320497Z [10:37:33 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:37:33.0321132Z [10:37:33 INF] CORS policy execution successful.
+2026-05-28T10:37:33.0321169Z [10:37:33 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:37:33.0853063Z [10:37:33 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:33.0853804Z [10:37:33 INF] CORS policy execution successful.
+2026-05-28T10:37:33.0853840Z [10:37:33 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:33.0968885Z [10:37:33 INF] Setting HTTP status code 200.
+2026-05-28T10:37:33.0979578Z [10:37:33 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:37:33.0991513Z [10:37:33 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:37:33.1001138Z [10:37:33 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 69.2785ms
+2026-05-28T10:37:33.1231830Z [10:37:33 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:33.1250216Z [10:37:33 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 40.9734ms
+2026-05-28T10:37:33.1757593Z [10:37:33 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:37:33.1763423Z [10:37:33 INF] CORS policy execution successful.
+2026-05-28T10:37:33.1763599Z [10:37:33 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:37:33.2111871Z [10:37:33 INF] Setting HTTP status code 200.
+2026-05-28T10:37:33.2112526Z [10:37:33 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:37:33.2148215Z [10:37:33 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:37:33.2159403Z [10:37:33 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 39.4975ms
+2026-05-28T10:37:33.2412177Z [10:37:33 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:33.2421554Z [10:37:33 INF] CORS policy execution successful.
+2026-05-28T10:37:33.2428246Z [10:37:33 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:33.2703721Z [10:37:33 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:33.2724249Z [10:37:33 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 31.3655ms
+2026-05-28T10:37:40.6514529Z [10:37:40 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-006 - null null
+2026-05-28T10:37:40.6515160Z [10:37:40 INF] CORS policy execution successful.
+2026-05-28T10:37:40.6526015Z [10:37:40 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-006 - 204 null null 0.2138ms
+2026-05-28T10:37:41.0563794Z [10:37:41 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-006 - application/json 890
+2026-05-28T10:37:41.0565068Z [10:37:41 INF] CORS policy execution successful.
+2026-05-28T10:37:41.0565114Z [10:37:41 INF] Executing endpoint 'HTTP: PATCH /api/admin/receipts/{id}'
+2026-05-28T10:37:41.1213686Z [10:37:41 INF] Setting HTTP status code 200.
+2026-05-28T10:37:41.1214453Z [10:37:41 INF] Writing value of type 'Receipt' as Json.
+2026-05-28T10:37:41.1215451Z [10:37:41 INF] Executed endpoint 'HTTP: PATCH /api/admin/receipts/{id}'
+2026-05-28T10:37:41.1216861Z [10:37:41 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts/seed-order-006 - 200 null application/json; charset=utf-8 65.9325ms
+2026-05-28T10:37:41.2023440Z [10:37:41 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-006/assign - null null
+2026-05-28T10:37:41.2024402Z [10:37:41 INF] CORS policy execution successful.
+2026-05-28T10:37:41.2042789Z [10:37:41 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-006/assign - 204 null null 0.3386ms
+2026-05-28T10:37:41.2358458Z [10:37:41 INF] Request starting HTTP/1.1 PATCH http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-006/assign - application/json 29
+2026-05-28T10:37:41.2359506Z [10:37:41 INF] CORS policy execution successful.
+2026-05-28T10:37:41.2371169Z [10:37:41 INF] Executing endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:37:41.2637425Z [10:37:41 INF] Setting HTTP status code 404.
+2026-05-28T10:37:41.2650930Z [10:37:41 INF] Executed endpoint 'HTTP: PATCH /api/admin/deliveries/{orderId}/assign'
+2026-05-28T10:37:41.2651806Z [10:37:41 INF] Request finished HTTP/1.1 PATCH https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries/seed-order-006/assign - 404 0 null 29.3073ms
+2026-05-28T10:37:56.1950983Z [10:37:56 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:37:56.1952141Z [10:37:56 INF] CORS policy execution successful.
+2026-05-28T10:37:56.1952191Z [10:37:56 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.2775ms
+2026-05-28T10:37:56.1952221Z [10:37:56 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:56.1952251Z [10:37:56 INF] CORS policy execution successful.
+2026-05-28T10:37:56.1952292Z [10:37:56 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.2959ms
+2026-05-28T10:37:56.1952322Z [10:37:56 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:56.1952362Z [10:37:56 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:37:56.1952475Z [10:37:56 INF] CORS policy execution successful.
+2026-05-28T10:37:56.1952504Z [10:37:56 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.1311ms
+2026-05-28T10:37:56.1952525Z [10:37:56 INF] CORS policy execution successful.
+2026-05-28T10:37:56.1973433Z [10:37:56 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 2.7401ms
+2026-05-28T10:37:56.2494057Z [10:37:56 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:37:56.2494686Z [10:37:56 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:56.2494725Z [10:37:56 INF] CORS policy execution successful.
+2026-05-28T10:37:56.2494750Z [10:37:56 INF] CORS policy execution successful.
+2026-05-28T10:37:56.2494772Z [10:37:56 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:37:56.2494890Z [10:37:56 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:56.2965433Z [10:37:56 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:56.3003166Z [10:37:56 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 51.4393ms
+2026-05-28T10:37:56.3579802Z [10:37:56 INF] Setting HTTP status code 200.
+2026-05-28T10:37:56.3580334Z [10:37:56 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:37:56.3580376Z [10:37:56 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:37:56.3580422Z [10:37:56 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 107.0742ms
+2026-05-28T10:37:57.2069910Z [10:37:57 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:37:57.2070672Z [10:37:57 INF] CORS policy execution successful.
+2026-05-28T10:37:57.2070708Z [10:37:57 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:57.2648189Z [10:37:57 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:37:57.2663629Z [10:37:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 60.555ms
+2026-05-28T10:37:57.3672878Z [10:37:57 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:37:57.3673458Z [10:37:57 INF] CORS policy execution successful.
+2026-05-28T10:37:57.3673503Z [10:37:57 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:37:57.4201979Z [10:37:57 INF] Setting HTTP status code 200.
+2026-05-28T10:37:57.4202605Z [10:37:57 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:37:57.4211133Z [10:37:57 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:37:57.4212497Z [10:37:57 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 55.1492ms
+2026-05-28T10:38:19.7308790Z [10:38:19 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:38:19.7309546Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.7309925Z [10:38:19 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.2207ms
+2026-05-28T10:38:19.7328254Z [10:38:19 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:38:19.7329979Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.7332223Z [10:38:19 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 204 null null 0.3567ms
+2026-05-28T10:38:19.7336777Z [10:38:19 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:38:19.7336876Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.7336906Z [10:38:19 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.0825ms
+2026-05-28T10:38:19.7367687Z [10:38:19 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:38:19.7369781Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.7369874Z [10:38:19 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.0996ms
+2026-05-28T10:38:19.7874869Z [10:38:19 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:38:19.7880981Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.7881142Z [10:38:19 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:19.7881188Z [10:38:19 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:38:19.7881225Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.7881254Z [10:38:19 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:38:19.8462413Z [10:38:19 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:19.8481547Z [10:38:19 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 62.3602ms
+2026-05-28T10:38:19.8486191Z [10:38:19 INF] Setting HTTP status code 200.
+2026-05-28T10:38:19.8488102Z [10:38:19 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:38:19.8492934Z [10:38:19 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:38:19.8494180Z [10:38:19 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 63.7004ms
+2026-05-28T10:38:19.9085893Z [10:38:19 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - null null
+2026-05-28T10:38:19.9087021Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.9089879Z [10:38:19 INF] Executing endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:38:19.9105850Z [10:38:19 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:38:19.9106121Z [10:38:19 INF] CORS policy execution successful.
+2026-05-28T10:38:19.9106152Z [10:38:19 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:19.9390298Z [10:38:19 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:19.9391303Z [10:38:19 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 28.3385ms
+2026-05-28T10:38:19.9602355Z [10:38:19 INF] Setting HTTP status code 200.
+2026-05-28T10:38:19.9603263Z [10:38:19 INF] Writing value of type '<>f__AnonymousType4`1' as Json.
+2026-05-28T10:38:19.9607348Z [10:38:19 INF] Executed endpoint 'HTTP: GET /api/admin/receipts'
+2026-05-28T10:38:19.9608733Z [10:38:19 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/receipts?status=pending - 200 null application/json; charset=utf-8 52.5308ms
+2026-05-28T10:38:22.0941233Z [10:38:22 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:38:22.0941989Z [10:38:22 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:38:22.0942024Z [10:38:22 INF] CORS policy execution successful.
+2026-05-28T10:38:22.0942045Z [10:38:22 INF] CORS policy execution successful.
+2026-05-28T10:38:22.0942075Z [10:38:22 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.3041ms
+2026-05-28T10:38:22.0942096Z [10:38:22 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.3041ms
+2026-05-28T10:38:22.1163959Z [10:38:22 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:38:22.1165015Z [10:38:22 INF] CORS policy execution successful.
+2026-05-28T10:38:22.1167734Z [10:38:22 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:22.1367174Z [10:38:22 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:38:22.1373907Z [10:38:22 INF] CORS policy execution successful.
+2026-05-28T10:38:22.1377638Z [10:38:22 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:38:22.1529163Z [10:38:22 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:22.1555163Z [10:38:22 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 37.0508ms
+2026-05-28T10:38:22.1862352Z [10:38:22 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:38:22.1870799Z [10:38:22 INF] CORS policy execution successful.
+2026-05-28T10:38:22.1876027Z [10:38:22 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:22.2093652Z [10:38:22 INF] Setting HTTP status code 200.
+2026-05-28T10:38:22.2094423Z [10:38:22 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:38:22.2094466Z [10:38:22 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:38:22.2094504Z [10:38:22 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 72.43ms
+2026-05-28T10:38:22.2189196Z [10:38:22 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:38:22.2190573Z [10:38:22 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 33.0143ms
+2026-05-28T10:38:22.2515641Z [10:38:22 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:38:22.2520558Z [10:38:22 INF] CORS policy execution successful.
+2026-05-28T10:38:22.2521802Z [10:38:22 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:38:22.3035133Z [10:38:22 INF] Setting HTTP status code 200.
+2026-05-28T10:38:22.3035703Z [10:38:22 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:38:22.3035748Z [10:38:22 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:38:22.3035784Z [10:38:22 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 52.0558ms
+2026-05-28T10:38:25.1215036Z [10:38:25 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - null null
+2026-05-28T10:38:25.1215673Z [10:38:25 INF] CORS policy execution successful.
+2026-05-28T10:38:25.1215719Z [10:38:25 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - 204 null null 0.2438ms
+2026-05-28T10:38:25.1964903Z [10:38:25 INF] Request starting HTTP/1.1 DELETE http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - null null
+2026-05-28T10:38:25.1970889Z [10:38:25 INF] CORS policy execution successful.
+2026-05-28T10:38:25.1971043Z [10:38:25 INF] Executing endpoint 'HTTP: DELETE /api/admin/drivers/{driverId}'
+2026-05-28T10:38:25.2255873Z [10:38:25 INF] Executed endpoint 'HTTP: DELETE /api/admin/drivers/{driverId}'
+2026-05-28T10:38:25.2290305Z [10:38:25 ERR] Unhandled exception on DELETE /api/admin/drivers/driver-dlamini-002
+2026-05-28T10:38:25.2290707Z Microsoft.Azure.Cosmos.CosmosException: Response status code does not indicate success: NotFound (404); Substatus: 0; ActivityId: e4e797f8-b1a7-4ed2-9334-f033ae281ebd; Reason: (
+2026-05-28T10:38:25.2290726Z Errors : [
+2026-05-28T10:38:25.2290745Z   "Resource Not Found. Learn more: https://aka.ms/cosmosdb-tsg-not-found"
+2026-05-28T10:38:25.2290759Z ]
+2026-05-28T10:38:25.2290773Z );
+2026-05-28T10:38:25.2290796Z    at Microsoft.Azure.Cosmos.ClientContextCore.RunWithDiagnosticsHelperAsync[TResult](String containerName, String databaseName, OperationType operationType, ITrace trace, Func`2 task, Nullable`1 openTelemetry, RequestOptions requestOptions, Nullable`1 resourceType)
+2026-05-28T10:38:25.2290822Z    at Microsoft.Azure.Cosmos.ClientContextCore.OperationHelperWithRootTraceAsync[TResult](String operationName, String containerName, String databaseName, OperationType operationType, RequestOptions requestOptions, Func`2 task, Nullable`1 openTelemetry, TraceComponent traceComponent, TraceLevel traceLevel, Nullable`1 resourceType)
+2026-05-28T10:38:25.2290842Z    at LocalsZaApi.Services.CosmosService.DeleteAsync(String container, String id, String partitionKey) in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Services\CosmoService.cs:line 57
+2026-05-28T10:38:25.2290893Z    at LocalsZaApi.Endpoints.AdminEndpoints.<>c.<<MapAdminEndpoints>b__3_10>d.MoveNext() in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Endpoints\AdminEndpoints.cs:line 301
+2026-05-28T10:38:25.2290912Z --- End of stack trace from previous location ---
+2026-05-28T10:38:25.2290929Z    at Microsoft.AspNetCore.Http.RequestDelegateFactory.ExecuteTaskResult[T](Task`1 task, HttpContext httpContext)
+2026-05-28T10:38:25.2290948Z    at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+2026-05-28T10:38:25.2290971Z    at LocalsZaApi.Middleware.FirebaseAuthMiddleware.InvokeAsync(HttpContext context, FirebaseAuthService authService, IConfiguration config) in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Middleware\FirebaseAuthMiddleware.cs:line 60
+2026-05-28T10:38:25.2290990Z    at Program.<>c.<<<Main>$>b__0_3>d.MoveNext() in C:\Users\kmmas\OneDrive\Documents\Projects\locals.za\api\Program.cs:line 65
+2026-05-28T10:38:25.2300780Z --- Cosmos Diagnostics ---{"Summary":{"DirectCalls":{"(404, 0)":1}},"name":"DeleteItemAsync","start datetime":"2026-05-28T10:38:25.222Z","duration in milliseconds":2.1159,"data":{"Client Configuration":{"Client Created Time Utc":"2026-05-28T10:32:42.0162231Z","MachineId":"hashedMachineName:99be40ad-0473-f0f6-67e2-3867669245dd","NumberOfClientsCreated":1,"NumberOfActiveClients":1,"ConnectionMode":"Direct","User Agent":"cosmos-netstandard-sdk/3.59.0|1|X64|Ubuntu 24.04.4 LTS|.NET 10.0.7|N|","ConnectionConfig":{"gw":"(cps:50, urto:6, p:False, httpf: False)","rntbd":"(cto: 5, icto: -1, mrpc: 30, mcpe: 65535, erd: True, pr: ReuseUnicastPort)","other":"(ed:False, be:False)"},"ConsistencyConfig":"(consistency: NotSet, readStrategy: NotSet, prgns:[], apprgn: )","ProcessorCount":2}},"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.RequestInvokerHandler","duration in milliseconds":1.8946,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.DiagnosticsHandler","duration in milliseconds":1.8172,"data":{"System Info":{"systemHistory":[{"dateUtc":"2026-05-28T10:37:32.1419630Z","cpu":6.317,"memory":2601000.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1579,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":16},{"dateUtc":"2026-05-28T10:37:42.1426118Z","cpu":10.320,"memory":2599704.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.4778,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":16},{"dateUtc":"2026-05-28T10:37:52.1435286Z","cpu":5.346,"memory":2599824.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":2.014,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":16},{"dateUtc":"2026-05-28T10:38:02.1449790Z","cpu":6.731,"memory":2591636.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.3011,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":16},{"dateUtc":"2026-05-28T10:38:12.1455469Z","cpu":7.724,"memory":2592020.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.0746,"availableThreads":32766,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":16},{"dateUtc":"2026-05-28T10:38:22.1510888Z","cpu":7.470,"memory":2592080.000,"threadInfo":{"isThreadStarving":"False","threadWaitIntervalInMs":0.1245,"availableThreads":32764,"minThreads":2,"maxThreads":32767},"numberOfOpenTcpConnection":16}]}},"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.TelemetryHandler","duration in milliseconds":1.8121,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.RetryHandler","duration in milliseconds":1.8062,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.RouterHandler","duration in milliseconds":1.7304,"children":[{"name":"Microsoft.Azure.Cosmos.Handlers.TransportHandler","duration in milliseconds":1.7264,"children":[{"name":"Microsoft.Azure.Documents.ServerStoreModel Transport Request","duration in milliseconds":1.6239,"data":{"Client Side Request Stats":{"Id":"AggregatedClientSideRequestStatistics","ContactedReplicas":[{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14361/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735793p"},{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14068/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735794s"},{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14086/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831009815105s"},{"Count":1,"Uri":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14306/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735792s"}],"RegionsContacted":[],"FailedReplicas":[],"AddressResolutionStatistics":[],"StoreResponseStatistics":[{"ResponseTimeUTC":"2026-05-28T10:38:25.2244037Z","DurationInMs":1.0438,"ResourceType":"Document","OperationType":"Delete","LocationEndpoint":"https://localsza-cosmos-southafricanorth.documents.azure.com/","StoreResult":{"ActivityId":"e4e797f8-b1a7-4ed2-9334-f033ae281ebd","StatusCode":"NotFound","SubStatusCode":"Unknown","LSN":28,"PartitionKeyRangeId":"0","GlobalCommittedLSN":28,"GlobalNRegionCommittedGLSN":-1,"ItemLSN":-1,"UsingLocalLSN":false,"QuorumAckedLSN":28,"SessionToken":"-1#28","CurrentWriteQuorum":3,"CurrentReplicaSetSize":4,"NumberOfReadRegions":0,"IsValid":true,"StorePhysicalAddress":"rntbd://cdb-ms-prod-southafricanorth1-be78.documents.azure.com:14361/apps/8b8c4485-c556-49ed-941a-3d0efba1e6ef/services/675a913a-1753-4230-8950-b90bd5da3c73/partitions/9905be09-f538-4f36-96d8-13c12ebee860/replicas/134232831427735793p","RequestCharge":1.24,"RetryAfterInMs":null,"BELatencyInMs":"0.331","ReplicaHealthStatuses":["(port: 14361 | status: Connected | lkt: 05/28/2026 10:34:37)"],"transportRequestTimeline":{"requestTimeline":[{"event": "Created", "startTimeUtc": "2026-05-28T10:38:25.2233650Z", "durationInMs": 0.0076},{"event": "ChannelAcquisitionStarted", "startTimeUtc": "2026-05-28T10:38:25.2233726Z", "durationInMs": 0.0099},{"event": "Pipelined", "startTimeUtc": "2026-05-28T10:38:25.2233825Z", "durationInMs": 0.2098},{"event": "Transit Time", "startTimeUtc": "2026-05-28T10:38:25.2235923Z", "durationInMs": 0.7337},{"event": "Received", "startTimeUtc": "2026-05-28T10:38:25.2243260Z", "durationInMs": 0.0534},{"event": "Completed", "startTimeUtc": "2026-05-28T10:38:25.2243794Z", "durationInMs": 0}],"serviceEndpointStats":{"inflightRequests":1,"openConnections":1},"connectionStats":{"waitforConnectionInit":"False","callsPendingReceive":0,"lastSendAttempt":"2026-05-28T10:38:25.2005078Z","lastSend":"2026-05-28T10:38:25.2006359Z","lastReceive":"2026-05-28T10:38:25.2220927Z"},"requestSizeInBytes":451,"responseMetadataSizeInBytes":183,"responseBodySizeInBytes":84},"TransportException":null}}]}}}]}]}]}]}]}]}]}
+2026-05-28T10:38:25.2309701Z [10:38:25 INF] Request finished HTTP/1.1 DELETE https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/driver-dlamini-002 - 500 null application/json; charset=utf-8 34.6082ms
+2026-05-28T10:39:46.0911300Z [10:39:46 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers/verify-credentials - null null
+2026-05-28T10:39:46.0911979Z [10:39:46 INF] CORS policy execution successful.
+2026-05-28T10:39:46.0912015Z [10:39:46 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers/verify-credentials - 204 null null 0.2546ms
+2026-05-28T10:39:46.1213339Z [10:39:46 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers/verify-credentials - application/json 43
+2026-05-28T10:39:46.1231038Z [10:39:46 INF] CORS policy execution successful.
+2026-05-28T10:39:46.1239631Z [10:39:46 INF] Executing endpoint 'HTTP: POST /api/drivers/verify-credentials'
+2026-05-28T10:39:46.2365902Z [10:39:46 INF] Setting HTTP status code 401.
+2026-05-28T10:39:46.2367237Z [10:39:46 INF] Writing value of type '<>f__AnonymousType0`1' as Json.
+2026-05-28T10:39:46.2368159Z [10:39:46 INF] Executed endpoint 'HTTP: POST /api/drivers/verify-credentials'
+2026-05-28T10:39:46.2368204Z [10:39:46 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers/verify-credentials - 401 null application/json; charset=utf-8 115.7008ms
+2026-05-28T10:40:50.3301715Z [10:40:50 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - null null
+2026-05-28T10:40:50.3302381Z [10:40:50 INF] CORS policy execution successful.
+2026-05-28T10:40:50.3302420Z [10:40:50 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 204 null null 0.272ms
+2026-05-28T10:40:50.4670515Z [10:40:50 INF] Request starting HTTP/1.1 POST http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - application/json 57
+2026-05-28T10:40:50.4674810Z [10:40:50 INF] CORS policy execution successful.
+2026-05-28T10:40:50.4676514Z [10:40:50 INF] Executing endpoint 'HTTP: POST /api/admin/auth'
+2026-05-28T10:40:50.4690195Z [10:40:50 INF] Executed endpoint 'HTTP: POST /api/admin/auth'
+2026-05-28T10:40:50.4698784Z [10:40:50 INF] Request finished HTTP/1.1 POST https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/auth - 200 null application/json; charset=utf-8 3.2145ms
+2026-05-28T10:40:50.8374123Z [10:40:50 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:40:50.8374754Z [10:40:50 INF] CORS policy execution successful.
+2026-05-28T10:40:50.8374808Z [10:40:50 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.2425ms
+2026-05-28T10:40:50.9564510Z [10:40:50 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:40:50.9565151Z [10:40:50 INF] CORS policy execution successful.
+2026-05-28T10:40:50.9572565Z [10:40:50 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 204 null null 0.2402ms
+2026-05-28T10:40:51.1062012Z [10:40:51 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:40:51.1063027Z [10:40:51 INF] CORS policy execution successful.
+2026-05-28T10:40:51.1086385Z [10:40:51 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:40:51.1816094Z [10:40:51 INF] Setting HTTP status code 200.
+2026-05-28T10:40:51.1821143Z [10:40:51 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:40:51.1842205Z [10:40:51 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:40:51.1845335Z [10:40:51 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 77.865ms
+2026-05-28T10:40:51.2582669Z [10:40:51 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - null null
+2026-05-28T10:40:51.2589030Z [10:40:51 INF] CORS policy execution successful.
+2026-05-28T10:40:51.2589222Z [10:40:51 INF] Executing endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:40:51.2897605Z [10:40:51 INF] Setting HTTP status code 200.
+2026-05-28T10:40:51.2922326Z [10:40:51 INF] Writing value of type '<>f__AnonymousType5`1' as Json.
+2026-05-28T10:40:51.2947304Z [10:40:51 INF] Executed endpoint 'HTTP: GET /api/admin/deliveries'
+2026-05-28T10:40:51.2948124Z [10:40:51 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/deliveries - 200 null application/json; charset=utf-8 36.6652ms
+2026-05-28T10:40:55.2067922Z [10:40:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:40:55.2068667Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.2068709Z [10:40:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.2425ms
+2026-05-28T10:40:55.2292337Z [10:40:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:40:55.2293050Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.2293098Z [10:40:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.2392ms
+2026-05-28T10:40:55.2335281Z [10:40:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:40:55.2346389Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.2346567Z [10:40:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 204 null null 0.2628ms
+2026-05-28T10:40:55.3461405Z [10:40:55 INF] Request starting HTTP/1.1 OPTIONS http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:40:55.3472919Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.3473207Z [10:40:55 INF] Request finished HTTP/1.1 OPTIONS https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 204 null null 0.2635ms
+2026-05-28T10:40:55.3808330Z [10:40:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:40:55.3814511Z [10:40:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:40:55.3814686Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.3814723Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.3815821Z [10:40:55 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:40:55.3829463Z [10:40:55 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:40:55.4287399Z [10:40:55 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:40:55.4288167Z [10:40:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 47.9513ms
+2026-05-28T10:40:55.4636722Z [10:40:55 INF] Setting HTTP status code 200.
+2026-05-28T10:40:55.4637417Z [10:40:55 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:40:55.4637760Z [10:40:55 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:40:55.4638074Z [10:40:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 83.1198ms
+2026-05-28T10:40:55.5510070Z [10:40:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - null null
+2026-05-28T10:40:55.5511284Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.5536116Z [10:40:55 INF] Executing endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:40:55.5536498Z [10:40:55 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - null null
+2026-05-28T10:40:55.5536530Z [10:40:55 INF] CORS policy execution successful.
+2026-05-28T10:40:55.5536567Z [10:40:55 INF] Executing endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:40:55.5825712Z [10:40:55 INF] Executed endpoint 'HTTP: GET /api/drivers'
+2026-05-28T10:40:55.5826988Z [10:40:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/drivers - 200 null application/json; charset=utf-8 28.832ms
+2026-05-28T10:40:55.6277520Z [10:40:55 INF] Setting HTTP status code 200.
+2026-05-28T10:40:55.6295224Z [10:40:55 INF] Writing value of type '<>f__AnonymousType7`1' as Json.
+2026-05-28T10:40:55.6304030Z [10:40:55 INF] Executed endpoint 'HTTP: GET /api/admin/drivers/revenue'
+2026-05-28T10:40:55.6311893Z [10:40:55 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/api/admin/drivers/revenue - 200 null application/json; charset=utf-8 78.9587ms
+2026-05-28T10:41:52.5135604Z [10:41:52 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-28T10:41:52.5136198Z [10:41:52 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.2108ms
+2026-05-28T10:41:52.5136233Z [10:41:52 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404
+2026-05-28T10:46:52.8718865Z [10:46:52 INF] Request starting HTTP/1.1 GET http://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - null null
+2026-05-28T10:46:52.8724246Z [10:46:52 INF] Request finished HTTP/1.1 GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/ - 404 0 null 0.6002ms
+2026-05-28T10:46:52.8724409Z [10:46:52 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net/, Response status code: 404

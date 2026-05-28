@@ -1,0 +1,736 @@
+2026-05-20T09:27:00  Fetching changes.
+2026-05-20T09:27:00    Starting  LocalZipHandler
+2026-05-20T09:27:00    Cleaning up temp folders from previous zip deployments and extracting pushed zip file /tmp/zipdeploy/b7082572-2733-4248-a14d-8453f50153ca.zip (14.19 MB) to /tmp/zipdeploy/extracted
+2026-05-20T09:27:03  Updating submodules.
+2026-05-20T09:27:04  Preparing deployment for commit id '4e69e544-5'.
+2026-05-20T09:27:04  PreDeployment: context.CleanOutputPath False
+2026-05-20T09:27:04  PreDeployment: context.OutputPath /home/site/wwwroot
+2026-05-20T09:27:04  Running build. Project type: OneDeploy
+2026-05-20T09:27:04  Copying the manifest
+2026-05-20T09:27:04  Running deployment command...
+2026-05-20T09:27:04    Command: /opt/Kudu/Scripts/parallel_rsync.sh /tmp/zipdeploy/extracted /home/site/wwwroot 8 /tmp/ False False  
+2026-05-20T09:27:05    Run rsync from: /tmp/zipdeploy/extracted/ to: /home/site/wwwroot/ in 8 parallel threads
+2026-05-20T09:27:05    Delete options: clean=False, use manifest=False, directory to ignore=
+2026-05-20T09:27:05    Prev manifest = /opt/Kudu/Scripts/firstDeploymentManifest and next /home/site/deployments/4e69e544-5366-4fcd-a098-52756ab5cd33/manifest
+2026-05-20T09:27:05    Cleaning up /tmp//filelist.txt and /tmp//splits
+2026-05-20T09:27:05    Creating a list of all files at /tmp//filelist.txt
+2026-05-20T09:27:05    No directory to exclude.
+2026-05-20T09:27:05    Created /tmp//filelist.txt. Total number of files to be synced = 72.
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+2026-05-20T09:27:05    Created batches from the list of files. Processing 10 files in each thread
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.aa from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.ab from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.ac from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.ae from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.ad from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.ag from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+2026-05-20T09:27:05    Running rsync for filelist /tmp//splits/split.af from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:05    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+2026-05-20T09:27:06    Running rsync for filelist /tmp//splits/split.ah from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+2026-05-20T09:27:06    
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+2026-05-20T09:27:06    Number of files: 2 (reg: 2)
+2026-05-20T09:27:06    Number of created files: 2 (reg: 2)
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    Number of deleted files: 0
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    Number of regular files transferred: 2
+2026-05-20T09:27:06    Total file size: 270.49K bytes
+or: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+2026-05-20T09:27:06    Total transferred file size: 270.49K bytes
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+2026-05-20T09:27:06    Literal data: 270.49K bytes
+2026-05-20T09:27:06    Matched data: 0 bytes
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+2026-05-20T09:27:06    File list size: 0
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    File list generation time: 0.001 seconds
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+2026-05-20T09:27:06    File list transfer time: 0.000 seconds
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+2026-05-20T09:27:06    Total bytes sent: 106.78K
+2026-05-20T09:27:06    Total bytes received: 54
+2026-05-20T09:27:06    
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    sent 106.78K bytes  received 54 bytes  213.66K bytes/sec
+2026-05-20T09:27:06    total size is 270.49K  speedup is 2.53
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+2026-05-20T09:27:06    Attempt 1: Rsync for filelist /tmp//splits/split.ah completed with exit code 0
+2026-05-20T09:27:06    
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    Number of created files: 8 (reg: 8)
+2026-05-20T09:27:06    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+2026-05-20T09:27:06    Number of deleted files: 0
+2026-05-20T09:27:06    Number of regular files transferred: 8
+transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:06    Total file size: 1.85M bytes
+ator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+2026-05-20T09:27:06    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+2026-05-20T09:27:07    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:07    Total transferred file size: 1.44M bytes
+2026-05-20T09:27:07    Literal data: 1.44M bytes
+trs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:07    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:07    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:07    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+2026-05-20T09:27:07    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026-05-20T09:27:07    File list size: 0
+2026-05-20T09:27:07    File list generation time: 0.001 seconds
+2026-05-20T09:27:07    File list transfer time: 0.000 seconds
+2026-05-20T09:27:07    Total bytes sent: 906.68K
+2026-05-20T09:27:07    Total bytes received: 168
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    sent 906.68K bytes  received 168 bytes  604.56K bytes/sec
+2026-05-20T09:27:07    total size is 1.85M  speedup is 2.03
+2026-05-20T09:27:07    Attempt 1: Rsync for filelist /tmp//splits/split.af completed with exit code 23
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    Number of files: 10 (reg: 10)
+2026-05-20T09:27:07    Number of created files: 8 (reg: 8)
+2026-05-20T09:27:07    Number of deleted files: 0
+2026-05-20T09:27:07    Number of regular files transferred: 8
+2026-05-20T09:27:07    Total file size: 1.62M bytes
+2026-05-20T09:27:07    Total transferred file size: 1.08M bytes
+2026-05-20T09:27:07    Literal data: 1.08M bytes
+2026-05-20T09:27:07    Matched data: 0 bytes
+2026-05-20T09:27:07    File list size: 0
+2026-05-20T09:27:07    File list generation time: 0.001 seconds
+2026-05-20T09:27:07    File list transfer time: 0.000 seconds
+2026-05-20T09:27:07    Total bytes sent: 470.23K
+2026-05-20T09:27:07    Total bytes received: 168
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    sent 470.23K bytes  received 168 bytes  313.60K bytes/sec
+2026-05-20T09:27:07    total size is 1.62M  speedup is 3.44
+2026-05-20T09:27:07    Attempt 1: Rsync for filelist /tmp//splits/split.ag completed with exit code 23
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    Number of files: 10 (reg: 10)
+2026-05-20T09:27:07    Number of created files: 8 (reg: 8)
+2026-05-20T09:27:07    Number of deleted files: 0
+2026-05-20T09:27:07    Number of regular files transferred: 8
+2026-05-20T09:27:07    Total file size: 11.08M bytes
+2026-05-20T09:27:07    Total transferred file size: 2.26M bytes
+2026-05-20T09:27:07    Literal data: 2.26M bytes
+2026-05-20T09:27:07    Matched data: 0 bytes
+2026-05-20T09:27:07    File list size: 0
+2026-05-20T09:27:07    File list generation time: 0.001 seconds
+2026-05-20T09:27:07    File list transfer time: 0.000 seconds
+2026-05-20T09:27:07    Total bytes sent: 834.89K
+2026-05-20T09:27:07    Total bytes received: 168
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    sent 834.89K bytes  received 168 bytes  556.70K bytes/sec
+2026-05-20T09:27:07    total size is 11.08M  speedup is 13.27
+2026-05-20T09:27:07    Attempt 1: Rsync for filelist /tmp//splits/split.ab completed with exit code 23
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    Number of files: 10 (reg: 10)
+2026-05-20T09:27:07    Number of created files: 9 (reg: 9)
+2026-05-20T09:27:07    Number of deleted files: 0
+2026-05-20T09:27:07    Number of regular files transferred: 9
+2026-05-20T09:27:07    Total file size: 2.66M bytes
+2026-05-20T09:27:07    Total transferred file size: 2.11M bytes
+2026-05-20T09:27:07    Literal data: 2.11M bytes
+2026-05-20T09:27:07    Matched data: 0 bytes
+2026-05-20T09:27:07    File list size: 0
+2026-05-20T09:27:07    File list generation time: 0.001 seconds
+2026-05-20T09:27:07    File list transfer time: 0.000 seconds
+2026-05-20T09:27:07    Total bytes sent: 828.96K
+2026-05-20T09:27:07    Total bytes received: 187
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    sent 828.96K bytes  received 187 bytes  552.76K bytes/sec
+2026-05-20T09:27:07    total size is 2.66M  speedup is 3.21
+2026-05-20T09:27:07    Attempt 1: Rsync for filelist /tmp//splits/split.ac completed with exit code 23
+2026-05-20T09:27:07    
+2026-05-20T09:27:07    Number of files: 10 (reg: 10)
+2026-05-20T09:27:07    Number of created files: 0
+2026-05-20T09:27:07    Number of deleted files: 0
+2026-05-20T09:27:08    Number of regular files transferred: 0
+2026-05-20T09:27:08    Total file size: 1.62M bytes
+2026-05-20T09:27:08    Total transferred file size: 0 bytes
+2026-05-20T09:27:08    Literal data: 0 bytes
+2026-05-20T09:27:08    Matched data: 0 bytes
+2026-05-20T09:27:08    File list size: 0
+2026-05-20T09:27:08    File list generation time: 0.001 seconds
+2026-05-20T09:27:08    File list transfer time: 0.000 seconds
+2026-05-20T09:27:08    Total bytes sent: 501
+2026-05-20T09:27:08    Total bytes received: 40
+2026-05-20T09:27:08    
+2026-05-20T09:27:08    sent 501 bytes  received 40 bytes  1.08K bytes/sec
+2026-05-20T09:27:08    total size is 1.62M  speedup is 2,994.76
+2026-05-20T09:27:08    Attempt 2: Rsync for filelist /tmp//splits/split.ag completed with exit code 23
+2026-05-20T09:27:08    
+2026-05-20T09:27:08    Number of files: 10 (reg: 10)
+2026-05-20T09:27:08    Number of created files: 0
+2026-05-20T09:27:08    Number of deleted files: 0
+2026-05-20T09:27:08    Number of regular files transferred: 0
+2026-05-20T09:27:08    Total file size: 1.85M bytes
+2026-05-20T09:27:08    Total transferred file size: 0 bytes
+2026-05-20T09:27:08    Literal data: 0 bytes
+2026-05-20T09:27:08    Matched data: 0 bytes
+2026-05-20T09:27:08    File list size: 0
+2026-05-20T09:27:08    File list generation time: 0.001 seconds
+2026-05-20T09:27:08    File list transfer time: 0.000 seconds
+2026-05-20T09:27:08    Total bytes sent: 473
+2026-05-20T09:27:08    Total bytes received: 40
+2026-05-20T09:27:08    
+2026-05-20T09:27:08    sent 473 bytes  received 40 bytes  1.03K bytes/sec
+2026-05-20T09:27:08    total size is 1.85M  speedup is 3,596.83
+2026-05-20T09:27:08    Attempt 2: Rsync for filelist /tmp//splits/split.af completed with exit code 23
+2026-05-20T09:27:08    
+2026-05-20T09:27:08    Number of files: 10 (reg: 10)
+2026-05-20T09:27:08    Number of created files: 9 (reg: 9)
+2026-05-20T09:27:08    Number of deleted files: 0
+2026-05-20T09:27:08    Number of regular files transferred: 9
+2026-05-20T09:27:08    Total file size: 3.07M bytes
+2026-05-20T09:27:08    Total transferred file size: 2.62M bytes
+2026-05-20T09:27:08    Literal data: 2.62M bytes
+2026-05-20T09:27:08    Matched data: 0 bytes
+2026-05-20T09:27:08    File list size: 0
+2026-05-20T09:27:08    File list generation time: 0.001 seconds
+2026-05-20T09:27:08    File list transfer time: 0.000 seconds
+2026-05-20T09:27:08    Total bytes sent: 938.90K
+2026-05-20T09:27:08    Total bytes received: 187
+2026-05-20T09:27:08    
+2026-05-20T09:27:08    sent 938.90K bytes  received 187 bytes  626.06K bytes/sec
+2026-05-20T09:27:08    total size is 3.07M  speedup is 3.27
+2026-05-20T09:27:08    Attempt 1: Rsync for filelist /tmp//splits/split.aa completed with exit code 23
+2026-05-20T09:27:08    
+2026-05-20T09:27:08    Number of files: 10 (reg: 10)
+2026-05-20T09:27:08    Number of created files: 0
+2026-05-20T09:27:08    Number of deleted files: 0
+2026-05-20T09:27:09    Number of regular files transferred: 0
+2026-05-20T09:27:09    Total file size: 11.08M bytes
+2026-05-20T09:27:09    Total transferred file size: 0 bytes
+2026-05-20T09:27:09    Literal data: 0 bytes
+2026-05-20T09:27:09    Matched data: 0 bytes
+2026-05-20T09:27:09    File list size: 0
+2026-05-20T09:27:09    File list generation time: 0.001 seconds
+2026-05-20T09:27:09    File list transfer time: 0.000 seconds
+2026-05-20T09:27:09    Total bytes sent: 492
+2026-05-20T09:27:09    Total bytes received: 40
+2026-05-20T09:27:09    
+2026-05-20T09:27:09    sent 492 bytes  received 40 bytes  1.06K bytes/sec
+2026-05-20T09:27:09    total size is 11.08M  speedup is 20,830.60
+2026-05-20T09:27:09    Attempt 2: Rsync for filelist /tmp//splits/split.ab completed with exit code 23
+2026-05-20T09:27:09    
+2026-05-20T09:27:09    Number of files: 10 (reg: 10)
+2026-05-20T09:27:09    Number of created files: 8 (reg: 8)
+2026-05-20T09:27:09    Number of deleted files: 0
+2026-05-20T09:27:09    Number of regular files transferred: 8
+2026-05-20T09:27:09    Total file size: 7.17M bytes
+2026-05-20T09:27:09    Total transferred file size: 7.09M bytes
+2026-05-20T09:27:09    Literal data: 7.09M bytes
+2026-05-20T09:27:09    Matched data: 0 bytes
+2026-05-20T09:27:09    File list size: 0
+2026-05-20T09:27:09    File list generation time: 0.001 seconds
+2026-05-20T09:27:09    File list transfer time: 0.000 seconds
+2026-05-20T09:27:09    Total bytes sent: 3.16M
+2026-05-20T09:27:09    Total bytes received: 168
+2026-05-20T09:27:09    
+2026-05-20T09:27:09    sent 3.16M bytes  received 168 bytes  2.11M bytes/sec
+2026-05-20T09:27:09    total size is 7.17M  speedup is 2.26
+2026-05-20T09:27:09    Attempt 1: Rsync for filelist /tmp//splits/split.ae completed with exit code 23
+2026-05-20T09:27:09    
+2026-05-20T09:27:09    Number of files: 10 (reg: 10)
+2026-05-20T09:27:09    Number of created files: 0
+2026-05-20T09:27:09    Number of deleted files: 0
+2026-05-20T09:27:09    Number of regular files transferred: 0
+2026-05-20T09:27:09    Total file size: 2.66M bytes
+2026-05-20T09:27:09    Total transferred file size: 0 bytes
+2026-05-20T09:27:09    Literal data: 0 bytes
+2026-05-20T09:27:10    Matched data: 0 bytes
+2026-05-20T09:27:10    File list size: 0
+2026-05-20T09:27:10    File list generation time: 0.001 seconds
+2026-05-20T09:27:10    File list transfer time: 0.000 seconds
+2026-05-20T09:27:10    Total bytes sent: 444
+2026-05-20T09:27:10    Total bytes received: 43
+2026-05-20T09:27:10    
+2026-05-20T09:27:10    sent 444 bytes  received 43 bytes  974.00 bytes/sec
+2026-05-20T09:27:10    total size is 2.66M  speedup is 5,464.61
+2026-05-20T09:27:10    Attempt 2: Rsync for filelist /tmp//splits/split.ac completed with exit code 23
+2026-05-20T09:27:10    
+2026-05-20T09:27:10    Number of files: 10 (reg: 10)
+2026-05-20T09:27:10    Number of created files: 0
+2026-05-20T09:27:10    Number of deleted files: 0
+2026-05-20T09:27:10    Number of regular files transferred: 0
+2026-05-20T09:27:10    Total file size: 3.07M bytes
+2026-05-20T09:27:10    Total transferred file size: 0 bytes
+2026-05-20T09:27:10    Literal data: 0 bytes
+2026-05-20T09:27:10    Matched data: 0 bytes
+2026-05-20T09:27:10    File list size: 0
+2026-05-20T09:27:10    File list generation time: 0.001 seconds
+2026-05-20T09:27:10    File list transfer time: 0.000 seconds
+2026-05-20T09:27:10    Total bytes sent: 494
+2026-05-20T09:27:10    Total bytes received: 43
+2026-05-20T09:27:10    
+2026-05-20T09:27:10    sent 494 bytes  received 43 bytes  1.07K bytes/sec
+2026-05-20T09:27:10    total size is 3.07M  speedup is 5,718.41
+2026-05-20T09:27:10    Attempt 2: Rsync for filelist /tmp//splits/split.aa completed with exit code 23
+2026-05-20T09:27:10    
+2026-05-20T09:27:10    Number of files: 10 (reg: 10)
+2026-05-20T09:27:10    Number of created files: 0
+2026-05-20T09:27:10    Number of deleted files: 0
+2026-05-20T09:27:10    Number of regular files transferred: 0
+2026-05-20T09:27:10    Total file size: 7.17M bytes
+2026-05-20T09:27:10    Total transferred file size: 0 bytes
+2026-05-20T09:27:10    Literal data: 0 bytes
+2026-05-20T09:27:10    Matched data: 0 bytes
+2026-05-20T09:27:10    File list size: 0
+2026-05-20T09:27:10    File list generation time: 0.001 seconds
+2026-05-20T09:27:10    File list transfer time: 0.000 seconds
+2026-05-20T09:27:10    Total bytes sent: 542
+2026-05-20T09:27:10    Total bytes received: 40
+2026-05-20T09:27:10    
+2026-05-20T09:27:10    sent 542 bytes  received 40 bytes  1.16K bytes/sec
+2026-05-20T09:27:10    total size is 7.17M  speedup is 12,313.78
+2026-05-20T09:27:10    Attempt 2: Rsync for filelist /tmp//splits/split.ae completed with exit code 23
+2026-05-20T09:27:10    
+2026-05-20T09:27:10    Number of files: 10 (reg: 10)
+2026-05-20T09:27:10    Number of created files: 9 (reg: 9)
+2026-05-20T09:27:10    Number of deleted files: 0
+2026-05-20T09:27:10    Number of regular files transferred: 9
+2026-05-20T09:27:10    Total file size: 12.97M bytes
+2026-05-20T09:27:10    Total transferred file size: 12.93M bytes
+2026-05-20T09:27:10    Literal data: 12.93M bytes
+2026-05-20T09:27:10    Matched data: 0 bytes
+2026-05-20T09:27:10    File list size: 0
+2026-05-20T09:27:10    File list generation time: 0.001 seconds
+2026-05-20T09:27:10    File list transfer time: 0.000 seconds
+2026-05-20T09:27:11    Total bytes sent: 4.07M
+2026-05-20T09:27:11    Total bytes received: 187
+2026-05-20T09:27:11    
+2026-05-20T09:27:11    sent 4.07M bytes  received 187 bytes  2.71M bytes/sec
+2026-05-20T09:27:11    total size is 12.97M  speedup is 3.19
+2026-05-20T09:27:11    Attempt 1: Rsync for filelist /tmp//splits/split.ad completed with exit code 23
+2026-05-20T09:27:11    
+2026-05-20T09:27:11    Number of files: 10 (reg: 10)
+2026-05-20T09:27:11    Number of created files: 0
+2026-05-20T09:27:11    Number of deleted files: 0
+2026-05-20T09:27:11    Number of regular files transferred: 0
+2026-05-20T09:27:11    Total file size: 12.97M bytes
+2026-05-20T09:27:11    Total transferred file size: 0 bytes
+2026-05-20T09:27:11    Literal data: 0 bytes
+2026-05-20T09:27:11    Matched data: 0 bytes
+2026-05-20T09:27:11    File list size: 0
+2026-05-20T09:27:11    File list generation time: 0.001 seconds
+2026-05-20T09:27:11    File list transfer time: 0.000 seconds
+2026-05-20T09:27:11    Total bytes sent: 459
+2026-05-20T09:27:11    Total bytes received: 43
+2026-05-20T09:27:11    
+2026-05-20T09:27:11    sent 459 bytes  received 43 bytes  1.00K bytes/sec
+2026-05-20T09:27:11    total size is 12.97M  speedup is 25,841.08
+2026-05-20T09:27:11    Attempt 2: Rsync for filelist /tmp//splits/split.ad completed with exit code 23
+2026-05-20T09:27:11    An error has occurred during web site deployment.
+2026-05-20T09:27:11    Rsync failed in 2 seconds
+2026-05-20T09:27:11    rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+/opt/Kudu/Scripts/starter.sh /opt/Kudu/Scripts/parallel_rsync.sh /tmp/zipdeploy/extracted /home/site/wwwroot 8 /tmp/ False False  
+2026-05-20T09:27:11  
+2026-05-20T09:27:11  WARNING!! Exception in parallel rsync: ExitCode: 123  Output: Run rsync from: /tmp/zipdeploy/extracted/ to: /home/site/wwwroot/ in 8 parallel threads
+Delete options: clean=False  use manifest=False  directory to ignore=
+Prev manifest = /opt/Kudu/Scripts/firstDeploymentManifest and next /home/site/deployments/4e69e544-5366-4fcd-a098-52756ab5cd33/manifest
+Cleaning up /tmp//filelist.txt and /tmp//splits
+Creating a list of all files at /tmp//filelist.txt
+No directory to exclude.
+Created /tmp//filelist.txt. Total number of files to be synced = 72.
+Created batches from the list of files. Processing 10 files in each thread
+Running rsync for filelist /tmp//splits/split.aa from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.ab from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.ac from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.ae from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.ad from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.ag from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.af from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+Running rsync for filelist /tmp//splits/split.ah from /tmp/zipdeploy/extracted/ to /home/site/wwwroot/
+
+Number of files: 2 (reg: 2)
+Number of created files: 2 (reg: 2)
+Number of deleted files: 0
+Number of regular files transferred: 2
+Total file size: 270.49K bytes
+Total transferred file size: 270.49K bytes
+Literal data: 270.49K bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 106.78K
+Total bytes received: 54
+
+sent 106.78K bytes  received 54 bytes  213.66K bytes/sec
+total size is 270.49K  speedup is 2.53
+Attempt 1: Rsync for filelist /tmp//splits/split.ah completed with exit code 0
+
+Number of files: 10 (reg: 10)
+Number of created files: 8 (reg: 8)
+Number of deleted files: 0
+Number of regular files transferred: 8
+Total file size: 1.85M bytes
+Total transferred file size: 1.44M bytes
+Literal data: 1.44M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 906.68K
+Total bytes received: 168
+
+sent 906.68K bytes  received 168 bytes  604.56K bytes/sec
+total size is 1.85M  speedup is 2.03
+Attempt 1: Rsync for filelist /tmp//splits/split.af completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 8 (reg: 8)
+Number of deleted files: 0
+Number of regular files transferred: 8
+Total file size: 1.62M bytes
+Total transferred file size: 1.08M bytes
+Literal data: 1.08M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 470.23K
+Total bytes received: 168
+
+sent 470.23K bytes  received 168 bytes  313.60K bytes/sec
+total size is 1.62M  speedup is 3.44
+Attempt 1: Rsync for filelist /tmp//splits/split.ag completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 8 (reg: 8)
+Number of deleted files: 0
+Number of regular files transferred: 8
+Total file size: 11.08M bytes
+Total transferred file size: 2.26M bytes
+Literal data: 2.26M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 834.89K
+Total bytes received: 168
+
+sent 834.89K bytes  received 168 bytes  556.70K bytes/sec
+total size is 11.08M  speedup is 13.27
+Attempt 1: Rsync for filelist /tmp//splits/split.ab completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 9 (reg: 9)
+Number of deleted files: 0
+Number of regular files transferred: 9
+Total file size: 2.66M bytes
+Total transferred file size: 2.11M bytes
+Literal data: 2.11M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 828.96K
+Total bytes received: 187
+
+sent 828.96K bytes  received 187 bytes  552.76K bytes/sec
+total size is 2.66M  speedup is 3.21
+Attempt 1: Rsync for filelist /tmp//splits/split.ac completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 1.62M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 501
+Total bytes received: 40
+
+sent 501 bytes  received 40 bytes  1.08K bytes/sec
+total size is 1.62M  speedup is 2 994.76
+Attempt 2: Rsync for filelist /tmp//splits/split.ag completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 1.85M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 473
+Total bytes received: 40
+
+sent 473 bytes  received 40 bytes  1.03K bytes/sec
+total size is 1.85M  speedup is 3 596.83
+Attempt 2: Rsync for filelist /tmp//splits/split.af completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 9 (reg: 9)
+Number of deleted files: 0
+Number of regular files transferred: 9
+Total file size: 3.07M bytes
+Total transferred file size: 2.62M bytes
+Literal data: 2.62M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 938.90K
+Total bytes received: 187
+
+sent 938.90K bytes  received 187 bytes  626.06K bytes/sec
+total size is 3.07M  speedup is 3.27
+Attempt 1: Rsync for filelist /tmp//splits/split.aa completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 11.08M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 492
+Total bytes received: 40
+
+sent 492 bytes  received 40 bytes  1.06K bytes/sec
+total size is 11.08M  speedup is 20 830.60
+Attempt 2: Rsync for filelist /tmp//splits/split.ab completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 8 (reg: 8)
+Number of deleted files: 0
+Number of regular files transferred: 8
+Total file size: 7.17M bytes
+Total transferred file size: 7.09M bytes
+Literal data: 7.09M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 3.16M
+Total bytes received: 168
+
+sent 3.16M bytes  received 168 bytes  2.11M bytes/sec
+total size is 7.17M  speedup is 2.26
+Attempt 1: Rsync for filelist /tmp//splits/split.ae completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 2.66M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 444
+Total bytes received: 43
+
+sent 444 bytes  received 43 bytes  974.00 bytes/sec
+total size is 2.66M  speedup is 5 464.61
+Attempt 2: Rsync for filelist /tmp//splits/split.ac completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 3.07M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 494
+Total bytes received: 43
+
+sent 494 bytes  received 43 bytes  1.07K bytes/sec
+total size is 3.07M  speedup is 5 718.41
+Attempt 2: Rsync for filelist /tmp//splits/split.aa completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 7.17M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 542
+Total bytes received: 40
+
+sent 542 bytes  received 40 bytes  1.16K bytes/sec
+total size is 7.17M  speedup is 12 313.78
+Attempt 2: Rsync for filelist /tmp//splits/split.ae completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 9 (reg: 9)
+Number of deleted files: 0
+Number of regular files transferred: 9
+Total file size: 12.97M bytes
+Total transferred file size: 12.93M bytes
+Literal data: 12.93M bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 4.07M
+Total bytes received: 187
+
+sent 4.07M bytes  received 187 bytes  2.71M bytes/sec
+total size is 12.97M  speedup is 3.19
+Attempt 1: Rsync for filelist /tmp//splits/split.ad completed with exit code 23
+
+Number of files: 10 (reg: 10)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 12.97M bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Matched data: 0 bytes
+File list size: 0
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 459
+Total bytes received: 43
+
+sent 459 bytes  received 43 bytes  1.00K bytes/sec
+total size is 12.97M  speedup is 25 841.08
+Attempt 2: Rsync for filelist /tmp//splits/split.ad completed with exit code 23
+An error has occurred during web site deployment.
+Rsync failed in 2 seconds  Error: rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]  Kudu.Core.Infrastructure.CommandLineException: rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net7.0\System.Management.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\unix\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Cosmos.CRTCompat.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\Microsoft.Azure.Cosmos.ServiceInterop.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\msvcp140.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Drawing.Common.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll": Invalid argument (22)
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win\lib\net6.0\System.Windows.Extensions.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+rsync: [generator] recv_generator: failed to stat "/home/site/wwwroot/runtimes\win-x64\native\vcruntime140_1.dll": Invalid argument (22)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+/opt/Kudu/Scripts/starter.sh /opt/Kudu/Scripts/parallel_rsync.sh /tmp/zipdeploy/extracted /home/site/wwwroot 8 /tmp/ False False  
+   at Kudu.Core.Infrastructure.Executable.ExecuteInternal(ITracer tracer  Func`2 onWriteOutput  Func`2 onWriteError  CancellationToken token  Encoding encoding  String arguments  Object[] args) in /tmp/KuduLite/Kudu.Core/Infrastructure/Executable.cs:line 239
+   at Kudu.Core.Infrastructure.Executable.ExecuteWithProgressWriter(ILogger logger  ITracer tracer  CancellationToken token  String arguments  Object[] args) in /tmp/KuduLite/Kudu.Core/Infrastructure/Executable.cs:line 118
+   at Kudu.Core.Deployment.Generator.ExternalCommandBuilder.RunCommand(DeploymentContext context  String command  Boolean ignoreManifest  CancellationToken token  String message  ILogger internalLogger) in /tmp/KuduLite/Kudu.Core/Deployment/Generator/ExternalCommandBuilder.cs:line 135
+   at Kudu.Core.Deployment.Generator.OneDeployBuilder.Build(DeploymentContext context  CancellationToken token) in /tmp/KuduLite/Kudu.Core/Deployment/Generator/OneDeployBuilder.cs:line 97
+2026-05-20T09:27:11  Incrementally deploying to /home/site/wwwroot
+2026-05-20T09:27:12  Deployment Failed. deployer = OneDeploy deploymentPath = OneDeploy
