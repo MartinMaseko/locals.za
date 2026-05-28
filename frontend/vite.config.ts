@@ -48,19 +48,19 @@ export default defineConfig({
               }
             }
           },
-          // API calls - Network First with cache fallback
+          // Azure API — Network First, short cache so data stays fresh
           {
-            urlPattern: /^https:\/\/.*\.cloudfunctions\.net\/.*/i,
+            urlPattern: /^https:\/\/localsza-api.*\.azurewebsites\.net\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
+              cacheName: 'azure-api-cache',
+              networkTimeoutSeconds: 8,
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
+                maxAgeSeconds: 60 * 2 // 2 minutes max stale
               },
               cacheableResponse: {
-                statuses: [0, 200]
+                statuses: [200]
               }
             }
           }
