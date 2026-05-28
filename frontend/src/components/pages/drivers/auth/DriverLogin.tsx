@@ -39,7 +39,7 @@ const DriverLogin: React.FC = () => {
 
       // Step 3 — sign in with the custom token
       await signInWithCustomToken(auth, tokenRes.data.customToken);
-      navigate('/driversdashboard');
+      navigate('/driver/dashboard');
     } catch (err: any) {
       if (err.response?.status === 401) {
         setError('Invalid Driver ID or PIN. Please check your credentials.');

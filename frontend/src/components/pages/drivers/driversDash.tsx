@@ -52,7 +52,7 @@ const STATUS_COLOR: Record<string, string> = {
 const getAddress = (addr: Job['delivery_address']): string => {
   if (!addr) return 'No address';
   const parts = [
-    addr.addressLine || addr.address_line || '',
+    addr.addressLine || addr.address_line || addr.street || '',
     addr.suburb || '',
     addr.city   || '',
   ].filter(Boolean);

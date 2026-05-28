@@ -176,6 +176,100 @@ CLEAN UP (optional, after successful deploy)
 ----------------------------------------------------
 LAST DEPLOYED
 ----------------------------------------------------
+  Date    : 2026-05-28
+  By      : kmmas
+  Version : Slice 19 (Fix assign 404 — remove JObject from orders query)
+  Notes   : Root cause: PATCH /api/admin/deliveries/{id}/assign still returned 404
+            after Slice 18 because the JObject fix was also broken.
+            The Cosmos SDK's built-in serializer (CosmosTextJsonSerializer, STJ-based
+            in v3.x) cannot deserialize to Newtonsoft's JObject — the same silent
+            failure as the earlier JsonElement attempt. The query DID find the document,
+            but deserialization produced an empty list → docs.Count == 0 → 404.
+            Fix: AdminEndpoints.cs — switched assign endpoint from QueryAsync<JObject>
+            + UpsertStreamAsync to QueryAsync<Order> + UpsertAsync<Order>.
+            QueryAsync<Order> is proven to work everywhere else (orders list, etc.).
+            Removed unused usings: Newtonsoft.Json.Linq, Microsoft.Azure.Cosmos.
+  Build   : Self-contained linux-x64, 0 errors, 2 pre-existing warnings
+  Status  : ✓ Deployed — /api/stores 200 OK confirmed
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
+  Date    : 2026-05-28
+  By      : kmmas
+  Version : Slice 18 (Driver system full rebuild — /id partition key)
+  Notes   : Root cause of persistent driver bugs: "drivers" container was
+            using /driverId as partition key. Cosmos Newtonsoft stores DriverId
+            as "driverId" — but seed drivers created by Node.js had "driver_id"
+            (snake_case), so they were stored at PartitionKey.None and could
+            not be found or deleted by C# code using the string PK.
+            Additionally, QueryAsync<JsonElement> is silently broken with the
+            Newtonsoft serializer — returns default/zero structs even when the
+            document exists. This was causing all order assign calls to 404.
+            Fix — complete rebuild:
+            1. Cosmos "drivers" container deleted and recreated with /id PK.
+               Every document always has "id"; operations are now trivially
+               correct: GetAsync/UpsertAsync/DeleteAsync all use driver.Id.
+            2. Driver.cs — clean rewrite; same fields, updated partition key
+               comments.
+            3. DriverEndpoints.cs — full rewrite from scratch:
+               • All operations: UpsertAsync/DeleteAsync/GetAsync use driver.Id.
+               • Point reads (O(1)) everywhere via GetAsync<Driver>("drivers",uid,uid)
+                 instead of cross-partition QueryAsync.
+               • verify-credentials + login-link: point read by driverId.
+               • Status progression, revenue, jobs: unchanged logic, cleaner PK.
+            4. AdminEndpoints.cs — assign endpoint fixed:
+               • Switched from QueryAsync<JsonElement> → QueryAsync<JObject>
+                 (Newtonsoft cannot deserialize STJ JsonElement — returns zeros).
+               • Prefer document with userId field (real orders) over legacy seed
+                 docs that only have guest_id.
+               • Extract correct PK: userId ?? guestId ?? guest_id → PartitionKey.None.
+               • Returns snake_case response {id, driver_id, status, updated_at}.
+               • Delete driver: simplified to GetAsync + DeleteAsync with string PK
+                 (container is /id so id == partition key always).
+            5. CosmosService.cs — added PartitionKey overloads for DeleteAsync
+               and UpsertStreamAsync (needed by assign endpoint for PartitionKey.None).
+  Build   : Self-contained linux-x64, 0 errors, 2 pre-existing warnings
+  Status  : ✓ Deployed — RuntimeSuccessful, /api/stores 200 OK confirmed
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
+  Date    : 2026-05-28
+  By      : kmmas
+  Version : Slice 16 (Driver system end-to-end fix — Cosmos camelCase queries + frontend)
+  Notes   : Root cause: Cosmos SDK 3.59.0 uses Newtonsoft (CamelCase policy).
+            STJ [JsonPropertyName] attributes are silently ignored by Newtonsoft.
+            All Cosmos fields are stored as camelCase (e.g. driverId not driver_id).
+            Every driver endpoint had snake_case Cosmos queries that matched nothing.
+            Backend:
+            1. DriverEndpoints.cs — complete camelCase query fix for all endpoints:
+               • verify-credentials + login-link: WHERE c.id = @id (not c.driver_id)
+               • me: WHERE c.id = @uid
+               • me/status: same
+               • me/jobs: WHERE c.driverId = @did ORDER BY c.updatedAt DESC
+               • me/jobs/{id}: resolves driverId via c.id query, 401 guard
+               • me/jobs/{id}/status: same; "set available" query uses c.id = @did
+               • me/revenue: SELECT c.driverPayout, c.createdAt WHERE c.driverId
+               • GET /api/drivers (admin): ORDER BY c.fullName
+               • Added ResolveDriverIdAsync helper (c.id lookup, cached in ctx.Items)
+               • Added null guards for driverId (fix CS8601 warnings)
+            2. AdminEndpoints assign response: now returns typed {id, driver_id,
+               status, updated_at} (snake_case) so frontend spread update works.
+            3. Order.cs: added [JsonPropertyName("customer_name")] and
+               [JsonPropertyName("contact_number")] — HTTP STJ serializer respects
+               these; Cosmos Newtonsoft ignores them (stores as customerName).
+            Frontend:
+            4. driversDash.tsx: getAddress now includes addr.street fallback.
+            5. driverDeliveries.tsx: formatAddress includes addr.street and
+               addr.postalCode; navigate fixed from /driversdashboard → /driver/dashboard.
+            6. DriverLogin.tsx: navigate fixed to /driver/dashboard.
+  Build   : Self-contained linux-x64, 0 errors, 2 pre-existing warnings
+  Status  : ✓ Deployed — /api/stores 200 OK confirmed
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
   Date    : 2026-05-27
   By      : kmmas
   Version : Slice 14 (Driver system refactor — PIN auth + job workflow)

@@ -56,6 +56,27 @@ public class CosmosService
     public async Task DeleteAsync(string container, string id, string partitionKey)
         => await C(container).DeleteItemAsync<object>(id, new PartitionKey(partitionKey));
 
+    public async Task DeleteAsync(string container, string id, PartitionKey partitionKey)
+        => await C(container).DeleteItemAsync<object>(id, partitionKey);
+
+    public async Task UpsertStreamAsync(string container, string rawJson, string partitionKey)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(rawJson);
+        using var stream = new MemoryStream(bytes);
+        using var response = await C(container).UpsertItemStreamAsync(stream, new PartitionKey(partitionKey));
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Cosmos upsert failed with status {response.StatusCode}");
+    }
+
+    public async Task UpsertStreamAsync(string container, string rawJson, PartitionKey partitionKey)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(rawJson);
+        using var stream = new MemoryStream(bytes);
+        using var response = await C(container).UpsertItemStreamAsync(stream, partitionKey);
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Cosmos upsert failed with status {response.StatusCode}");
+    }
+
     /// <summary>
     /// Creates the Cosmos container if it doesn't already exist.
     /// Safe to call on every request — SDK returns 200 OK when the container is

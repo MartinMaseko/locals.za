@@ -60,11 +60,11 @@ const STATUS_LABEL: Record<string, string> = {
 const formatAddress = (addr: Job['delivery_address']): string => {
   if (!addr) return 'No address';
   return [
-    addr.addressLine || addr.address_line || '',
-    addr.suburb  || '',
-    addr.city    || '',
-    addr.province|| '',
-    addr.postal  || '',
+    addr.addressLine || addr.address_line || addr.street || '',
+    addr.suburb   || '',
+    addr.city     || '',
+    addr.province || addr.province || '',
+    addr.postal   || addr.postalCode || '',
   ].filter(Boolean).join(', ') || 'No address details';
 };
 
@@ -164,7 +164,7 @@ const DriverDeliveries = () => {
       <div className="error-container">
         <h2>Error</h2>
         <p>{error || 'Failed to load job'}</p>
-        <button className="app-btn" onClick={() => navigate('/driversdashboard')}>
+        <button className="app-btn" onClick={() => navigate('/driver/dashboard')}>
           Back to Dashboard
         </button>
       </div>
@@ -180,7 +180,7 @@ const DriverDeliveries = () => {
 
       {/* ── Header ── */}
       <div className="delivery-header">
-        <button className="back-btn" onClick={() => navigate('/driversdashboard')}>
+        <button className="back-btn" onClick={() => navigate('/driver/dashboard')}>
           <img width="20" height="20"
             src="https://img.icons8.com/ios-filled/20/ffb803/back.png" alt="back" />
           Back to jobs

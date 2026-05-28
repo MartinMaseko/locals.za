@@ -5,58 +5,73 @@ using System.Text;
 
 namespace LocalsZaApi.Endpoints;
 
+// ── Design notes ──────────────────────────────────────────────────────────────
+// Cosmos container "drivers" uses partition key /id.
+// Every document always has "id", so all operations are trivially correct:
+//   UpsertAsync("drivers", driver, driver.Id)
+//   DeleteAsync("drivers", id, id)
+//   GetAsync<Driver>("drivers", id, id)
+// Cosmos SDK (Newtonsoft CamelCase) stores fields as: fullName, driverId, pinHash, etc.
+// STJ [JsonPropertyName] on Driver model controls HTTP response shape only.
+// ─────────────────────────────────────────────────────────────────────────────
+
 public static class DriverEndpoints
 {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Produces a salted SHA-256 hex hash of the driver's PIN.
-    /// Salt = driver_id so identical PINs produce different hashes.
-    /// </summary>
     static string HashPin(string driverId, string pin)
         => Convert.ToHexString(
                SHA256.HashData(Encoding.UTF8.GetBytes($"{driverId}:{pin}"))
            ).ToLower();
 
-    /// <summary>
-    /// Returns a copy of the driver document with pin_hash stripped out
-    /// so it is never leaked to any client.
-    /// </summary>
     static object SafeDriver(Driver d) => new
     {
-        id           = d.Id,
-        driver_id    = d.DriverId,
-        firebase_uid = d.FirebaseUid,
-        full_name    = d.FullName,
-        email        = d.Email,
-        phone_number = d.PhoneNumber,
-        vehicle_type = d.VehicleType,
-        vehicle_model= d.VehicleModel,
-        status       = d.Status,
-        created_at   = d.CreatedAt,
+        id            = d.Id,
+        driver_id     = d.DriverId,
+        firebase_uid  = d.FirebaseUid,
+        full_name     = d.FullName,
+        email         = d.Email,
+        phone_number  = d.PhoneNumber,
+        vehicle_type  = d.VehicleType,
+        vehicle_model = d.VehicleModel,
+        status        = d.Status,
+        created_at    = d.CreatedAt,
     };
 
-    // ── Allowed status transitions for drivers ─────────────────────────────
+    // Status progression for job workflow
     static readonly Dictionary<string, string> _nextStatus = new()
     {
-        ["assigned"]       = "accepted",
-        ["accepted"]       = "arrivedAtPickup",
-        ["arrivedAtPickup"]= "loaded",
-        ["loaded"]         = "delivered",
+        ["assigned"]        = "accepted",
+        ["accepted"]        = "arrivedAtPickup",
+        ["arrivedAtPickup"] = "loaded",
+        ["loaded"]          = "delivered",
     };
+
+    // ── Get authenticated driver ──────────────────────────────────────────────
+    // After Firebase custom-token login, uid = driver.Id (always).
+    // Query by c.id = @uid — the only field that is always present and indexed.
+    static async Task<Driver?> GetAuthDriverAsync(HttpContext ctx, CosmosService cosmos)
+    {
+        var uid = AuthHelpers.GetUid(ctx);
+        if (uid is null) return null;
+
+        // With partition key /id, point-read is instant — no cross-partition fan-out.
+        return await cosmos.GetAsync<Driver>("drivers", uid, uid);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
 
     public static void MapDriverEndpoints(this WebApplication app)
     {
-        // ── Driver registration / profile update ─────────────────────────────
+        // ── Driver registration / self-registration ──────────────────────────
         app.MapPost("/api/drivers/register", async (HttpContext ctx,
             Driver driver, CosmosService cosmos) =>
         {
             driver.Id        = driver.FirebaseUid ?? Guid.NewGuid().ToString();
             driver.DriverId  = string.IsNullOrEmpty(driver.DriverId) ? driver.Id : driver.DriverId;
             driver.CreatedAt = DateTime.UtcNow.ToString("o");
-            var saved = await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
+            // Partition key = driver.Id — always valid, no field-name confusion.
+            var saved = await cosmos.UpsertAsync("drivers", driver, driver.Id);
             return Results.Created($"/api/drivers/{saved.Id}", SafeDriver(saved));
         });
 
@@ -66,16 +81,12 @@ public static class DriverEndpoints
             var uid = await AuthHelpers.RequireUidAsync(ctx);
             if (uid is null) return;
 
-            var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                new() { ["@uid"] = uid });
-
-            var driver = drivers.FirstOrDefault();
+            var driver = await cosmos.GetAsync<Driver>("drivers", uid, uid);
             if (driver is null) { ctx.Response.StatusCode = 404; return; }
             await ctx.Response.WriteAsJsonAsync(SafeDriver(driver));
         });
 
-        // ── Toggle online / offline status ────────────────────────────────────
+        // ── Toggle online / offline ───────────────────────────────────────────
         app.MapPatch("/api/drivers/me/status", async (HttpContext ctx, CosmosService cosmos) =>
         {
             var uid = await AuthHelpers.RequireUidAsync(ctx);
@@ -89,15 +100,11 @@ public static class DriverEndpoints
                 return;
             }
 
-            var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                new() { ["@uid"] = uid });
-
-            var driver = drivers.FirstOrDefault();
+            var driver = await cosmos.GetAsync<Driver>("drivers", uid, uid);
             if (driver is null) { ctx.Response.StatusCode = 404; return; }
 
             driver.Status = body.Status;
-            await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
+            await cosmos.UpsertAsync("drivers", driver, driver.Id);
             await ctx.Response.WriteAsJsonAsync(SafeDriver(driver));
         });
 
@@ -107,76 +114,50 @@ public static class DriverEndpoints
             var uid = await AuthHelpers.RequireUidAsync(ctx);
             if (uid is null) return;
 
-            // Resolve the driver_id from the claims / Cosmos lookup
-            var driverId = ctx.Items["driver_id"] as string;
-            if (string.IsNullOrEmpty(driverId))
-            {
-                var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                    "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                    new() { ["@uid"] = uid });
-                driverId = drivers.FirstOrDefault()?.DriverId ?? uid;
-            }
-
+            // uid = driver.Id = driver.DriverId for all drivers created by admin.
+            // Orders store the driver reference as "driverId" (Newtonsoft camelCase).
             var orders = await cosmos.QueryAsync<Order>("orders",
-                "SELECT * FROM c WHERE c.driver_id = @did ORDER BY c.updated_at DESC",
-                new() { ["@did"] = driverId });
+                "SELECT * FROM c WHERE c.driverId = @did ORDER BY c.updatedAt DESC",
+                new() { ["@did"] = uid });
 
             await ctx.Response.WriteAsJsonAsync(orders);
         });
 
-        // ── Single job details ────────────────────────────────────────────────
+        // ── Single job ────────────────────────────────────────────────────────
         app.MapGet("/api/drivers/me/jobs/{orderId}", async (HttpContext ctx,
             string orderId, CosmosService cosmos) =>
         {
             var uid = await AuthHelpers.RequireUidAsync(ctx);
             if (uid is null) return;
 
-            var driverId = ctx.Items["driver_id"] as string;
-            if (string.IsNullOrEmpty(driverId))
-            {
-                var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                    "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                    new() { ["@uid"] = uid });
-                driverId = drivers.FirstOrDefault()?.DriverId ?? uid;
-            }
-
             var orders = await cosmos.QueryAsync<Order>("orders",
                 "SELECT * FROM c WHERE c.id = @id",
                 new() { ["@id"] = orderId });
 
-            var order = orders.FirstOrDefault();
-            if (order is null) { ctx.Response.StatusCode = 404; return; }
-            if (order.DriverId != driverId) { ctx.Response.StatusCode = 403; return; }
+            if (orders.Count == 0) { ctx.Response.StatusCode = 404; return; }
+            // Prefer the copy that belongs to this driver (seed data may have duplicates)
+            var order = orders.FirstOrDefault(o => o.DriverId == uid);
+            if (order is null) { ctx.Response.StatusCode = 403; return; }
 
             await ctx.Response.WriteAsJsonAsync(order);
         });
 
         // ── Status progression ────────────────────────────────────────────────
-        // Allowed chain: assigned → accepted → arrivedAtPickup → loaded → delivered
         app.MapPatch("/api/drivers/me/jobs/{orderId}/status", async (HttpContext ctx,
             string orderId, CosmosService cosmos) =>
         {
             var uid = await AuthHelpers.RequireUidAsync(ctx);
             if (uid is null) return;
 
-            var driverId = ctx.Items["driver_id"] as string;
-            if (string.IsNullOrEmpty(driverId))
-            {
-                var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                    "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                    new() { ["@uid"] = uid });
-                driverId = drivers.FirstOrDefault()?.DriverId ?? uid;
-            }
-
             var orders = await cosmos.QueryAsync<Order>("orders",
                 "SELECT * FROM c WHERE c.id = @id",
                 new() { ["@id"] = orderId });
 
-            var order = orders.FirstOrDefault();
-            if (order is null) { ctx.Response.StatusCode = 404; return; }
-            if (order.DriverId != driverId) { ctx.Response.StatusCode = 403; return; }
+            if (orders.Count == 0) { ctx.Response.StatusCode = 404; return; }
+            // Prefer the copy that belongs to this driver (seed data may have duplicates)
+            var order = orders.FirstOrDefault(o => o.DriverId == uid);
+            if (order is null) { ctx.Response.StatusCode = 403; return; }
 
-            // Validate the transition
             if (!_nextStatus.TryGetValue(order.Status, out var next))
             {
                 ctx.Response.StatusCode = 409;
@@ -187,21 +168,17 @@ public static class DriverEndpoints
             order.Status    = next;
             order.UpdatedAt = DateTime.UtcNow.ToString("o");
 
-            // When delivered: calculate payouts and free up the driver
             if (next == "delivered")
             {
                 order.DriverPayout = Math.Round(order.DeliveryFee * 0.8m, 2);
                 order.PlatformFee  = Math.Round(order.DeliveryFee * 0.2m, 2);
 
-                // Set driver back to available
-                var allDrivers = await cosmos.QueryAsync<Driver>("drivers",
-                    "SELECT * FROM c WHERE c.driver_id = @did",
-                    new() { ["@did"] = driverId });
-                var driver = allDrivers.FirstOrDefault();
+                // Set driver back to available (point-read, no cross-partition query needed)
+                var driver = await cosmos.GetAsync<Driver>("drivers", uid, uid);
                 if (driver is not null)
                 {
                     driver.Status = "available";
-                    await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
+                    await cosmos.UpsertAsync("drivers", driver, driver.Id);
                 }
             }
 
@@ -219,16 +196,12 @@ public static class DriverEndpoints
             var body = await ctx.Request.ReadFromJsonAsync<LocationPing>();
             if (body is null) { ctx.Response.StatusCode = 400; return; }
 
-            var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                new() { ["@uid"] = uid });
-
-            var driver = drivers.FirstOrDefault();
+            var driver = await cosmos.GetAsync<Driver>("drivers", uid, uid);
             if (driver is null) { ctx.Response.StatusCode = 404; return; }
 
             driver.CurrentLocation = new DriverLocation { Lat = body.Lat, Lng = body.Lng };
             driver.Status = body.Status ?? driver.Status;
-            await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
+            await cosmos.UpsertAsync("drivers", driver, driver.Id);
             ctx.Response.StatusCode = 204;
         });
 
@@ -238,18 +211,9 @@ public static class DriverEndpoints
             var uid = await AuthHelpers.RequireUidAsync(ctx);
             if (uid is null) return;
 
-            var driverId = ctx.Items["driver_id"] as string;
-            if (string.IsNullOrEmpty(driverId))
-            {
-                var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                    "SELECT * FROM c WHERE c.firebase_uid = @uid OR c.driver_id = @uid",
-                    new() { ["@uid"] = uid });
-                driverId = drivers.FirstOrDefault()?.DriverId ?? uid;
-            }
-
             var completed = await cosmos.QueryAsync<Order>("orders",
-                "SELECT c.driver_payout, c.created_at FROM c WHERE c.driver_id = @did AND c.status = 'delivered'",
-                new() { ["@did"] = driverId });
+                "SELECT c.driverPayout, c.createdAt FROM c WHERE c.driverId = @did AND c.status = 'delivered'",
+                new() { ["@did"] = uid });
 
             var now   = DateTime.UtcNow;
             var today = now.Date;
@@ -274,16 +238,13 @@ public static class DriverEndpoints
         {
             if (!AuthHelpers.IsAdmin(ctx)) { ctx.Response.StatusCode = 403; return; }
             var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c ORDER BY c.full_name");
-            // Strip pin_hash before returning
+                "SELECT * FROM c ORDER BY c.fullName");
             await ctx.Response.WriteAsJsonAsync(drivers.Select(SafeDriver));
         });
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Authentication — anonymous endpoints
-        // ─────────────────────────────────────────────────────────────────────
+        // ── Authentication — anonymous endpoints ─────────────────────────────
 
-        // Step 1: verify driver_id + PIN → return firebase_uid + identity
+        // Step 1: verify Driver ID + PIN
         app.MapPost("/api/drivers/verify-credentials", async (HttpContext ctx, CosmosService cosmos) =>
         {
             var body = await ctx.Request.ReadFromJsonAsync<VerifyCredBody>();
@@ -292,23 +253,21 @@ public static class DriverEndpoints
                 || string.IsNullOrWhiteSpace(body.Pin))
                 return Results.BadRequest(new { error = "driver_id and pin are required" });
 
-            var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c WHERE c.driver_id = @id",
-                new() { ["@id"] = body.DriverId.Trim() });
+            // Admin-created drivers: Id = DriverId. Point-read is O(1).
+            var driver = await cosmos.GetAsync<Driver>("drivers",
+                body.DriverId.Trim(), body.DriverId.Trim());
 
-            var driver = drivers.FirstOrDefault();
             if (driver is null)
                 return Results.Json(new { error = "Invalid credentials" }, statusCode: 401);
 
-            // Verify PIN hash
-            var expected = HashPin(driver.DriverId, body.Pin.Trim());
+            var expected = HashPin(driver.Id, body.Pin.Trim());
             if (!string.Equals(driver.PinHash, expected, StringComparison.OrdinalIgnoreCase))
                 return Results.Json(new { error = "Invalid credentials" }, statusCode: 401);
 
             return Results.Ok(new
             {
-                firebase_uid = driver.FirebaseUid ?? driver.DriverId,
-                driver_id    = driver.DriverId,
+                firebase_uid = driver.FirebaseUid ?? driver.Id,
+                driver_id    = driver.Id,
                 full_name    = driver.FullName,
             });
         }).AllowAnonymous();
@@ -321,23 +280,22 @@ public static class DriverEndpoints
             if (body is null || string.IsNullOrWhiteSpace(body.DriverId))
                 return Results.BadRequest(new { error = "driver_id is required" });
 
-            var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c WHERE c.driver_id = @id",
-                new() { ["@id"] = body.DriverId });
+            var driver = await cosmos.GetAsync<Driver>("drivers",
+                body.DriverId.Trim(), body.DriverId.Trim());
 
-            var driver = drivers.FirstOrDefault();
             if (driver is null)
                 return Results.Json(new { error = "Driver not found" }, statusCode: 401);
 
-            var uid = driver.FirebaseUid ?? driver.DriverId;
+            // uid for the custom token = driver.Id (= driver.DriverId for admin-created drivers).
+            // After signInWithCustomToken, auth.currentUser.uid = driver.Id.
+            var uid = driver.FirebaseUid ?? driver.Id;
             var claims = new Dictionary<string, object>
             {
                 ["role"]      = "driver",
-                ["driver_id"] = driver.DriverId,
+                ["driver_id"] = driver.Id,
                 ["full_name"] = driver.FullName,
             };
             var customToken = await firebase.CreateCustomTokenAsync(uid, claims);
-
             return Results.Ok(new { customToken, success = true });
         }).AllowAnonymous();
     }

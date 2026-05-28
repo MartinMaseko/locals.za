@@ -11,10 +11,6 @@ public static class AdminEndpoints
     private static IResult Forbidden()
         => Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
-    /// <summary>
-    /// Produces the same salted SHA-256 hash used by DriverEndpoints.
-    /// Salt = driver_id so identical PINs produce different hashes.
-    /// </summary>
     private static string HashPin(string driverId, string pin)
         => Convert.ToHexString(
                SHA256.HashData(Encoding.UTF8.GetBytes($"{driverId}:{pin}"))
@@ -152,20 +148,33 @@ public static class AdminEndpoints
             var body = await ctx.Request.ReadFromJsonAsync<AssignDriverPatch>();
             if (body is null) return Results.BadRequest(new { error = "Missing body" });
 
+            // Use the typed Order model — the Cosmos SDK serializer works correctly
+            // with C# model types. JObject and JsonElement both fail silently with
+            // the SDK's built-in serializer (CosmosTextJsonSerializer / STJ).
             var orders = await cosmos.QueryAsync<Order>("orders",
                 "SELECT * FROM c WHERE c.id = @id",
                 new() { ["@id"] = orderId });
 
-            var order = orders.FirstOrDefault();
-            if (order is null) return Results.NotFound();
+            if (orders.Count == 0) return Results.NotFound();
+
+            // Prefer the document with a userId (real + new seed orders).
+            var order = orders.OrderByDescending(o => o.UserId != null ? 1 : 0).First();
 
             order.DriverId  = body.DriverId;
             order.Status    = "assigned";
             order.UpdatedAt = DateTime.UtcNow.ToString("o");
 
-            var pk = order.UserId ?? order.GuestId ?? orderId;
+            // Partition key path is /userId — fall back to guestId or id if null.
+            var pk = order.UserId ?? order.GuestId ?? order.Id;
             await cosmos.UpsertAsync("orders", order, pk);
-            return Results.Ok(order);
+
+            return Results.Ok(new
+            {
+                id         = orderId,
+                driver_id  = body.DriverId,
+                status     = "assigned",
+                updated_at = DateTime.UtcNow.ToString("o"),
+            });
         });
 
         // ── Driver revenue summary ───────────────────────────────────────────
@@ -247,11 +256,10 @@ public static class AdminEndpoints
                 CreatedAt    = DateTime.UtcNow.ToString("o"),
             };
 
-            var saved = await cosmos.UpsertAsync("drivers", driver, driver.DriverId);
+            // Partition key = driver.Id (container uses /id — always present, never ambiguous).
+            var saved = await cosmos.UpsertAsync("drivers", driver, driver.Id);
 
-            // Return the safe record plus the plain-text driverId + pin
-            // for the command centre to display once (PIN is never stored in plain text)
-            return Results.Created($"/api/drivers/{driver.DriverId}", new
+            return Results.Created($"/api/drivers/{driver.Id}", new
             {
                 id           = saved.Id,
                 driver_id    = saved.DriverId,
@@ -274,14 +282,11 @@ public static class AdminEndpoints
         {
             if (!AuthHelpers.IsAdmin(ctx)) return Forbidden();
 
-            var drivers = await cosmos.QueryAsync<Driver>("drivers",
-                "SELECT * FROM c WHERE c.driver_id = @id",
-                new() { ["@id"] = driverId });
-
-            var driver = drivers.FirstOrDefault();
+            // Container partition key is /id, so id == partition key — simple point-read.
+            var driver = await cosmos.GetAsync<Driver>("drivers", driverId, driverId);
             if (driver is null) return Results.NotFound(new { error = "Driver not found" });
 
-            await cosmos.DeleteAsync("drivers", driver.Id, driver.DriverId);
+            await cosmos.DeleteAsync("drivers", driverId, driverId);
             return Results.Ok(new { deleted = true, driver_id = driverId });
         });
 
