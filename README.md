@@ -2,9 +2,9 @@
 
 https://locals-za.co.za
 
-LocalsZA is a supply-chain aggregator platform built for South African SMEs -- spaza shops, salons, fast-food outlets, and other informal traders. The system connects product suppliers, field sales representatives, delivery drivers, and business buyers through a single coordinated platform, handling everything from catalogue browsing and checkout to payment processing, route-optimised delivery, and discount distribution.
+LocalsZA is a wholesale pickup and delivery platform built for South African SMEs — spaza shops, salons, fast-food outlets, and informal traders. Customers upload a receipt from a cash-and-carry store; the platform prices the delivery, collects payment via Ozow, and dispatches a driver. The admin team reviews receipts, assigns drivers, and monitors operations through the Command Centre. Drivers manage their jobs through a dedicated mobile-first app.
 
-The project is actively maintained. The MVP is live and new modules are under development.
+The MVP is live. Levi Version One delivers the complete driver system end-to-end: PIN authentication, job workflow, assignment from Command Centre, and revenue tracking.
 
 ---
 
@@ -13,10 +13,11 @@ The project is actively maintained. The MVP is live and new modules are under de
 - [System Overview](#system-overview)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Firebase Backend](#firebase-backend)
+- [Backend — .NET API on Azure](#backend--net-api-on-azure)
 - [Frontend Architecture](#frontend-architecture)
 - [Ozow Pay-by-Bank Integration](#ozow-pay-by-bank-integration)
-- [The LocalsZA Ecosystem](#the-localsza-ecosystem)
+- [Driver System](#driver-system)
+- [Command Centre](#command-centre)
 - [API Reference](#api-reference)
 - [Environment Variables](#environment-variables)
 - [Getting Started](#getting-started)
@@ -26,15 +27,11 @@ The project is actively maintained. The MVP is live and new modules are under de
 
 ## System Overview
 
-LocalsZA operates as an interconnected ecosystem of five user roles, each with its own interface, all sharing a common backend and data layer:
-
-| Role | Purpose |
-|------|---------|
-| **Customer** | Browse products, build a cart, checkout, pay via Ozow, and track deliveries |
-| **Driver** | Receive delivery assignments, navigate routes, update statuses, and request cashouts |
-| **Admin** | Manage products, drivers, orders, discounts, sales reps, and view operational analytics |
-| **Sales Rep** | Onboard and link customers, place orders on their behalf, and earn per-order commission |
-| **Buyer** | Track orders and receive price-update notifications from procurement |
+| Role | Interface | Purpose |
+|------|-----------|---------|
+| **Customer** | Storefront (React) | Upload receipt, get delivery quote, pay via Ozow, track order |
+| **Driver** | Driver App (React, mobile-first) | Accept jobs, navigate, update status, track earnings |
+| **Admin** | Command Centre (React) | Review receipts, assign drivers, manage stores, set pricing |
 
 ---
 
@@ -43,364 +40,243 @@ LocalsZA operates as an interconnected ecosystem of five user roles, each with i
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, TypeScript 5.8, Vite 7, React Router 7 |
-| Backend | Node.js 22, Express 4, Firebase Admin SDK 12 |
-| Database | Cloud Firestore |
-| Authentication | Firebase Authentication (Email/Password, custom tokens) |
+| Backend | .NET 10 (C#), ASP.NET Core Minimal API |
+| Database | Azure Cosmos DB (NoSQL, Newtonsoft CamelCase serialisation) |
+| Authentication | Firebase Authentication — email/password (customers), HMAC signed tokens (admin), Firebase custom tokens (drivers) |
 | Payments | Ozow Pay-by-Bank (SHA-512 signed requests) |
-| Maps | Google Maps Distance Matrix and Geocoding APIs |
-| Email | Nodemailer via SMTP (smtpout.secureserver.net) |
-| Hosting | Firebase Hosting (frontend), Firebase Cloud Functions (backend) |
-| Build | Vite with PWA plugin, Brotli/Gzip compression |
+| Storage | Azure Blob Storage (receipt images, store logos) |
+| Maps | Azure Maps (geocoding, distance, routing) |
+| Email | MailKit over SMTP |
+| Hosting | Azure App Service — Linux, .NET 10, self-contained (backend); Netlify (frontend) |
+| PWA | vite-plugin-pwa with auto-update, Brotli/Gzip compression |
 
 ---
 
 ## Project Structure
 
 ```
-locals-za-app/
-├── firebase.json                 # Firebase Hosting + Cloud Functions config
-├── .firebaserc                   # Firebase project alias (localsza)
-├── package.json                  # Root dependencies (firebase-functions)
+locals.za/
+├── README.md
+├── seed-orders.js              # Seed script — orders + receipts + driver accounts
+├── seed-stores.js              # Seed script — store catalogue
 │
-├── backend/
-│   ├── index.js                  # Express server, CORS, route mounting
-│   ├── index.firebase.js         # Cloud Functions entry point
-│   ├── firebase.js               # Firebase Admin SDK initialisation
-│   ├── package.json
-│   └── src/
-│       ├── middleware/
-│       │   └── auth.js           # authenticateToken, requireAdmin, authenticateSalesRep
-│       ├── controllers/
-│       │   ├── authController.js
-│       │   ├── adminController.js
-│       │   ├── driverController.js
-│       │   ├── orderController.js
-│       │   ├── productController.js
-│       │   ├── discountController.js
-│       │   └── mapsController.js
-│       ├── routes/
-│       │   ├── authRoutes.js
-│       │   ├── userRoutes.js
-│       │   ├── productRoutes.js
-│       │   ├── orderRoutes.js
-│       │   ├── driverRoutes.js
-│       │   ├── paymentRoutes.js
-│       │   ├── adminRoutes.js
-│       │   ├── dashboardRoutes.js
-│       │   ├── salesRoutes.js
-│       │   ├── messageRoutes.js
-│       │   ├── ticketRoutes.js
-│       │   ├── mapsRoutes.js
-│       │   ├── reportRoutes.js
-│       │   ├── discountRoutes.js
-│       │   ├── supportRoutes.js
-│       │   └── productRequestRoutes.js
-│       ├── services/
-│       │   ├── ozowService.js    # Ozow payment hash generation and verification
-│       │   └── mapsService.js    # Google Maps Distance Matrix and Geocoding
-│       └── utils/
-│           ├── emailHelper.js    # Transactional email via Nodemailer
-│           └── notificationHelper.js  # In-app inbox and notification messages
+├── api/                        # .NET 10 C# backend
+│   ├── LocalsZaApi.csproj
+│   ├── Program.cs              # Service registration, middleware, endpoint mapping
+│   ├── appsettings.json
+│   ├── deploynotes.txt         # Azure deploy recipe and slice history
+│   ├── Endpoints/
+│   │   ├── AdminEndpoints.cs   # Dashboard, orders, receipts, deliveries, drivers, pricing
+│   │   ├── AuthEndPoints.cs    # Admin HMAC token login
+│   │   ├── DriverEndpoints.cs  # Driver auth, jobs, status, location, revenue
+│   │   ├── OrderEndPoints.cs   # Order CRUD, status updates
+│   │   ├── PaymentEndpoints.cs # Ozow initiation and webhook callback
+│   │   ├── QuoteEndpoints.cs   # Delivery pricing quotes
+│   │   ├── ReceiptsEndpoints.cs# Receipt upload (OCR), retrieval
+│   │   ├── StoreEndpoints.cs   # Store catalogue CRUD
+│   │   └── MessageEndpoints.cs # In-app notifications
+│   ├── Models/
+│   │   ├── Order.cs
+│   │   ├── Driver.cs
+│   │   ├── Store.cs
+│   │   ├── Payment.cs
+│   │   ├── Receipts.cs
+│   │   ├── PricingConfig.cs
+│   │   ├── User.cs
+│   │   ├── UserNotification.cs
+│   │   ├── DeliveryAddress.cs
+│   │   └── OrderItem.cs
+│   └── Services/
+│       ├── CosmoService.cs         # Cosmos DB client — CRUD, query, stream upsert
+│       ├── BlobService.cs          # Azure Blob upload with SAS URL generation
+│       ├── FirebaseAuthService.cs  # Custom token minting for driver login
+│       ├── AuthHelpers.cs          # Token validation, UID extraction, admin/driver guards
+│       ├── PricingService.cs       # Delivery fee calculation from Cosmos config container
+│       ├── MapsService.cs          # Azure Maps distance + geocoding
+│       ├── NotificationService.cs  # Push notifications to user inbox
+│       └── OzowService.cs          # Ozow SHA-512 hash and transaction verification
 │
-└── frontend/
+└── frontend/                   # React + Vite frontend
     ├── package.json
     ├── vite.config.ts
-    ├── tsconfig.json
+    ├── netlify.toml            # Build config + CSP headers + SPA redirect
+    ├── public/
+    │   └── _headers
     └── src/
-        ├── App.tsx               # All route definitions
-        ├── main.tsx              # React entry point
+        ├── App.tsx             # All route definitions
+        ├── main.tsx
         ├── Auth/
-        │   ├── AuthProvider.tsx   # Auth context and token management
-        │   ├── authService.ts     # signUp, signIn, signOut wrappers
-        │   ├── firebaseClient.ts  # Firebase client SDK init
-        │   ├── ProtectedRoute.tsx # Route guard (authenticated users)
-        │   └── SalesProtectedRoute.tsx  # Route guard (sales reps)
+        │   ├── AuthProvider.tsx        # Firebase auth context, token refresh
+        │   ├── firebaseClient.ts       # Firebase SDK initialisation
+        │   └── ProtectedRoute.tsx      # Auth guard
         ├── components/
         │   ├── contexts/
-        │   │   ├── CartContext.tsx       # Cart state with localStorage persistence
-        │   │   ├── FavoritesContext.tsx  # Wishlist with localStorage persistence
-        │   │   └── WazeRouteContext.tsx  # Waze deep-link integration for drivers
+        │   │   └── CartContext.tsx
         │   └── pages/
-        │       ├── storepages/          # Customer storefront and checkout
-        │       ├── dashboard/           # Admin dashboard with sections, hooks, services, types
-        │       ├── drivers/             # Driver dashboard, deliveries, revenue
-        │       ├── userpages/           # Customer account, orders, profile
-        │       ├── sales/               # Sales rep shop, cart, customers, revenue
-        │       └── buyers/              # Buyer orders and price updates
-        ├── lib/
-        │   └── api.ts            # Axios instance creation
+        │       ├── storepages/         # Customer storefront, checkout, orders
+        │       ├── commandcentre/      # Admin Command Centre (9 pages)
+        │       │   ├── pages/          # Dashboard, Orders, Payments, Receipts,
+        │       │   │                   # Deliveries, Drivers, Metrics, Pricing, Stores
+        │       │   ├── services/
+        │       │   │   └── adminApi.ts # All Command Centre API calls
+        │       │   └── components/     # StatusBadge, shared CC components
+        │       ├── drivers/            # Driver app
+        │       │   ├── auth/
+        │       │   │   └── DriverLogin.tsx
+        │       │   ├── driversDash.tsx
+        │       │   ├── driverDeliveries.tsx
+        │       │   ├── driverRevenue.tsx
+        │       │   ├── driverNav.tsx
+        │       │   ├── driverStyles.css
+        │       │   └── layout/
+        │       │       ├── DriverLayout.tsx
+        │       │       └── DriverLayout.css
+        │       └── userpages/          # Customer account, profile, orders
         ├── utils/
-        │   ├── api.ts            # Axios interceptors, token refresh, retry logic
-        │   ├── analytics.ts      # Event tracking
-        │   └── priceHelper.ts    # Price formatting utilities
+        │   └── api.ts          # Axios instance — Bearer token interceptor, 401 retry
         └── types/
-            ├── global.d.ts       # ImportMetaEnv interface
-            ├── env.d.ts
-            ├── images.d.ts
-            └── virtual-pwa-register.d.ts
+            └── env.d.ts
 ```
 
 ---
 
-## Firebase Backend
+## Backend — .NET API on Azure
 
-### Authentication
+### Cosmos DB Data Model
 
-Firebase Authentication handles identity for all user roles. The implementation supports three authentication strategies depending on the role:
+The backend uses Azure Cosmos DB. All containers use camelCase field names (Newtonsoft CamelCase serialiser policy). **STJ `[JsonPropertyName]` attributes affect HTTP responses only — Cosmos queries must use camelCase field names.**
 
-- **Customers** authenticate directly on the frontend using Firebase's `signInWithEmailAndPassword`. After sign-in, the frontend calls `POST /api/users/register` to persist the user profile in Firestore.
-- **Drivers** are registered by an admin. On first login the backend verifies the driver's name and ID against the `drivers` collection, creates a Firebase Auth account if one does not exist, and issues a custom token with driver claims.
-- **Sales Reps** authenticate with a username and bcrypt-hashed password stored in the `salesReps` Firestore collection. The backend validates credentials and returns a session reference.
-- **Admins** are promoted via `POST /api/auth/promote-admin`, which sets the `admin: true` custom claim on the Firebase Auth token and updates the Firestore user document.
+| Container | Partition Key | Purpose |
+|-----------|--------------|---------|
+| `orders` | `/userId` | All customer orders — status, items, delivery address, assigned driver |
+| `drivers` | `/id` | Driver profiles — PIN hash, status, location, vehicle |
+| `receipts` | `/orderId` | Receipt documents — blob URL, OCR items, weight class, admin review state |
+| `stores` | `/id` | Wholesale store catalogue |
+| `payments` | `/orderId` | Ozow payment records |
+| `config` | `/id` | Single `pricing` document — delivery fee parameters |
 
-All authenticated API requests attach a Firebase ID token as a Bearer token. The `authenticateToken` middleware decodes and verifies the token on every protected route. The `requireAdmin` middleware extends this check by inspecting the custom claim or falling back to a Firestore lookup.
+### Authentication Model
 
-### Cloud Firestore
+**Customers** — Firebase email/password. Frontend attaches Firebase ID token as `Authorization: Bearer <token>` on every API request. Middleware validates with Firebase Admin SDK.
 
-Firestore is the sole database. The following collections form the data model:
+**Admins** — HMAC-SHA256 signed token issued by `POST /api/admin/auth`. The Command Centre login page exchanges a shared secret for a signed token stored in sessionStorage, included as `Authorization: commandadmin <token>` on all admin requests.
 
-| Collection | Purpose |
-|------------|---------|
-| `users` | Customer and admin profiles. Contains subcollections `inbox` and `notifications` for in-app messaging. |
-| `orders` | All orders with items, totals, payment status, delivery address, assigned driver, and ETA. |
-| `products` | Master product catalogue with name, price, image, category, and brand. |
-| `drivers` | Driver profiles including vehicle type, contact details, and cashout history. |
-| `salesReps` | Sales representative accounts with a `customers` subcollection linking them to onboarded users. |
-| `discounts` | Daily discount records keyed as `YYYY-MM-DD_productId` with unit-level cost breakdowns. |
-| `customerDiscounts` | Per-customer discount balances with a `transactions` subcollection for audit trail. |
-| `cashouts` | Driver cashout requests with status tracking (pending, completed). |
+**Drivers** — Two-step flow:
+1. `POST /api/drivers/verify-credentials` — verifies Driver ID + PIN (SHA-256 hash of `{driverId}:{pin}`). Anonymous endpoint.
+2. `POST /api/drivers/login-link` — issues a Firebase custom token with `role: driver` claims. Anonymous endpoint.
+3. Frontend calls `signInWithCustomToken(auth, customToken)` — Firebase session established. All subsequent driver requests use the resulting Firebase ID token as Bearer token.
 
-### Cloud Functions
+### Key Design Notes
 
-The backend Express server is exported as a Firebase Cloud Function via `index.firebase.js`. Firebase Hosting proxies all `/api` requests to this function. The runtime is Node.js 22.
-
-### Notification System
-
-The `notificationHelper` module writes structured messages to two Firestore subcollections under each user document:
-
-- `users/{userId}/inbox` -- user-facing messages displayed in the app.
-- `users/{userId}/notifications` -- backend audit notifications.
-
-Predefined message types include order confirmation, status updates (processing, in transit, delivered, cancelled), driver approach alerts, and delivery PIN codes.
-
-Transactional emails are sent via Nodemailer over SMTP for events such as driver cashout requests and support form submissions.
+- **Cosmos serialiser**: `Microsoft.Azure.Cosmos` 3.59.0 with `CosmosPropertyNamingPolicy.CamelCase`. The built-in serialiser uses STJ (not Newtonsoft) — `QueryAsync<T>` works correctly with C# model types. `QueryAsync<JObject>` and `QueryAsync<JsonElement>` both silently fail (serialiser cannot produce Newtonsoft/STJ foreign types).
+- **Cross-partition queries**: All `QueryAsync` calls without a partition key hint fan out across all partitions. Point-reads (`GetAsync`) require both `id` and partition key value.
+- **Duplicate seed documents**: Seed orders may appear in multiple partitions. Assign and job-detail endpoints prefer the document matching the expected driver ID or user ID rather than relying on `FirstOrDefault()`.
 
 ---
 
 ## Frontend Architecture
 
-### TypeScript and Type Safety
+### Route Structure
 
-The frontend is written entirely in TypeScript 5.8. Key interfaces include:
+**Public:**
+- `/` — Landing page
+- `/login`, `/register` — Customer auth
+- `/commandlogin` — Command Centre admin login
+- `/driverlogin` — Driver PIN login
+- `/calculator` — Delivery cost calculator (sales tool)
 
-```typescript
-// Cart and product types
-type Product = {
-  id: string;
-  name?: string;
-  price?: number | string;
-  image_url?: string;
-  category?: string;
-};
+**Customer (protected):**
+- `/order/select-store` → `/order/delivery` → `/order/payment` — Order journey
+- `/useraccount`, `/userprofile`, `/userorders` — Account management
+- `/messages` — Notification inbox
 
-type CartItem = { product: Product; qty: number };
+**Driver (protected, Firebase custom token):**
+- `/driver/dashboard` — Job list with status filters, online/offline toggle
+- `/driver/deliveries/:orderId` — Job detail, status progression, Waze navigation
+- `/driver/revenue` — Earnings breakdown (today / week / month / all-time)
 
-// Order types
-type Order = {
-  id: string;
-  items: OrderItem[];
-  subtotal?: number;
-  serviceFee?: number;
-  total?: number;
-  status?: string;
-  paymentStatus?: string;
-  deliveryAddress?: Record<string, any>;
-  driver_id?: string;
-  eta?: string;
-  missingItems?: MissingItem[];
-  refundStatus?: 'pending' | 'processed' | 'credited';
-};
-
-// Auth context
-interface AuthContextType {
-  currentUser: User | null;
-  userLoading: boolean;
-  accessToken: string | null;
-  refreshUserToken: () => Promise<string | null>;
-}
-
-// Environment variables
-interface ImportMetaEnv {
-  VITE_API_URL: string;
-  VITE_FIREBASE_API_KEY: string;
-  VITE_FIREBASE_AUTH_DOMAIN: string;
-  VITE_FIREBASE_PROJECT_ID: string;
-  VITE_FIREBASE_STORAGE_BUCKET: string;
-  VITE_FIREBASE_MESSAGING_SENDER_ID: string;
-  VITE_FIREBASE_APP_ID: string;
-  VITE_FIREBASE_MEASUREMENT_ID: string;
-}
-```
-
-The admin dashboard maintains its own `types/` directory with interfaces for dashboard statistics, driver records, and order management views.
-
-### State Management
-
-Global state is managed through React Context providers:
-
-| Context | Responsibility | Persistence |
-|---------|---------------|-------------|
-| `AuthProvider` | Current user, Firebase ID token, automatic token refresh (30-minute interval) | sessionStorage / localStorage |
-| `CartContext` | Cart items with add, remove, increase, decrease, and clear operations | localStorage |
-| `FavoritesContext` | Favourite products wishlist with toggle and remove | localStorage |
-| `WazeRouteContext` | Route data for Waze deep-link navigation used by drivers | In-memory |
-| `LoadingContext` | Shared loading spinner state across checkout and order pages | In-memory |
+**Command Centre (protected, HMAC token):**
+- `/commandcentre/dashboard` — Weekly KPIs, active deliveries, pending receipts
+- `/commandcentre/orders` — All orders with status filter
+- `/commandcentre/payments` — Payment records
+- `/commandcentre/receipts` — Receipt review workflow (image viewer, manual item entry, driver assignment)
+- `/commandcentre/deliveries` — Assign drivers to orders
+- `/commandcentre/drivers` — Create / delete driver accounts, view revenue
+- `/commandcentre/metrics` — 30-day delivery and cancellation rates
+- `/commandcentre/pricing` — Edit and save delivery fee configuration
+- `/commandcentre/stores` — Manage store catalogue, upload logos
 
 ### API Client
 
-The Axios client is configured with request and response interceptors:
-
-- **Request interceptor** attaches the Firebase ID token from sessionStorage to every outgoing request (excluding auth routes).
-- **Response interceptor** catches 401 responses, transparently refreshes the token via `getAuthToken()`, and retries the original request once.
-- **Timeout** is set to 30 seconds.
-- **Base URL** resolves from `VITE_API_URL` or defaults to `/api`.
-
-### Route Structure
-
-**Public routes:**
-- `/` -- Home and product catalogue
-- `/register` -- Customer registration
-- `/login` -- Customer login
-- `/product/:id` -- Product detail
-- `/adminlogin`, `/driverlogin`, `/buyerlogin`, `/saleslogin` -- Role-specific login pages
-
-**Customer routes (protected):**
-- `/useraccount`, `/userprofile`, `/userorders` -- Account management
-- `/checkout` -- Cart checkout with delivery details
-- `/payment-success/:orderId`, `/payment-cancelled/:orderId` -- Payment result pages
-- `/messages` -- Order messaging
-
-**Driver routes (protected):**
-- `/driver/dashboard` -- Assigned orders with status filtering
-- `/driver/deliveries/:orderId` -- Delivery details, status updates, proof of delivery
-- `/driver/revenue` -- Earnings breakdown and cashout requests
-
-**Admin routes (protected, admin-only):**
-- `/admindashboard` -- Unified dashboard with sections for statistics, driver management, product management, order management, admin promotion, client views, procurement, and discount analytics
-
-**Sales rep routes (sales rep guard):**
-- `/sales/shop`, `/sales/cart` -- Browse and order on behalf of customers
-- `/sales/add-customer`, `/sales/customers` -- Customer onboarding and management
-- `/sales/revenue` -- Commission tracking
-
-**Buyer routes (protected):**
-- `/buyer/orders` -- Order history
-- `/buyer/price-updates` -- Price change notifications
-
-### PWA Support
-
-The frontend is configured as a Progressive Web App via `vite-plugin-pwa`, enabling installation on mobile devices and offline asset caching. Build output is compressed with Brotli and Gzip via `vite-plugin-compression2`.
+`src/utils/api.ts` — Axios instance with:
+- **Request interceptor**: attaches Firebase ID token or HMAC admin token from sessionStorage.
+- **Response interceptor**: on 401, refreshes the Firebase token and retries the request once.
+- **Base URL**: `import.meta.env.VITE_API_URL`
 
 ---
 
 ## Ozow Pay-by-Bank Integration
 
-LocalsZA uses Ozow for secure pay-by-bank payments. Ozow connects directly to South African banks, allowing customers to pay from their bank account without a card.
-
-### Payment Flow
-
-1. **Order creation** -- The customer completes checkout. The frontend sends cart items, delivery address, and calculated totals to `POST /api/orders`. The order is created in Firestore with status `pending_payment`.
-
-2. **Payment initiation** -- The frontend calls `POST /api/payment/process/:orderId`. The backend constructs a signed payment request using the Ozow Site Code, Private Key, and order details. A SHA-512 hash is generated over the concatenated fields (SiteCode, CountryCode, CurrencyCode, Amount, TransactionReference, BankReference, callback URLs, IsTest flag, and Private Key). The response contains form fields for a browser POST to the Ozow gateway.
-
-3. **Bank selection and authentication** -- The customer is redirected to Ozow, selects their bank, and authenticates using their bank credentials.
-
-4. **Callback handling** -- Ozow sends a server-to-server POST to `POST /api/payment/notify` with the transaction result. The backend verifies the hash integrity, confirms the transaction via the Ozow `GetTransactionByReference` API, and updates the order:
-   - `Complete` -- sets `paymentStatus: 'paid'` and `status: 'pending'` (ready for fulfilment)
-   - `Cancelled` or `Abandoned` -- sets `status: 'cancelled'`
-   - `Error` -- sets `status: 'payment_failed'`
-   - `PendingInvestigation` -- retains `status: 'pending_payment'`
-
-5. **Frontend redirect** -- The customer is returned to either the `OrderConfirmationPage` or `PaymentCancelledPage` based on the Ozow callback URL.
-
-### Service Fee Calculation
-
-Service fees are determined by product category and reflect the vehicle type required for delivery:
-
-- **R80 (van)** -- Beverages, Canned Foods, Sugar, Flour, Cooking Oils and Fats, Rice, Maize Meal
-- **R60 (light vehicle)** -- Spices and Seasoning, Snacks and Confectionery, Household Cleaning, Laundry Supplies, Personal Care, Hair Care products
-
-If the cart contains any van-category item, the R80 fee applies regardless of other items.
+1. Customer completes delivery quote → frontend calls `POST /api/payment/process/:orderId`.
+2. Backend builds a SHA-512 signed form POST to the Ozow gateway.
+3. Customer authenticates with their bank on the Ozow hosted page.
+4. Ozow sends a server-to-server `POST /api/payment/notify` callback — backend verifies hash, confirms via `GetTransactionByReference`, and updates the order status.
+5. Customer is redirected to `/payment-success` or `/payment-cancelled`.
 
 ---
 
-## The LocalsZA Ecosystem
+## Driver System
 
-The platform is designed as a closed-loop supply chain where each role feeds into the next.
+### Creating a Driver (Admin)
 
-### Storefront (Customer-Facing)
+`POST /api/admin/drivers` — body: `{ fullName, pin, driverId?, email?, phoneNumber?, vehicleType?, vehicleModel? }`
 
-The storefront is the primary entry point. Customers browse the product catalogue, filter by category, add items to a persistent cart, and proceed to checkout. The cart is managed through `CartContext` and survives browser refreshes via localStorage. At checkout, the system calculates the service fee based on the heaviest product category in the cart, applies any earned discounts from the `customerDiscounts` collection, and initiates Ozow payment. Once paid, the order moves to `pending` status and becomes visible in the admin dashboard for processing.
+The endpoint hashes the PIN as `SHA256("{driverId}:{pin}")`, stores it as `pinHash`, and returns the plain-text credentials once for the admin to share with the driver. The driver ID and PIN are never stored in plain text after this response.
 
-### Admin Dashboard
-
-The admin dashboard is the operational control centre. It provides:
-
-- **Order management** -- View incoming, unassigned, and in-progress orders. Assign drivers to orders and resolve issues such as missing items.
-- **Product management** -- Add, edit, and delete products from the master catalogue.
-- **Driver management** -- Register new drivers, view all active drivers, track delivery performance, and process cashout requests.
-- **Sales rep management** -- Promote users to sales representatives and monitor their customer portfolios.
-- **Procurement and discounts** -- Record daily paid prices for products, which triggers the discount distribution engine. The system calculates per-unit discounts, splits them 75/25 between customers and the business, and distributes earned discounts to every customer who ordered that product on the recorded date.
-- **Analytics** -- Dashboard KPIs include service revenue, order revenue, driver revenue (R40/van delivery, R30/light delivery), sales rep revenue (R10/order), and top products by quantity sold. Periods are configurable (30, 60, 90 days, or all time).
-
-### Driver Dashboard
-
-Drivers operate through a dedicated interface. After logging in with their registered credentials, they see a list of orders assigned to them. The workflow proceeds through status transitions:
-
-1. `pending` -- Order is paid and awaiting dispatch.
-2. `processing` -- Driver acknowledges and prepares for pickup.
-3. `in_transit` -- Driver is en route. The system sends the customer an alert message and updates the ETA via the Google Maps Distance Matrix API.
-4. `delivered` -- Driver confirms delivery with proof. The customer receives a notification with a delivery PIN.
-
-Earnings are calculated per delivery based on vehicle type. Drivers can view their accumulated earnings and submit cashout requests, which are reviewed and processed by an admin.
-
-Waze deep-link integration is available through `WazeRouteContext`, allowing drivers to open turn-by-turn navigation directly from the delivery screen.
-
-### Sales Network
-
-Sales representatives act as field agents who onboard new customers. A sales rep can:
-
-- Link existing platform users to their account by email address.
-- Browse the product catalogue and place orders on behalf of linked customers.
-- Track their commission earnings (R10 per fulfilled order from their linked customers).
-
-Customer-sales rep relationships are stored in the `salesReps/{repId}/customers` subcollection. When an order is delivered for a linked customer, the commission is attributed to the corresponding sales rep and reflected in the revenue dashboard.
-
-### Buyer Portal
-
-Buyers operate at the procurement level. They can view their order history and receive notifications when product prices are updated, allowing them to make informed purchasing decisions.
-
-### How the Roles Interlink
+### Driver Login Flow
 
 ```
-Customer ─── browses ───> Storefront ─── checkout ───> Ozow Payment
-                                                            │
-Sales Rep ── places order on behalf ──────────────────> Order Created
-                                                            │
-                                                            v
-                                                     Admin Dashboard
-                                                       │         │
-                                          assigns driver│         │records paid prices
-                                                       v         v
-                                                 Driver App    Discount Engine
-                                                    │              │
-                                          delivers  │              │distributes to
-                                                    v              v
-                                               Customer ◄──── Customer Discounts
-                                              (notification)   (applied at next checkout)
+Driver enters ID + PIN
+       │
+       ▼
+POST /api/drivers/verify-credentials
+(validates pinHash — anonymous endpoint)
+       │
+       ▼
+POST /api/drivers/login-link
+(issues Firebase custom token — anonymous endpoint)
+       │
+       ▼
+signInWithCustomToken(auth, customToken)
+(Firebase session — uid = driver.Id)
+       │
+       ▼
+All driver endpoints authenticated via Firebase Bearer token
 ```
 
-The cycle is continuous: customers order, admins process, drivers deliver, discounts accumulate, and customers return to order again with reduced costs. Sales reps expand the customer base, feeding more volume into the same pipeline.
+### Job Status Progression
+
+```
+assigned → accepted → arrivedAtPickup → loaded → delivered
+```
+
+Each `PATCH /api/drivers/me/jobs/{orderId}/status` advances the job one step. On `delivered`:
+- `driverPayout` = `deliveryFee × 0.8`
+- `platformFee` = `deliveryFee × 0.2`
+- Driver status set back to `available`
+
+---
+
+## Command Centre
+
+The Command Centre is the operational admin UI at `/commandcentre`. It authenticates with a HMAC-signed token issued by `POST /api/admin/auth`.
+
+### Receipt Review Workflow
+
+1. Customer uploads a receipt image → OCR service parses items → `POST /api/receipts/upload` creates a receipt document in Cosmos with `status: pending`.
+2. Admin opens the receipt in the Receipts page — views the image, manually types items into a table, sets weight class.
+3. Admin clicks **Confirm & Assign** → `PATCH /api/admin/receipts/{id}` (updates status + items) then `PATCH /api/admin/deliveries/{orderId}/assign` (sets driverId on the order).
+4. Driver sees the assigned job on their dashboard.
 
 ---
 
@@ -410,139 +286,97 @@ The cycle is continuous: customers order, admins process, drivers deliver, disco
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/auth/register` | None | Registration (handled on frontend) |
-| POST | `/api/auth/login` | None | Login (handled on frontend) |
-| POST | `/api/auth/session` | Token | Verify session token |
-| POST | `/api/auth/promote-admin` | Token | Promote user to admin role |
+| POST | `/api/admin/auth` | Shared secret | Issue HMAC admin token |
+| POST | `/api/drivers/verify-credentials` | None | Verify driver ID + PIN |
+| POST | `/api/drivers/login-link` | None | Issue Firebase custom token for driver |
 
-### Users
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/users/register` | Token | Create user profile after auth |
-| GET | `/api/users/me` | Token | Get current user profile |
-| PUT | `/api/users/me` | Token | Update current user profile |
-| GET | `/api/users/:id` | Token | Get user by ID |
-| PUT | `/api/users/:id` | Token | Update user by ID |
-
-### Products
+### Stores
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/products` | None | List all products, optional category filter |
-| GET | `/api/products/:id` | None | Get product by ID |
-| POST | `/api/products` | Admin | Create product |
-| PUT | `/api/products/:id` | Admin | Update product |
-| DELETE | `/api/products/:id` | Admin | Delete product |
+| GET | `/api/stores` | None | List all active stores |
+| GET | `/api/stores/{id}` | None | Get store by ID |
+| POST | `/api/stores` | Admin | Create store |
+| PUT | `/api/stores/{id}` | Admin | Update store |
+| PATCH | `/api/stores/{id}/deactivate` | Admin | Deactivate store |
+| PATCH | `/api/stores/{id}/activate` | Admin | Activate store |
+| DELETE | `/api/stores/{id}` | Admin | Delete store |
+| POST | `/api/admin/upload-logo` | Admin | Upload store logo to Azure Blob |
 
 ### Orders
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/orders` | Token | Create order (checkout) |
-| GET | `/api/orders/my` | Token | Get current user orders |
-| GET | `/api/orders/:id` | Token | Get order by ID |
-| PUT | `/api/orders/:id` | Token | Update order status |
-| GET | `/api/orders/all` | Admin | Get all orders |
-| GET | `/api/orders/incoming` | Admin | Get pending orders |
-| GET | `/api/orders/user/:userId` | Admin | Get orders for a specific user |
+| POST | `/api/orders` | Token | Create order |
+| GET | `/api/orders/my` | Token | Get current user's orders |
+| GET | `/api/orders/{id}` | Token | Get order by ID |
+| PATCH | `/api/orders/{id}/status` | Token | Update order status |
+| GET | `/api/admin/orders` | Admin | All orders with optional status filter |
+| GET | `/api/admin/deliveries` | Admin | Active deliveries |
+| PATCH | `/api/admin/deliveries/{orderId}/assign` | Admin | Assign driver to order |
 
-### Payments
+### Receipts
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/payment/process/:orderId` | Token | Initiate Ozow payment |
-| POST | `/api/payment/notify` | None | Ozow webhook callback |
-| GET | `/api/payment/status/:orderId` | Token | Check payment status |
+| POST | `/api/receipts/upload` | Token | Upload receipt image (OCR parse) |
+| GET | `/api/receipts/order/{orderId}` | Token | Get receipt for order |
+| GET | `/api/admin/receipts` | Admin | All receipts with optional status filter |
+| PATCH | `/api/admin/receipts/{id}` | Admin | Review receipt (confirm/reject, set items + weight class) |
 
 ### Drivers
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/drivers/register` | Admin | Register a new driver |
-| POST | `/api/drivers/verify-credentials` | None | Verify driver identity |
-| POST | `/api/drivers/login-link` | None | Generate driver login token |
-| GET | `/api/drivers/profile` | Token | Get driver profile |
-| PUT | `/api/drivers/me/profile` | Token | Update driver profile |
-| GET | `/api/drivers/me/deliveries` | Token | Get assigned deliveries |
-| GET | `/api/drivers/me/earnings` | Token | Get earnings summary |
-| PUT | `/api/drivers/deliveries/:id/status` | Token | Update delivery status |
-| POST | `/api/drivers/deliveries/:id/proof` | Token | Upload proof of delivery |
-| POST | `/api/drivers/cashout` | Token | Request earnings cashout |
 | GET | `/api/drivers` | Admin | List all drivers |
-| GET | `/api/drivers/all` | Admin | List all drivers with details |
+| POST | `/api/admin/drivers` | Admin | Create driver account |
+| DELETE | `/api/admin/drivers/{driverId}` | Admin | Delete driver account |
+| GET | `/api/drivers/me` | Driver token | Get own profile |
+| PATCH | `/api/drivers/me/status` | Driver token | Toggle available / offline |
+| POST | `/api/drivers/me/location` | Driver token | Update location ping |
+| GET | `/api/drivers/me/jobs` | Driver token | Get assigned jobs |
+| GET | `/api/drivers/me/jobs/{orderId}` | Driver token | Get single job detail |
+| PATCH | `/api/drivers/me/jobs/{orderId}/status` | Driver token | Advance job status |
+| GET | `/api/drivers/me/revenue` | Driver token | Earnings summary (today/week/month/all-time) |
 
-### Admin
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/admin/stats` | Admin | Dashboard statistics by period |
-| GET | `/api/admin/stats/users` | Admin | User count |
-| GET | `/api/admin/cashouts` | Admin | Get pending cashout requests |
-| PUT | `/api/admin/cashouts/:cashoutId/complete` | Admin | Process a cashout payment |
-| GET | `/api/admin/drivers/:driverId/payments` | Admin | Driver payment history |
-| POST | `/api/admin/promote-sales-rep` | Admin | Promote user to sales rep |
-| GET | `/api/admin/sales-reps` | Admin | List all sales reps |
-| GET | `/api/admin/sales-reps/:salesRepId` | Admin | Get sales rep details |
-
-### Dashboard (Internal Operations)
+### Payments
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/dashboard/orders/incoming` | Admin | New pending orders |
-| GET | `/api/dashboard/orders/unassigned` | Admin | Orders without drivers |
-| GET | `/api/dashboard/orders/issues` | Admin | Orders with reported issues |
-| GET | `/api/dashboard/deliveries` | Admin | Unassigned deliveries |
-| GET | `/api/dashboard/deliveries/performance` | Admin | Delivery performance metrics |
-| GET | `/api/dashboard/drivers/efficiency` | Admin | Driver efficiency statistics |
-| GET | `/api/dashboard/drivers/earnings` | Admin | All driver earnings |
-| GET | `/api/dashboard/revenue` | Admin | Revenue totals |
-| GET | `/api/dashboard/:id/location` | Admin | Driver location |
+| POST | `/api/payment/process/{orderId}` | Token | Initiate Ozow payment |
+| POST | `/api/payment/notify` | None | Ozow webhook callback |
+| GET | `/api/admin/payments` | Admin | All payment records |
 
-### Sales
+### Pricing
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/sales/login` | None | Sales rep login |
-| POST | `/api/sales/customers` | SalesRep | Link customer to sales rep |
-| GET | `/api/sales/customers` | SalesRep | Get linked customers |
-| POST | `/api/sales/customer-orders` | SalesRep | Create order for customer |
+| GET | `/api/admin/pricing` | Admin | Get current pricing config |
+| PUT | `/api/admin/pricing` | Admin | Save pricing config |
 
-### Discounts
+### Admin Dashboard
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/discounts/paid-price` | Admin | Record paid price and trigger discount distribution |
-| GET | `/api/discounts/analytics` | Admin | Discount analytics |
-| GET | `/api/discounts/by-date/:date` | Admin | Discounts for a specific date |
-| GET | `/api/discounts/customer/:userId` | Token | Get customer discount balance |
-| POST | `/api/discounts/apply` | Token | Apply discount to an order |
+| GET | `/api/admin/dashboard` | Admin | Weekly KPIs (orders, revenue, active deliveries) |
+| GET | `/api/admin/metrics` | Admin | 30-day delivery and cancellation rates |
+| GET | `/api/admin/drivers/revenue` | Admin | Per-driver completed trips and estimated payout |
 
-### Maps
+### Quotes and Maps
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/maps/directions` | Token | Get directions and ETA |
-| GET | `/api/maps/geocode` | Token | Geocode an address |
-| PUT | `/api/maps/orders/:orderId/eta` | Token | Update order ETA |
-
-### Messaging and Support
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/messages` | Token | Send a message on an order |
-| GET | `/api/messages/order/:orderId` | Token | Get messages for an order |
-| POST | `/api/support/contact` | None | Submit a support query (sends email) |
-| POST | `/api/product-requests` | None | Request a new product (sends email) |
+| POST | `/api/quote` | None | Calculate delivery fee for a route |
+| GET | `/api/maps/distance` | Token | Azure Maps distance between two points |
 
 ---
 
 ## Environment Variables
 
-### Frontend (.env)
+### Frontend (`frontend/.env`)
 
 ```
-VITE_API_URL=https://your-backend-url.com/api
+VITE_API_URL=https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=
 VITE_FIREBASE_PROJECT_ID=localsza
@@ -552,24 +386,31 @@ VITE_FIREBASE_APP_ID=
 VITE_FIREBASE_MEASUREMENT_ID=
 ```
 
-### Backend (.env)
+### Backend (`api/appsettings.json` / Azure App Settings)
 
 ```
-PORT=3000
-OZOW_SITE_CODE=
-OZOW_PRIVATE_KEY=
-OZOW_API_KEY=
-OZOW_IS_TEST=true
-OZOW_SUCCESS_URL=
-OZOW_CANCEL_URL=
-OZOW_ERROR_URL=
-OZOW_NOTIFY_URL=
-GOOGLE_MAPS_API_KEY=
-EMAIL_HOST=smtpout.secureserver.net
-EMAIL_PORT=587
-EMAIL_SECURE=false
-EMAIL_USER=
-EMAIL_PASSWORD=
+Cosmos__EndpointUri
+Cosmos__PrimaryKey
+Cosmos__DatabaseName
+Firebase__ProjectId
+Firebase__ServiceAccountPath        # = "firebase-service-account.json"
+Ozow__SiteCode
+Ozow__PrivateKey
+Ozow__ApiKey
+Ozow__IsTest
+Ozow__PaymentUrl
+Ozow__ApiUrl
+AzureMaps__SubscriptionKey
+AzureBlob__ConnectionString
+AzureBlob__ContainerName
+OcrService__BaseUrl
+OcrService__SharedSecret
+Email__SmtpHost
+Email__Port
+Email__Username
+Email__Password
+Email__From
+AppBaseUrl
 ```
 
 ---
@@ -578,20 +419,20 @@ EMAIL_PASSWORD=
 
 ### Prerequisites
 
-- Node.js 22 or later
-- Firebase CLI (`npm install -g firebase-tools`)
-- A Firebase project with Authentication and Firestore enabled
-- An Ozow merchant account (test or production)
-- A Google Maps API key with Distance Matrix and Geocoding enabled
+- .NET 10 SDK
+- Node.js 22
+- Azure Cosmos DB account (or Cosmos emulator)
+- Azure Blob Storage account
+- Firebase project (Authentication + service account JSON)
+- Ozow merchant account (test or production)
 
 ### Backend
 
 ```bash
-cd backend
-npm install
-# Configure .env with Firebase, Ozow, Google Maps, and email credentials
-node index.js
-# Server runs on http://localhost:3000
+cd api
+# Add appsettings.Development.json with local credentials (gitignored)
+dotnet run
+# API runs on https://localhost:7xxx
 ```
 
 ### Frontend
@@ -599,7 +440,7 @@ node index.js
 ```bash
 cd frontend
 npm install
-# Configure .env with VITE_API_URL and Firebase client credentials
+# Configure frontend/.env with VITE_API_URL and Firebase client credentials
 npm run dev
 # App runs on http://localhost:5173
 ```
@@ -608,20 +449,67 @@ npm run dev
 
 ## Deployment
 
-### Firebase Hosting (Frontend)
+### Backend — Azure App Service
+
+Run from `api/` directory. Requires Azure CLI and an existing App Service (`localsza-api`, resource group `localsza-rg`).
+
+```powershell
+$az = "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd"
+
+# 1. Clean
+if (Test-Path .\publish)    { Remove-Item .\publish    -Recurse -Force }
+if (Test-Path .\deploy.zip) { Remove-Item .\deploy.zip -Force          }
+
+# 2. Publish self-contained linux-x64 bundle
+dotnet publish -c Release -r linux-x64 --self-contained true -o ./publish --nologo
+
+# 3. Pack with tar (NOT Compress-Archive — Windows backslashes break Linux rsync)
+Push-Location .\publish
+tar -a -cf ..\deploy.zip *
+Pop-Location
+
+# 4. Deploy async (Kudu finishes in background, ~60s)
+& $az webapp deploy `
+    --resource-group localsza-rg `
+    --name localsza-api `
+    --src-path .\deploy.zip `
+    --type zip `
+    --async true
+```
+
+App Service settings required (already configured):
+- `SCM_DO_BUILD_DURING_DEPLOYMENT = false`
+- `ASPNETCORE_ENVIRONMENT = Production`
+- Startup file: `dotnet LocalsZaApi.dll`
+
+Cosmos DB firewall: `ip-range-filter = "0.0.0.0"` (accept Azure datacenter IPs).
+
+### Frontend — Netlify
+
+Netlify is connected to the GitHub repo. Merging `issue-186-Levi-VersionOne` into `main` triggers an automatic build using `netlify.toml`:
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+```
+
+To deploy manually:
 
 ```bash
 cd frontend
 npm run build
-firebase deploy --only hosting
+npx netlify-cli deploy --prod --dir=dist
 ```
 
-The build output in `frontend/dist` is served by Firebase Hosting. All routes are rewritten to `index.html` for SPA client-side routing.
+### Version Tags
 
-### Firebase Cloud Functions (Backend)
-
-```bash
-firebase deploy --only functions
-```
-
-The Express server is exported from `index.firebase.js` as a Cloud Function. The runtime is Node.js 22, configured in `firebase.json` under the `localsbackend` codebase.
+| Tag | Description |
+|-----|-------------|
+| `emani-v1` | Emani Version One — last stable state before Levi (on `main`) |
+| `levi-v1` | Levi Version One — complete driver system, Command Centre, assign fix |
