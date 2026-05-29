@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import './App.css';
 import { AuthProvider } from './Auth/AuthProvider';
 import { ProtectedRoute } from './Auth/ProtectedRoute';
+import { CommandProtectedRoute } from './Auth/CommandProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import { WazeRouteProvider } from './components/contexts/WazeRouteContext';
 import SEOHead from './components/SEO/SEOHead';
@@ -151,9 +152,9 @@ function App() {
                 <Route
                   path="/commandcentre"
                   element={
-                    <ProtectedRoute redirectTo="/login">
+                    <CommandProtectedRoute>
                       <CommandLayout />
-                    </ProtectedRoute>
+                    </CommandProtectedRoute>
                   }
                 >
                   <Route index element={<Navigate to="deliveries" replace />} />
