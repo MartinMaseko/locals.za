@@ -77,7 +77,7 @@ const DriverLogin: React.FC = () => {
             id="driver-login-input"
             value={driverId}
             onChange={e => setDriverId(e.target.value)}
-            placeholder="Driver ID (e.g. DRV-241103120045)"
+            placeholder="Driver ID"
             required
             autoComplete="username"
           />
