@@ -25,8 +25,8 @@ const CommandLayout = () => {
     const verifyAdmin = async () => {
       try {
         // Check 1: Command Centre simple auth flow (email + password via /api/admin/auth)
-        const commandCentreAuth = sessionStorage.getItem('commandCentreAuth');
-        const authToken         = sessionStorage.getItem('authToken');
+        const commandCentreAuth = localStorage.getItem('commandCentreAuth');
+        const authToken         = localStorage.getItem('authToken');
         if (commandCentreAuth === 'true' && authToken?.startsWith('commandadmin:')) {
           setChecking(false);
           return;
@@ -57,11 +57,11 @@ const CommandLayout = () => {
   }
 
   const handleSignOut = async () => {
-    const isCommandCentreAuth = sessionStorage.getItem('commandCentreAuth') === 'true';
+    const isCommandCentreAuth = localStorage.getItem('commandCentreAuth') === 'true';
     if (isCommandCentreAuth) {
-      sessionStorage.removeItem('commandCentreAuth');
-      sessionStorage.removeItem('commandCentreEmail');
-      sessionStorage.removeItem('authToken');
+      localStorage.removeItem('commandCentreAuth');
+      localStorage.removeItem('commandCentreEmail');
+      localStorage.removeItem('authToken');
       navigate('/commandlogin', { replace: true });
     } else {
       await signOut(auth);
