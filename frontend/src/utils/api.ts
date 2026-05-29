@@ -18,8 +18,8 @@ api.interceptors.request.use(
       return config;
     }
 
-    // Get token from session storage directly to avoid async operation
-    const token = sessionStorage.getItem('authToken');
+    // Command Centre login stores token in localStorage; regular Firebase login uses sessionStorage
+    const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
     
     // Add token to request header
     if (token) {
