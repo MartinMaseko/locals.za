@@ -63,6 +63,10 @@ public class OzowService
         var hash = GenerateRequestHash(payload);
         payload["HashCheck"] = hash;
 
+        // Added after hash so it does not alter the SHA-512 signature.
+        // Pre-selects the card tab on the Ozow hosted checkout page.
+        payload["PaymentMethodType"] = "card";
+
         _log.LogInformation("Ozow initiate: orderId={OrderId} amount={Amount} bankRef={BankRef}",
             order.Id, amount, bankRef);
 

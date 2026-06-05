@@ -176,6 +176,21 @@ CLEAN UP (optional, after successful deploy)
 ----------------------------------------------------
 LAST DEPLOYED
 ----------------------------------------------------
+  Date    : 2026-06-05
+  By      : kmmas
+  Version : Slice 20 (Ozow card payment — PaymentMethodType field)
+  Notes   : Added ["PaymentMethodType"] = "card" to OzowService.Initiate()
+            payload after HashCheck is set (does not alter SHA-512 signature).
+            Pre-selects the Visa card tab on the Ozow hosted checkout page.
+            Also: Deliveries CC page — search bar added (client-side filter
+            by order number). Receipts CC modal — buyer delivery_fee and
+            order total now shown in review metadata panel.
+  Build   : Self-contained linux-x64, 54.3 MB, 0 errors, 2 pre-existing warnings
+  Status  : ✓ Deployed — /api/stores 200 OK confirmed
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
   Date    : 2026-05-28
   By      : kmmas
   Version : Slice 19 (Fix assign 404 — remove JObject from orders query)
