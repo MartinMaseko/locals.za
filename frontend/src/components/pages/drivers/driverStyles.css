@@ -1661,8 +1661,169 @@
   .driver-revenue-cards {
     flex-direction: row;
   }
-  
+
   .revenue-card {
     flex: 1;
   }
+}
+
+/* ── POC Modal ────────────────────────────────────────────────────────────── */
+.driver-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.driver-modal-card {
+  background: #1f1f1f;
+  color: #f0f0f0;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 32px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.driver-modal-title {
+  font-size: 1.1rem;
+  color: #FFB803;
+  margin: 0 0 6px;
+}
+
+.driver-modal-subtitle {
+  font-size: 0.82rem;
+  color: #aaa;
+  margin: 0 0 16px;
+}
+
+.poc-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.poc-item-qty {
+  color: #FFB803;
+  font-weight: 700;
+  min-width: 28px;
+}
+
+.poc-item-desc { flex: 1; }
+
+.poc-no-items {
+  color: #666;
+  font-size: 0.82rem;
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+.driver-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poc-confirm-btn {
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+.poc-cancel-btn {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ── OTP Entry ────────────────────────────────────────────────────────────── */
+.otp-entry-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  width: 100%;
+}
+
+.otp-label {
+  font-size: 0.82rem;
+  color: #888;
+  text-align: center;
+  margin: 0;
+}
+
+.otp-input {
+  font-size: 2rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+  width: 160px;
+  padding: 12px 8px;
+  border: 2px solid #FFB803;
+  border-radius: 10px;
+  background: #1f1f1f;
+  color: #FFB803;
+  font-family: monospace;
+  outline: none;
+}
+
+.otp-error {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Driver receipt image ─────────────────────────────────────────────────── */
+.receipt-section {
+  text-align: center;
+}
+
+.receipt-store-name {
+  font-size: 0.78rem;
+  color: #888;
+  margin: 0 0 10px;
+}
+
+.driver-receipt-img {
+  width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 184, 3, 0.2);
+}
+
+.receipt-tap-hint {
+  font-size: 0.72rem;
+  color: #555;
+  margin: 6px 0 0;
+}
 }

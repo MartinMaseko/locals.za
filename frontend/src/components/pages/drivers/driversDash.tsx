@@ -260,7 +260,7 @@ const DriversDash = () => {
                     className="driver-view-order-btn"
                     onClick={() => navigate(`/driver/deliveries/${job.id}`)}
                   >
-                    {job.status === 'assigned' ? '⚡ Accept & View Job' : 'View Job'}
+                    {job.status === 'assigned' ? 'Accept & View Job' : 'View Job'}
                   </button>
                 </div>
               </div>

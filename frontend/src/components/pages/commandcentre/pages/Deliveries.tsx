@@ -8,9 +8,9 @@ const FILTERS = ['all', 'confirmed', 'assigned', 'accepted', 'arrivedAtPickup', 
 const Deliveries = () => {
   const [deliveries, setDeliveries] = useState<AdminOrder[]>([]);
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [assigning, setAssigning] = useState<string | null>(null);
 
   useEffect(() => {
     adminApi.getDeliveries()
@@ -19,29 +19,36 @@ const Deliveries = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAssign = async (orderId: string) => {
-    const driverId = window.prompt('Enter Driver ID:');
-    if (!driverId?.trim()) return;
-    setAssigning(orderId);
-    try {
-      const updated = await adminApi.assignDriver(orderId, driverId.trim());
-      setDeliveries(prev => prev.map(d => d.id === orderId ? { ...d, ...updated } : d));
-    } catch {
-      setError('Failed to assign driver.');
-    } finally {
-      setAssigning(null);
-    }
+  const handleAlertCustomer = (_orderId: string) => {
+    // TODO: trigger SMS notification when endpoint is ready
   };
 
   // Deduplicate in case the cross-partition Cosmos query returns the same document twice
-  const unique  = Array.from(new Map(deliveries.map(d => [d.id, d])).values());
-  const visible = filter === 'all' ? unique : unique.filter(d => d.status === filter);
+  const unique    = Array.from(new Map(deliveries.map(d => [d.id, d])).values());
+  const filtered  = filter === 'all' ? unique : unique.filter(d => d.status === filter);
+  const searchTerm = search.trim().toLowerCase();
+  const visible   = searchTerm
+    ? filtered.filter(d =>
+        (d.order_number || d.id).toLowerCase().includes(searchTerm)
+      )
+    : filtered;
 
   return (
     <div>
       <div className="cc-page-header">
         <h1 className="cc-page-title">Deliveries</h1>
         <span style={{ color: '#555', fontSize: '0.8rem' }}>{unique.length} total</span>
+      </div>
+
+      <div style={{ margin: '0 0 0.75rem' }}>
+        <input
+          type="search"
+          className="cc-form-input"
+          placeholder="Search order number…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ maxWidth: 320 }}
+        />
       </div>
 
       <div className="cc-filter-bar">
@@ -68,7 +75,6 @@ const Deliveries = () => {
                 <th>Status</th>
                 <th>Driver</th>
                 <th>Delivery Fee</th>
-                <th>Total</th>
                 <th>Updated</th>
                 <th>Actions</th>
               </tr>
@@ -82,21 +88,20 @@ const Deliveries = () => {
                     {d.driver_id ?? <span style={{ color: '#555' }}>Unassigned</span>}
                   </td>
                   <td>{formatRand(d.delivery_fee)}</td>
-                  <td>{formatRand(d.total)}</td>
                   <td>{formatDate(d.updated_at)}</td>
                   <td>
                     <button
                       className="cc-btn cc-btn--ghost"
-                      disabled={assigning === d.id || d.status === 'delivered'}
-                      onClick={() => handleAssign(d.id)}
+                      disabled={d.status === 'delivered'}
+                      onClick={() => handleAlertCustomer(d.id)}
                     >
-                      {assigning === d.id ? '…' : 'Assign'}
+                      Alert Customer
                     </button>
                   </td>
                 </tr>
               ))}
               {visible.length === 0 && (
-                <tr><td colSpan={7} className="cc-empty">No deliveries</td></tr>
+                <tr><td colSpan={6} className="cc-empty">No deliveries</td></tr>
               )}
             </tbody>
           </table>

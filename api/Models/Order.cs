@@ -45,6 +45,12 @@ public class Order
     [JsonPropertyName("driver_id")]
     public string?         DriverId        { get; set; }
 
+    [JsonPropertyName("delivery_pin")]
+    public string?         DeliveryPin     { get; set; }
+
+    [JsonPropertyName("delivery_pin_generated_at")]
+    public string?         DeliveryPinGeneratedAt { get; set; }
+
     [JsonPropertyName("receipt_id")]
     public string?         ReceiptId       { get; set; }      // links to Cosmos receipts container
 
