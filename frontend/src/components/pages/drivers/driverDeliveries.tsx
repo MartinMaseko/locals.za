@@ -14,6 +14,22 @@ interface OrderItem {
   line_total:  number;
 }
 
+interface DriverReceipt {
+  id:          string;
+  orderId:     string;
+  blobUrl:     string;
+  storeName?:  string;
+  items?:      Array<{
+    description: string;
+    qty:         number;
+    unitPrice:   number;
+    lineTotal:   number;
+    estimatedKg: number;
+  }>;
+  weightClass: string;
+  status:      string;
+}
+
 interface Job {
   id:               string;
   order_number:     string;
@@ -71,10 +87,14 @@ const formatAddress = (addr: Job['delivery_address']): string => {
 const DriverDeliveries = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [job, setJob]               = useState<Job | null>(null);
+  const [receipt, setReceipt]       = useState<DriverReceipt | null>(null);
   const [loading, setLoading]       = useState(true);
   const [advancing, setAdvancing]   = useState(false);
   const [error, setError]           = useState('');
   const [addressCopied, setAddrCopied] = useState(false);
+  const [showPocModal, setShowPocModal] = useState(false);
+  const [otpInput, setOtpInput]     = useState('');
+  const [otpError, setOtpError]     = useState('');
   const navigate = useNavigate();
   const auth = getAuth(app);
 
@@ -94,6 +114,14 @@ const DriverDeliveries = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setJob(res.data);
+        // Best-effort receipt fetch — not an error if it doesn't exist yet
+        try {
+          const rRes = await axios.get<DriverReceipt>(
+            `${API_URL}/api/drivers/me/jobs/${orderId}/receipt`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setReceipt(rRes.data);
+        } catch { /* receipt not confirmed yet — normal */ }
       } catch (err: any) {
         if (err.response?.status === 403)
           setError('You are not assigned to this job.');
@@ -108,23 +136,26 @@ const DriverDeliveries = () => {
     fetch();
   }, [orderId, getToken]);
 
-  const advanceStatus = async () => {
+  const advanceStatus = async (pin?: string) => {
     if (!job || !NEXT_ACTION[job.status]) return;
     setAdvancing(true);
     setError('');
+    setOtpError('');
     try {
       const token = await getToken();
       const res = await axios.patch<Job>(
         `${API_URL}/api/drivers/me/jobs/${job.id}/status`,
-        {},
+        pin ? { delivery_pin: pin } : {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setJob(res.data);
+      setOtpInput('');
     } catch (err: any) {
-      if (err.response?.data?.error)
-        setError(err.response.data.error);
+      const msg = err.response?.data?.error;
+      if (err.response?.status === 400 && msg === 'Invalid delivery PIN')
+        setOtpError('Incorrect PIN — ask the customer for their delivery PIN.');
       else
-        setError('Failed to update status. Please try again.');
+        setError(msg || 'Failed to update status. Please try again.');
     } finally {
       setAdvancing(false);
     }
@@ -333,10 +364,38 @@ const DriverDeliveries = () => {
                   src="https://img.icons8.com/ios-filled/20/ffffff/checkmark.png" alt="" />
                 Delivered
               </button>
+            ) : job.status === 'loaded' ? (
+              <div className="otp-entry-section">
+                <p className="otp-label">Enter the customer's delivery PIN:</p>
+                <input
+                  className="otp-input"
+                  type="tel"
+                  maxLength={4}
+                  value={otpInput}
+                  onChange={e => { setOtpInput(e.target.value.replace(/\D/g, '')); setOtpError(''); }}
+                  placeholder="1234"
+                  inputMode="numeric"
+                />
+                {otpError && <p className="otp-error">{otpError}</p>}
+                <button
+                  className="collect-order-btn"
+                  style={{
+                    background: '#4CAF50', color: '#fff', fontWeight: 700, fontSize: '1rem',
+                    border: 'none', borderRadius: 8, padding: '14px 20px',
+                    cursor: advancing || otpInput.length !== 4 ? 'not-allowed' : 'pointer',
+                    opacity: advancing || otpInput.length !== 4 ? 0.6 : 1,
+                    transition: 'all 0.2s', width: '100%', marginTop: 4,
+                  }}
+                  onClick={() => advanceStatus(otpInput)}
+                  disabled={advancing || otpInput.length !== 4}
+                >
+                  {advancing ? 'Verifying…' : 'Confirm Delivery'}
+                </button>
+              </div>
             ) : nextAction ? (
               <button
                 className="collect-order-btn"
-                onClick={advanceStatus}
+                onClick={job.status === 'arrivedAtPickup' ? () => setShowPocModal(true) : () => advanceStatus()}
                 disabled={advancing}
                 style={{
                   background: nextAction.color,
@@ -357,7 +416,55 @@ const DriverDeliveries = () => {
           </div>
         </div>
 
+        {/* ── Confirmed receipt image (shown at pickup and en route) ── */}
+        {receipt && (job.status === 'arrivedAtPickup' || job.status === 'loaded') && (
+          <div className="delivery-section receipt-section">
+            <h2>Confirmed Receipt</h2>
+            <p className="receipt-store-name">{receipt.storeName ?? 'Store receipt'}</p>
+            <a href={receipt.blobUrl} target="_blank" rel="noopener noreferrer">
+              <img src={receipt.blobUrl} alt="Confirmed receipt" className="driver-receipt-img" />
+            </a>
+            <p className="receipt-tap-hint">Tap image to view full size</p>
+          </div>
+        )}
+
       </div>
+
+      {/* ── Proof of Collection modal ── */}
+      {showPocModal && (
+        <div className="driver-modal-overlay" onClick={() => setShowPocModal(false)}>
+          <div className="driver-modal-card" onClick={e => e.stopPropagation()}>
+            <h3 className="driver-modal-title">Confirm Items Loaded</h3>
+            <p className="driver-modal-subtitle">
+              Verify all items are in your vehicle before proceeding.
+            </p>
+            {receipt?.items && receipt.items.length > 0 ? (
+              <ul className="poc-items-list">
+                {receipt.items.map((item, i) => (
+                  <li key={i} className="poc-item">
+                    <span className="poc-item-qty">×{item.qty}</span>
+                    <span className="poc-item-desc">{item.description}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="poc-no-items">No confirmed item list — use the receipt image above.</p>
+            )}
+            <div className="driver-modal-actions">
+              <button
+                className="poc-confirm-btn"
+                onClick={async () => { setShowPocModal(false); await advanceStatus(); }}
+                disabled={advancing}
+              >
+                {advancing ? 'Updating…' : 'All Items Loaded — Proceed'}
+              </button>
+              <button className="poc-cancel-btn" onClick={() => setShowPocModal(false)}>
+                Check Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

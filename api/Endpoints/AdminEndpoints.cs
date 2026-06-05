@@ -66,6 +66,20 @@ public static class AdminEndpoints
             return Results.Ok(new { orders });
         });
 
+        // ── Single order (for receipt review — fetches customer info) ────────────
+        app.MapGet("/api/admin/orders/{orderId}", async (HttpContext ctx, string orderId,
+            CosmosService cosmos) =>
+        {
+            if (!AuthHelpers.IsAdmin(ctx)) return Forbidden();
+
+            var orders = await cosmos.QueryAsync<Order>("orders",
+                "SELECT * FROM c WHERE c.id = @id",
+                new() { ["@id"] = orderId });
+
+            if (orders.Count == 0) return Results.NotFound();
+            return Results.Ok(orders.First());
+        });
+
         // ── All payments ─────────────────────────────────────────────────────
         app.MapGet("/api/admin/payments", async (HttpContext ctx, CosmosService cosmos,
             int limit = 100) =>

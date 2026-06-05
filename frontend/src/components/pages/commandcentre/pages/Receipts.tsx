@@ -4,6 +4,7 @@ import {
   type AdminReceipt,
   type AdminReceiptItem,
   type AdminDriverFull,
+  type AdminOrderDetail,
 } from '../services/adminApi';
 import { formatRand, formatDate } from '../functions/formatters';
 import StatusBadge from '../components/StatusBadge';
@@ -20,6 +21,7 @@ const Receipts = () => {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
   const [reviewing, setReviewing]   = useState<AdminReceipt | null>(null);
+  const [reviewOrder, setReviewOrder] = useState<AdminOrderDetail | null>(null);
   const [saving, setSaving]         = useState(false);
   const [rejectMode, setRejectMode] = useState(false);
 
@@ -51,9 +53,11 @@ const Receipts = () => {
     setAdminNote(r.adminNote || '');
     setRejectMode(false);
     setError(null);
+    setReviewOrder(null);
+    adminApi.getOrder(r.orderId).then(setReviewOrder).catch(() => {});
   };
 
-  const closeReview = () => { setReviewing(null); setRejectMode(false); setError(null); };
+  const closeReview = () => { setReviewing(null); setReviewOrder(null); setRejectMode(false); setError(null); };
 
   const handleSave = async (status: string) => {
     if (!reviewing) return;
@@ -247,6 +251,34 @@ const Receipts = () => {
                   <div><span>Store:</span> {reviewing.storeName ?? '—'}</div>
                   <div><span>Total:</span> {reviewing.total != null ? formatRand(reviewing.total) : '—'}</div>
                   <div><span>Received:</span> {formatDate(reviewing.parsedAt)}</div>
+                  <div><span>Customer:</span> {reviewOrder?.customer_name ?? '—'}</div>
+                  <div>
+                    <span>Phone:</span>{' '}
+                    {reviewOrder?.contact_number
+                      ? <a href={`tel:${reviewOrder.contact_number}`} style={{ color: '#FFB803' }}>{reviewOrder.contact_number}</a>
+                      : '—'}
+                  </div>
+                  <div>
+                    <span>Address:</span>{' '}
+                    {reviewOrder?.delivery_address
+                      ? [
+                          reviewOrder.delivery_address.addressLine,
+                          reviewOrder.delivery_address.suburb,
+                          reviewOrder.delivery_address.city,
+                          reviewOrder.delivery_address.province,
+                        ].filter(Boolean).join(', ')
+                      : '—'}
+                  </div>
+                  <div>
+                    <span>Delivery Fee:</span>{' '}
+                    {reviewOrder?.delivery_fee != null
+                      ? <strong style={{ color: '#FFB803' }}>{formatRand(reviewOrder.delivery_fee)}</strong>
+                      : '—'}
+                  </div>
+                  <div>
+                    <span>Order Total:</span>{' '}
+                    {reviewOrder?.total != null ? formatRand(reviewOrder.total) : '—'}
+                  </div>
                   <div>
                     <span>Status:</span>
                     <StatusBadge status={reviewing.status ?? 'pending'} />

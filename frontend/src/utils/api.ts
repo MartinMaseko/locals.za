@@ -18,8 +18,13 @@ api.interceptors.request.use(
       return config;
     }
 
-    // Command Centre login stores token in localStorage; regular Firebase login uses sessionStorage
-    const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+    // Command Centre login stores token in localStorage; regular Firebase login uses sessionStorage.
+    // When a command centre session is active, always prefer the localStorage commandadmin token
+    // so a stale Firebase token in sessionStorage doesn't shadow it.
+    const isCommandCentre = localStorage.getItem('commandCentreAuth') === 'true';
+    const token = isCommandCentre
+      ? localStorage.getItem('authToken')
+      : (sessionStorage.getItem('authToken') || localStorage.getItem('authToken'));
     
     // Add token to request header
     if (token) {

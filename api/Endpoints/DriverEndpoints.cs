@@ -142,12 +142,34 @@ public static class DriverEndpoints
             await ctx.Response.WriteAsJsonAsync(order);
         });
 
-        // ── Status progression ────────────────────────────────────────────────
-        app.MapPatch("/api/drivers/me/jobs/{orderId}/status", async (HttpContext ctx,
+        // ── Receipt for assigned job (driver sees confirmed items at pickup) ──────
+        app.MapGet("/api/drivers/me/jobs/{orderId}/receipt", async (HttpContext ctx,
             string orderId, CosmosService cosmos) =>
         {
             var uid = await AuthHelpers.RequireUidAsync(ctx);
             if (uid is null) return;
+
+            var orders = await cosmos.QueryAsync<Order>("orders",
+                "SELECT * FROM c WHERE c.id = @id",
+                new() { ["@id"] = orderId });
+
+            var order = orders.FirstOrDefault(o => o.DriverId == uid);
+            if (order is null) { ctx.Response.StatusCode = 403; return; }
+
+            var receipt = await cosmos.GetAsync<Receipt>("receipts", orderId, orderId);
+            if (receipt is null) { ctx.Response.StatusCode = 404; return; }
+            await ctx.Response.WriteAsJsonAsync(receipt);
+        });
+
+        // ── Status progression ────────────────────────────────────────────────
+        app.MapPatch("/api/drivers/me/jobs/{orderId}/status", async (HttpContext ctx,
+            string orderId, CosmosService cosmos, NotificationService notifications) =>
+        {
+            var uid = await AuthHelpers.RequireUidAsync(ctx);
+            if (uid is null) return;
+
+            var body = await ctx.Request.ReadFromJsonAsync<StatusAdvanceBody>()
+                       ?? new StatusAdvanceBody(null);
 
             var orders = await cosmos.QueryAsync<Order>("orders",
                 "SELECT * FROM c WHERE c.id = @id",
@@ -163,6 +185,29 @@ public static class DriverEndpoints
                 ctx.Response.StatusCode = 409;
                 await ctx.Response.WriteAsJsonAsync(new { error = $"No next status from '{order.Status}'" });
                 return;
+            }
+
+            // PIN verification — driver must enter customer's PIN to complete delivery
+            if (next == "delivered")
+            {
+                if (string.IsNullOrWhiteSpace(body.DeliveryPin) || body.DeliveryPin != order.DeliveryPin)
+                {
+                    ctx.Response.StatusCode = 400;
+                    await ctx.Response.WriteAsJsonAsync(new { error = "Invalid delivery PIN" });
+                    return;
+                }
+                order.DeliveryPin            = null;
+                order.DeliveryPinGeneratedAt = null;
+            }
+
+            // PIN generation — when driver has loaded goods and is heading to customer
+            if (next == "loaded")
+            {
+                var pin = Random.Shared.Next(1000, 9999).ToString("D4");
+                order.DeliveryPin            = pin;
+                order.DeliveryPinGeneratedAt = DateTime.UtcNow.ToString("o");
+                if (order.UserId is not null)
+                    _ = notifications.SendDeliveryPinAsync(order.UserId, order.Id, pin);
             }
 
             order.Status    = next;
@@ -304,6 +349,9 @@ public static class DriverEndpoints
 // ── Record types ──────────────────────────────────────────────────────────────
 record LocationPing(double Lat, double Lng, string? Status);
 record StatusToggleBody(string Status);
+record StatusAdvanceBody(
+    [property: System.Text.Json.Serialization.JsonPropertyName("delivery_pin")] string? DeliveryPin
+);
 
 record VerifyCredBody(
     [property: System.Text.Json.Serialization.JsonPropertyName("driver_id")] string DriverId,

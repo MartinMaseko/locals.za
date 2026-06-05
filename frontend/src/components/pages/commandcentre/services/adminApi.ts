@@ -32,6 +32,20 @@ export interface AdminOrder {
   updated_at: string;
 }
 
+export interface AdminOrderDetail extends AdminOrder {
+  customer_name: string;
+  contact_number: string;
+  delivery_address: {
+    addressLine?: string;
+    suburb?: string;
+    city?: string;
+    province?: string;
+    postal?: string;
+    lat?: number;
+    lng?: number;
+  };
+}
+
 // ─── Payments ────────────────────────────────────────────────────────────────
 
 export interface AdminPayment {
@@ -199,6 +213,9 @@ export const adminApi = {
   getOrders: (status?: string) =>
     api.get<{ orders: AdminOrder[] }>('/api/admin/orders', { params: { status, limit: 100 } })
       .then(r => r.data.orders),
+
+  getOrder: (orderId: string) =>
+    api.get<AdminOrderDetail>(`/api/admin/orders/${orderId}`).then(r => r.data),
 
   // ── Payments ─────────────────────────────────────────────────────────────────
   getPayments: () =>

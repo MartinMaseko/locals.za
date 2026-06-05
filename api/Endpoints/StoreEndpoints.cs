@@ -25,7 +25,7 @@ public static class StoreEndpoints
         app.MapPost("/api/stores", async (HttpContext ctx, Store store, CosmosService cosmos) =>
         {
             if (!AuthHelpers.IsAdmin(ctx))
-                return Results.Forbid();
+                return Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
             store.Id = store.Id == "" ? Guid.NewGuid().ToString() : store.Id;
             var saved = await cosmos.UpsertAsync("stores", store, store.Id);
@@ -36,7 +36,7 @@ public static class StoreEndpoints
             Store store, CosmosService cosmos) =>
         {
             if (!AuthHelpers.IsAdmin(ctx))
-                return Results.Forbid();
+                return Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
             store.Id = id;
             var saved = await cosmos.UpsertAsync("stores", store, id);
@@ -48,7 +48,7 @@ public static class StoreEndpoints
             CosmosService cosmos) =>
         {
             if (!AuthHelpers.IsAdmin(ctx))
-                return Results.Forbid();
+                return Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
             var store = await cosmos.GetAsync<Store>("stores", id, id);
             if (store is null) return Results.NotFound();
@@ -63,7 +63,7 @@ public static class StoreEndpoints
             CosmosService cosmos) =>
         {
             if (!AuthHelpers.IsAdmin(ctx))
-                return Results.Forbid();
+                return Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
             var store = await cosmos.GetAsync<Store>("stores", id, id);
             if (store is null) return Results.NotFound();
@@ -78,7 +78,7 @@ public static class StoreEndpoints
             CosmosService cosmos) =>
         {
             if (!AuthHelpers.IsAdmin(ctx))
-                return Results.Forbid();
+                return Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
             var store = await cosmos.GetAsync<Store>("stores", id, id);
             if (store is null) return Results.NotFound();
@@ -91,7 +91,7 @@ public static class StoreEndpoints
         app.MapGet("/api/admin/stores", async (HttpContext ctx, CosmosService cosmos) =>
         {
             if (!AuthHelpers.IsAdmin(ctx))
-                return Results.Forbid();
+                return Results.Json(new { error = "Admin access required" }, statusCode: 403);
 
             var stores = await cosmos.QueryAsync<Store>("stores",
                 "SELECT * FROM c ORDER BY c.name");
