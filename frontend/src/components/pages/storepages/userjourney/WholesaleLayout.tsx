@@ -89,7 +89,8 @@ const WholesaleLayout = () => {
   const onProceedToDelivery = () => goTo(2);
 
   const onAddressChange = (addr: string) =>
-    setOrder(prev => ({ ...prev, address: addr }));
+    // Clear resolved coords — user typed manually so Google Places lat/lng no longer applies
+    setOrder(prev => ({ ...prev, address: addr, addressLat: undefined, addressLng: undefined }));
 
   /** DeliveryPage calls this when the quote API returns successfully. */
   const onSetDeliveryQuote = (quote: DeliveryQuote) =>

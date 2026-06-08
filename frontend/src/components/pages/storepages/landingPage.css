@@ -1086,6 +1086,19 @@
   margin: 0;
 }
 
+.receipt-address-resolved {
+  font-size: 11px;
+  color: #4caf50;
+  margin: 4px 0 0;
+  letter-spacing: 0.02em;
+}
+
+.receipt-address-hint {
+  font-size: 11px;
+  color: var(--lz-muted);
+  margin: 4px 0 0;
+}
+
 /* ---------- Step 2: Photo clarity note ---------- */
 .receipt-clarity-note {
   margin-top: 30px;

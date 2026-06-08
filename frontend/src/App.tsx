@@ -19,7 +19,8 @@ import SelectStore from './components/pages/storepages/userjourney/SelectStore';
 const LoginPage       = lazy(() => import('./components/pages/storepages/loginPage'));
 const UserRegistration = lazy(() => import('./components/pages/userpages/userReg'));
 const CommandLogin    = lazy(() => import('./components/pages/commandcentre/commandLogin'));
-const DriverLogin     = lazy(() => import('./components/pages/drivers/auth/DriverLogin'));
+const DriverLogin        = lazy(() => import('./components/pages/drivers/auth/DriverLogin'));
+const DriverRegistration = lazy(() => import('./components/pages/drivers/DriverRegistration'));
 
 // ── Authenticated user pages ──────────────────────────────────────────────────
 const UserAccount  = lazy(() => import('./components/pages/userpages/userAccount'));
@@ -98,7 +99,8 @@ function App() {
                 <Route path="/register"    element={<UserRegistration />} />
                 <Route path="/login"       element={<LoginPage />} />
                 <Route path="/commandlogin" element={<CommandLogin />} />
-                <Route path="/driverlogin" element={<DriverLogin />} />
+                <Route path="/driverlogin"    element={<DriverLogin />} />
+                <Route path="/driver-register" element={<DriverRegistration />} />
 
                 {/* ── Driver app ────────────────────────────────────────── */}
                 <Route
