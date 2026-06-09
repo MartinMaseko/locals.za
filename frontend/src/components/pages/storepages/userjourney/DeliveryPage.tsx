@@ -195,6 +195,11 @@ const DeliveryPage = () => {
       const res = await api.post<DeliveryQuote>('/api/quotes/delivery', {
         storeId: order.store.id,
         dropoffAddress: address,
+        // Pass Google-resolved coordinates when available — bypasses Azure Maps geocoding
+        // so township and informal-settlement addresses resolve correctly.
+        ...(order.addressLat && order.addressLng
+          ? { dropoffLat: order.addressLat, dropoffLng: order.addressLng }
+          : {}),
         isRush: false,
         isPool: false,
       });
@@ -205,20 +210,23 @@ const DeliveryPage = () => {
     } finally {
       setFetchingQuote(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order.store]);
+  }, [order.store, order.addressLat, order.addressLng]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep a ref to the latest fetchQuote so debounced calls always use the current version
+  const fetchQuoteRef = useRef(fetchQuote);
+  useEffect(() => { fetchQuoteRef.current = fetchQuote; }, [fetchQuote]);
 
   // Auto-fetch on mount if we have an address but no persisted quote
   useEffect(() => {
-    if (localAddress && !order.deliveryQuote) fetchQuote(localAddress);
+    if (localAddress && !order.deliveryQuote) fetchQuoteRef.current(localAddress);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddressChange = (addr: string) => {
     setLocalAddress(addr);
-    onAddressChange(addr);
+    onAddressChange(addr); // also clears addressLat/addressLng in parent state
     if (debounceRef.current != null) clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => fetchQuote(addr), 800);
+    debounceRef.current = window.setTimeout(() => fetchQuoteRef.current(addr), 800);
   };
 
   return (

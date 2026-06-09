@@ -72,7 +72,9 @@ export interface OrderState {
   // Step 2 — receipt upload & customer info
   customerName: string;
   contactNumber: string;
-  address: string;           // delivery address
+  address: string;           // delivery address (human-readable)
+  addressLat?: number;       // resolved by Google Places — passed directly to Azure Maps routing
+  addressLng?: number;
   receiptBlobUrls: string[]; // client-side preview URLs (object URLs) from uploaded images
   // Step 3 — delivery quote from API
   deliveryQuote: DeliveryQuote | null;
@@ -87,6 +89,8 @@ export interface ReceiptFormData {
   customerName: string;
   contactNumber: string;
   address: string;
+  addressLat?: number;
+  addressLng?: number;
   receiptBlobUrls: string[];
 }
 

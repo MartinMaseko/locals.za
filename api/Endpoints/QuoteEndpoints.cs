@@ -45,11 +45,17 @@ public static class QuoteEndpoints
             if (string.IsNullOrWhiteSpace(req.DropoffAddress))
                 return Results.BadRequest(new { error = "dropoffAddress is required" });
 
+            // Use pre-resolved Google Places coordinates when available — bypasses Azure Maps
+            // geocoding so township and informal-settlement addresses route correctly.
+            var dropoff = (req.DropoffLat.HasValue && req.DropoffLng.HasValue)
+                ? $"{req.DropoffLat.Value},{req.DropoffLng.Value}"
+                : req.DropoffAddress;
+
             // ── Route (distance + polyline via Azure Maps) ───────────────────────
             RouteResult routeInfo;
             try
             {
-                routeInfo = await maps.GetRouteAsync(origin, req.DropoffAddress);
+                routeInfo = await maps.GetRouteAsync(origin, dropoff);
             }
             catch (Exception ex)
             {
@@ -85,6 +91,8 @@ public record DeliveryQuoteRequest(
     string? StoreId,
     string? PickupAddress,
     string  DropoffAddress,
+    double? DropoffLat,
+    double? DropoffLng,
     string? WeightClass,
     bool    IsRush = false,
     bool    IsPool = false

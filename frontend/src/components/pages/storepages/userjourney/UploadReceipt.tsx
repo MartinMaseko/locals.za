@@ -3,87 +3,131 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import mapLight from '../../../assets/images/mapLight.png';
 import type { ReceiptFormData, WholesaleOutletContext } from './wholesale.types';
 
-const AZURE_MAPS_KEY = (import.meta.env.VITE_AZURE_MAPS_KEY ?? '') as string;
+const GOOGLE_MAPS_KEY = (import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY ?? '') as string;
 
-interface AddressSuggestion {
-  label: string;
-  position: { lat: number; lon: number };
+// ── Google Places loader (module-level singleton) ─────────────────────────────
+
+interface PlacePrediction {
+  description: string;
+  place_id: string;
 }
 
-const useAddressAutocomplete = (query: string, enabled: boolean) => {
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
-  const debounceRef = useRef<number | null>(null);
+let _gmapsPromise: Promise<void> | null = null;
 
-  const search = useCallback(async (q: string) => {
-    if (!q.trim() || q.length < 3 || !AZURE_MAPS_KEY ||
-        AZURE_MAPS_KEY === 'ADD_YOUR_AZURE_MAPS_KEY_HERE') {
+const loadGoogleMaps = (): Promise<void> => {
+  if ((window as Window & { google?: unknown }).google) return Promise.resolve();
+  if (_gmapsPromise) return _gmapsPromise;
+  _gmapsPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places&loading=async`;
+    s.async = true;
+    s.onload  = () => resolve();
+    s.onerror = () => reject(new Error('Google Maps failed to load'));
+    document.head.appendChild(s);
+  });
+  return _gmapsPromise;
+};
+
+// ── Google Places autocomplete hook ──────────────────────────────────────────
+
+const useGooglePlacesAutocomplete = (query: string, enabled: boolean) => {
+  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
+  const debounceRef = useRef<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serviceRef = useRef<any>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!GOOGLE_MAPS_KEY) return;
+    loadGoogleMaps()
+      .then(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        serviceRef.current = new (window as any).google.maps.places.AutocompleteService();
+        setReady(true);
+      })
+      .catch(() => {});
+  }, []);
+
+  const search = useCallback((q: string) => {
+    if (!ready || !serviceRef.current || !q.trim() || q.length < 3) {
       setSuggestions([]);
       return;
     }
-    try {
-      const url = 'https://atlas.microsoft.com/search/address/json' +
-                  '?api-version=1.0' +
-                  `&query=${encodeURIComponent(q)}` +
-                  '&countrySet=ZA&typeahead=true&limit=5' +
-                  `&subscription-key=${AZURE_MAPS_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const results: AddressSuggestion[] = (data.results ?? []).map((r: any) => ({
-        label: r.address?.freeformAddress ?? '',
-        position: { lat: r.position?.lat ?? 0, lon: r.position?.lon ?? 0 },
-      })).filter((r: AddressSuggestion) => r.label);
-      setSuggestions(results);
-    } catch {
-      setSuggestions([]);
-    }
-  }, []);
+    serviceRef.current.getPlacePredictions(
+      { input: q, componentRestrictions: { country: 'za' } },
+      (results: PlacePrediction[] | null) => setSuggestions(results ?? []),
+    );
+  }, [ready]);
 
   useEffect(() => {
     if (!enabled) { setSuggestions([]); return; }
     if (debounceRef.current != null) clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => search(query), 320);
+    debounceRef.current = window.setTimeout(() => search(query), 300);
     return () => { if (debounceRef.current != null) clearTimeout(debounceRef.current); };
   }, [query, enabled, search]);
 
+  const geocodePlaceId = (placeId: string): Promise<{ lat: number; lng: number } | null> =>
+    new Promise(resolve => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const g = (window as any).google?.maps;
+      if (!g) { resolve(null); return; }
+      new g.Geocoder().geocode(
+        { placeId },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (results: any[] | null) => {
+          if (!results?.length) { resolve(null); return; }
+          const loc = results[0].geometry.location;
+          resolve({ lat: loc.lat() as number, lng: loc.lng() as number });
+        },
+      );
+    });
+
   const clear = () => setSuggestions([]);
-  return { suggestions, clear };
+
+  return { suggestions, clear, geocodePlaceId };
 };
+
+// ── Parallax constants ────────────────────────────────────────────────────────
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 1.6;
 const ACCEPT = 'image/jpeg,image/png,application/pdf';
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 const UploadReceipt = () => {
   const navigate = useNavigate();
   const { order, onSetReceiptData, onProceedToDelivery } =
     useOutletContext<WholesaleOutletContext>();
 
-  const bgRef = useRef<HTMLDivElement | null>(null);
-  const rafRef = useRef<number | null>(null);
+  const bgRef           = useRef<HTMLDivElement | null>(null);
+  const rafRef          = useRef<number | null>(null);
   const detailsInputRef = useRef<HTMLInputElement | null>(null);
-  const itemsInputRef = useRef<HTMLInputElement | null>(null);
+  const itemsInputRef   = useRef<HTMLInputElement | null>(null);
 
   // ─── File state ────────────────────────────────────────────────────────────
-  const [detailsFile, setDetailsFile] = useState<File | null>(null);
+  const [detailsFile, setDetailsFile]     = useState<File | null>(null);
   const [detailsPreview, setDetailsPreview] = useState<string | null>(null);
-  const [itemsFiles, setItemsFiles] = useState<File[]>([]);
+  const [itemsFiles, setItemsFiles]       = useState<File[]>([]);
   const [itemsPreviews, setItemsPreviews] = useState<(string | null)[]>([]);
 
-  // ─── Customer info (initialised from persisted order state) ───────────────
-  const [customerName, setCustomerName] = useState(order.customerName);
+  // ─── Customer info ─────────────────────────────────────────────────────────
+  const [customerName, setCustomerName]       = useState(order.customerName);
   const [deliveryAddress, setDeliveryAddress] = useState(order.address);
-  const [contactNumber, setContactNumber] = useState(order.contactNumber);
+  const [contactNumber, setContactNumber]     = useState(order.contactNumber);
+  const [addressCoords, setAddressCoords]     = useState<{ lat: number; lng: number } | null>(
+    order.addressLat && order.addressLng
+      ? { lat: order.addressLat, lng: order.addressLng }
+      : null,
+  );
 
-  // Keep form fields in sync with the committed order state so that going back
-  // and changing the store (or any other upstream field) is reflected here.
   useEffect(() => { setCustomerName(order.customerName); }, [order.customerName]);
   useEffect(() => { setDeliveryAddress(order.address); }, [order.address]);
   useEffect(() => { setContactNumber(order.contactNumber); }, [order.contactNumber]);
+
   const [addressFocused, setAddressFocused] = useState(false);
-  const { suggestions, clear: clearSuggestions } = useAddressAutocomplete(
-    deliveryAddress, addressFocused
-  );
+  const { suggestions, clear: clearSuggestions, geocodePlaceId } =
+    useGooglePlacesAutocomplete(deliveryAddress, addressFocused);
 
   // ─── Parallax background ──────────────────────────────────────────────────
   useEffect(() => {
@@ -161,6 +205,8 @@ const UploadReceipt = () => {
       customerName,
       contactNumber,
       address: deliveryAddress,
+      addressLat: addressCoords?.lat,
+      addressLng: addressCoords?.lng,
       receiptBlobUrls: previewUrls,
     };
     onSetReceiptData(data);
@@ -302,6 +348,7 @@ const UploadReceipt = () => {
             autoComplete="name"
           />
         </div>
+
         <div className="receipt-field receipt-field--autocomplete">
           <label className="receipt-field-label" htmlFor="deliveryAddress">Delivery Address</label>
           <input
@@ -310,29 +357,47 @@ const UploadReceipt = () => {
             className="receipt-field-input"
             placeholder="Street, suburb, city"
             value={deliveryAddress}
-            onChange={e => { setDeliveryAddress(e.target.value); clearSuggestions(); }}
+            onChange={e => {
+              setDeliveryAddress(e.target.value);
+              setAddressCoords(null); // clear coords — user typed manually
+              clearSuggestions();
+            }}
             onFocus={() => setAddressFocused(true)}
-            onBlur={() => setTimeout(() => setAddressFocused(false), 150)}
+            onBlur={() => setTimeout(() => setAddressFocused(false), 200)}
             autoComplete="off"
           />
+          {/* Google Places suggestions */}
           {suggestions.length > 0 && addressFocused && (
             <ul className="address-suggestions">
               {suggestions.map((s, i) => (
                 <li
                   key={i}
                   className="address-suggestion-item"
-                  onMouseDown={() => {
-                    setDeliveryAddress(s.label);
+                  onMouseDown={async () => {
+                    setDeliveryAddress(s.description);
                     clearSuggestions();
                     setAddressFocused(false);
+                    const coords = await geocodePlaceId(s.place_id);
+                    setAddressCoords(coords);
                   }}
                 >
-                  {s.label}
+                  {s.description}
                 </li>
               ))}
             </ul>
           )}
+          {addressCoords && (
+            <p className="receipt-address-resolved">
+              ✓ Address located
+            </p>
+          )}
+          {!GOOGLE_MAPS_KEY && (
+            <p className="receipt-address-hint">
+              Address search unavailable — VITE_GOOGLE_MAPS_KEY not set.
+            </p>
+          )}
         </div>
+
         <div className="receipt-field">
           <label className="receipt-field-label" htmlFor="contactNumber">Contact Number</label>
           <input
