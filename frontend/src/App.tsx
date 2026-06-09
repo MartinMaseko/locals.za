@@ -9,6 +9,7 @@ import { WazeRouteProvider } from './components/contexts/WazeRouteContext';
 import SEOHead from './components/SEO/SEOHead';
 import StructuredData from './components/SEO/StructuredData';
 import PWAInstallBanner from './components/pwa/PWAInstallBanner';
+import UpdateBanner from './components/pwa/UpdateBanner';
 
 // ── Critical path (landing = /order/select-store) — kept eager ───────────────
 import LayOut from './components/pages/LayOut';
@@ -90,6 +91,8 @@ function App() {
         <AuthProvider>
           <WazeRouteProvider>
             <ScrollToTop />
+            {/* PWA update bar — appears at top when a new version is waiting */}
+            <UpdateBanner />
             {/* PWA install sheet — mounted globally; auto-shows on /order/select-store */}
             <PWAInstallBanner />
             <Suspense fallback={<PageLoader />}>

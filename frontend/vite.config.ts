@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       // Use the hand-crafted manifest.webmanifest in /public instead of generating one.
       // This avoids duplicating manifest entries and keeps icons pointing to correct paths.
       manifest: false,
@@ -15,8 +15,7 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         sourcemap: true,
-        // Skip waiting and claim clients immediately
-        skipWaiting: true,
+        skipWaiting: false,
         clientsClaim: true,
         // Cache Google Fonts to improve LCP on repeat visits
         runtimeCaching: [

@@ -16,15 +16,26 @@ let _gmapsPromise: Promise<void> | null = null;
 
 const loadGoogleMaps = (): Promise<void> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((window as any).google?.maps?.places?.AutocompleteSuggestion) return Promise.resolve();
+  const g = window as any;
+  if (g.google?.maps?.places?.AutocompleteSuggestion) return Promise.resolve();
   if (_gmapsPromise) return _gmapsPromise;
-  _gmapsPromise = new Promise((resolve, reject) => {
+  _gmapsPromise = new Promise<void>((resolve, reject) => {
+    const cb = '__localsza_gmaps_cb__';
+    // Maps JS API invokes this callback once the core is ready — importLibrary
+    // is guaranteed to exist at that point (unlike in onload with loading=async).
+    g[cb] = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (g.google.maps.importLibrary as (lib: string) => Promise<any>)('places')
+        .then(() => resolve())
+        .catch(reject)
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        .finally(() => { delete g[cb]; });
+    };
     const s = document.createElement('script');
-    // Include libraries=places so AutocompleteSuggestion is ready on onload
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&loading=async&callback=${cb}`;
     s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Google Maps failed to load'));
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    s.onerror = () => { delete g[cb]; reject(new Error('Google Maps failed to load')); };
     document.head.appendChild(s);
   });
   return _gmapsPromise;
