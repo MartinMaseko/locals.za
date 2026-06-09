@@ -2,7 +2,7 @@
 
 https://locals-za.co.za
 
-LocalsZA is a wholesale pickup and delivery platform built for South African SMEs — spaza shops, salons, fast-food outlets, and informal traders. Customers upload a receipt from a cash-and-carry store; the platform prices the delivery, collects payment via Ozow, and dispatches a driver. The admin team reviews receipts, assigns drivers, and monitors operations through the Command Centre. Drivers manage their jobs through a dedicated mobile-first app.
+LocalsZA is a wholesale pickup and delivery platform built for South African SMEs — spaza shops, salons, fast-food outlets, and informal traders. Customers upload a receipt from a cash-and-carry store; the platform prices the delivery, collects payment via PayFast, and dispatches a driver. The admin team reviews receipts, assigns drivers, and monitors operations through the Command Centre. Drivers manage their jobs through a dedicated mobile-first app.
 
 The MVP is live. Levi Version One delivers the complete driver system end-to-end: PIN authentication, job workflow, assignment from Command Centre, and revenue tracking.
 
@@ -15,7 +15,7 @@ The MVP is live. Levi Version One delivers the complete driver system end-to-end
 - [Project Structure](#project-structure)
 - [Backend — .NET API on Azure](#backend--net-api-on-azure)
 - [Frontend Architecture](#frontend-architecture)
-- [Ozow Pay-by-Bank Integration](#ozow-pay-by-bank-integration)
+- [PayFast Payment Integration](#payfast-payment-integration)
 - [Driver System](#driver-system)
 - [Command Centre](#command-centre)
 - [API Reference](#api-reference)
@@ -29,7 +29,7 @@ The MVP is live. Levi Version One delivers the complete driver system end-to-end
 
 | Role | Interface | Purpose |
 |------|-----------|---------|
-| **Customer** | Storefront (React) | Upload receipt, get delivery quote, pay via Ozow, track order |
+| **Customer** | Storefront (React) | Upload receipt, get delivery quote, pay via PayFast, track order |
 | **Driver** | Driver App (React, mobile-first) | Accept jobs, navigate, update status, track earnings |
 | **Admin** | Command Centre (React) | Review receipts, assign drivers, manage stores, set pricing |
 
@@ -41,11 +41,11 @@ The MVP is live. Levi Version One delivers the complete driver system end-to-end
 |-------|-----------|
 | Frontend | React 19, TypeScript 5.8, Vite 7, React Router 7 |
 | Backend | .NET 10 (C#), ASP.NET Core Minimal API |
-| Database | Azure Cosmos DB (NoSQL, Newtonsoft CamelCase serialisation) |
+| Database | Azure Cosmos DB (NoSQL, CamelCase serialisation) |
 | Authentication | Firebase Authentication — email/password (customers), HMAC signed tokens (admin), Firebase custom tokens (drivers) |
-| Payments | Ozow Pay-by-Bank (SHA-512 signed requests) |
+| Payments | PayFast (MD5 signed form POST + ITN webhook) |
 | Storage | Azure Blob Storage (receipt images, store logos) |
-| Maps | Azure Maps (geocoding, distance, routing) |
+| Maps | Azure Maps (geocoding, distance, routing) + Google Places API (address autocomplete) |
 | Email | MailKit over SMTP |
 | Hosting | Azure App Service — Linux, .NET 10, self-contained (backend); Netlify (frontend) |
 | PWA | vite-plugin-pwa with auto-update, Brotli/Gzip compression |
@@ -70,7 +70,7 @@ locals.za/
 │   │   ├── AuthEndPoints.cs    # Admin HMAC token login
 │   │   ├── DriverEndpoints.cs  # Driver auth, jobs, status, location, revenue
 │   │   ├── OrderEndPoints.cs   # Order CRUD, status updates
-│   │   ├── PaymentEndpoints.cs # Ozow initiation and webhook callback
+│   │   ├── PaymentEndpoints.cs # PayFast initiation, backend redirect page, ITN webhook
 │   │   ├── QuoteEndpoints.cs   # Delivery pricing quotes
 │   │   ├── ReceiptsEndpoints.cs# Receipt upload (OCR), retrieval
 │   │   ├── StoreEndpoints.cs   # Store catalogue CRUD
@@ -94,14 +94,15 @@ locals.za/
 │       ├── PricingService.cs       # Delivery fee calculation from Cosmos config container
 │       ├── MapsService.cs          # Azure Maps distance + geocoding
 │       ├── NotificationService.cs  # Push notifications to user inbox
-│       └── OzowService.cs          # Ozow SHA-512 hash and transaction verification
+│       ├── OzowService.cs          # Legacy — kept for historical payment record compatibility
+│       └── PayfastService.cs       # PayFast MD5 signature, form initiation, ITN verification
 │
 └── frontend/                   # React + Vite frontend
     ├── package.json
     ├── vite.config.ts
     ├── netlify.toml            # Build config + CSP headers + SPA redirect
+    ├── index.html              # Meta CSP tag (kept in sync with netlify.toml)
     ├── public/
-    │   └── _headers
     └── src/
         ├── App.tsx             # All route definitions
         ├── main.tsx
@@ -114,6 +115,12 @@ locals.za/
         │   │   └── CartContext.tsx
         │   └── pages/
         │       ├── storepages/         # Customer storefront, checkout, orders
+        │       │   └── userjourney/
+        │       │       ├── WholesaleLayout.tsx  # Order funnel shell + onPay logic
+        │       │       ├── SelectStore.tsx
+        │       │       ├── UploadReceipt.tsx    # Google Places address autocomplete
+        │       │       ├── DeliveryPage.tsx     # Azure Maps quote + route display
+        │       │       └── PaymentPage.tsx      # PayFast payment button
         │       ├── commandcentre/      # Admin Command Centre (9 pages)
         │       │   ├── pages/          # Dashboard, Orders, Payments, Receipts,
         │       │   │                   # Deliveries, Drivers, Metrics, Pricing, Stores
@@ -144,7 +151,7 @@ locals.za/
 
 ### Cosmos DB Data Model
 
-The backend uses Azure Cosmos DB. All containers use camelCase field names (Newtonsoft CamelCase serialiser policy). **STJ `[JsonPropertyName]` attributes affect HTTP responses only — Cosmos queries must use camelCase field names.**
+The backend uses Azure Cosmos DB. All containers use camelCase field names (CamelCase serialiser policy). **STJ `[JsonPropertyName]` attributes affect HTTP responses only — Cosmos queries must use camelCase field names.**
 
 | Container | Partition Key | Purpose |
 |-----------|--------------|---------|
@@ -152,7 +159,7 @@ The backend uses Azure Cosmos DB. All containers use camelCase field names (Newt
 | `drivers` | `/id` | Driver profiles — PIN hash, status, location, vehicle |
 | `receipts` | `/orderId` | Receipt documents — blob URL, OCR items, weight class, admin review state |
 | `stores` | `/id` | Wholesale store catalogue |
-| `payments` | `/orderId` | Ozow payment records |
+| `payments` | `/orderId` | PayFast payment records — status, signature, `pf_payment_id` |
 | `config` | `/id` | Single `pricing` document — delivery fee parameters |
 
 ### Authentication Model
@@ -168,9 +175,9 @@ The backend uses Azure Cosmos DB. All containers use camelCase field names (Newt
 
 ### Key Design Notes
 
-- **Cosmos serialiser**: `Microsoft.Azure.Cosmos` 3.59.0 with `CosmosPropertyNamingPolicy.CamelCase`. The built-in serialiser uses STJ (not Newtonsoft) — `QueryAsync<T>` works correctly with C# model types. `QueryAsync<JObject>` and `QueryAsync<JsonElement>` both silently fail (serialiser cannot produce Newtonsoft/STJ foreign types).
+- **Cosmos serialiser**: `Microsoft.Azure.Cosmos` 3.59.0 with `CosmosPropertyNamingPolicy.CamelCase`. `QueryAsync<T>` works correctly with C# model types. `QueryAsync<JObject>` and `QueryAsync<JsonElement>` both silently fail.
 - **Cross-partition queries**: All `QueryAsync` calls without a partition key hint fan out across all partitions. Point-reads (`GetAsync`) require both `id` and partition key value.
-- **Duplicate seed documents**: Seed orders may appear in multiple partitions. Assign and job-detail endpoints prefer the document matching the expected driver ID or user ID rather than relying on `FirstOrDefault()`.
+- **Payment redirect page**: `GET /api/payment/redirect/{orderId}` returns a self-submitting HTML page that POSTs directly to PayFast. This endpoint has no CSP headers, so the form POST to PayFast is unrestricted. The frontend navigates to it rather than building a DOM form, which avoids both GTM form interception and CSP `form-action` enforcement.
 
 ---
 
@@ -184,9 +191,10 @@ The backend uses Azure Cosmos DB. All containers use camelCase field names (Newt
 - `/commandlogin` — Command Centre admin login
 - `/driverlogin` — Driver PIN login
 - `/calculator` — Delivery cost calculator (sales tool)
+- `/driver-register` — Driver application form
 
 **Customer (protected):**
-- `/order/select-store` → `/order/delivery` → `/order/payment` — Order journey
+- `/order/select-store` → `/order/upload-receipt` → `/order/delivery` → `/order/payment` — Order journey
 - `/useraccount`, `/userprofile`, `/userorders` — Account management
 - `/messages` — Notification inbox
 
@@ -213,15 +221,56 @@ The backend uses Azure Cosmos DB. All containers use camelCase field names (Newt
 - **Response interceptor**: on 401, refreshes the Firebase token and retries the request once.
 - **Base URL**: `import.meta.env.VITE_API_URL`
 
+### Address Autocomplete
+
+`UploadReceipt.tsx` uses the Google Places **AutocompleteSuggestion** API (new Places API, not the deprecated `AutocompleteService`). The Maps JS API is loaded dynamically with `&libraries=places`. Geocoding uses `Place.fetchFields({ fields: ['location'] })`. Restricted to `ZA` region. Requires `VITE_APP_GOOGLE_MAPS_API_KEY`.
+
 ---
 
-## Ozow Pay-by-Bank Integration
+## PayFast Payment Integration
 
-1. Customer completes delivery quote → frontend calls `POST /api/payment/process/:orderId`.
-2. Backend builds a SHA-512 signed form POST to the Ozow gateway.
-3. Customer authenticates with their bank on the Ozow hosted page.
-4. Ozow sends a server-to-server `POST /api/payment/notify` callback — backend verifies hash, confirms via `GetTransactionByReference`, and updates the order status.
-5. Customer is redirected to `/payment-success` or `/payment-cancelled`.
+### Flow
+
+```
+Customer clicks "Pay via PayFast"
+        │
+        ▼
+POST /api/orders  →  orderId
+        │
+        ▼
+window.location.href = /api/payment/redirect/{orderId}
+        │
+        ▼
+Backend: GET /api/payment/redirect/{orderId}
+  - Loads order from Cosmos
+  - Calls PayfastService.Initiate() → MD5-signed fields
+  - Creates pending Payment doc in Cosmos
+  - Returns self-submitting HTML form (no CSP headers)
+        │
+        ▼
+Browser auto-submits form → https://www.payfast.co.za/eng/process
+        │
+        ▼
+Customer completes payment on PayFast hosted page
+        │
+        ▼
+PayFast sends ITN to POST /api/payment/notify
+  - Verifies MD5 signature
+  - Updates Payment doc (pf_payment_id, status)
+  - Updates Order status (paid / cancelled / pending)
+        │
+        ▼
+PayFast redirects browser to return_url
+(/order/payment/success/{orderId} or /order/payment/cancelled/{orderId})
+```
+
+### Signature Algorithm
+
+PayFast uses MD5. Fields are sorted alphabetically, URL-encoded (`Uri.EscapeDataString` with `%20` → `+`), joined with `&`, optional passphrase appended, then MD5 hex-lowercased.
+
+### Why Backend Redirect
+
+GTM monkey-patches `HTMLFormElement.prototype.submit()` for form tracking. When a cross-origin script (GTM) re-triggers a form submission, Chrome applies CSP `form-action` in a way that blocks the request even with the correct URL listed. The backend redirect page bypasses this: the page served by the API has no CSP headers and no GTM, so the form submits to PayFast without restriction.
 
 ---
 
@@ -231,7 +280,7 @@ The backend uses Azure Cosmos DB. All containers use camelCase field names (Newt
 
 `POST /api/admin/drivers` — body: `{ fullName, pin, driverId?, email?, phoneNumber?, vehicleType?, vehicleModel? }`
 
-The endpoint hashes the PIN as `SHA256("{driverId}:{pin}")`, stores it as `pinHash`, and returns the plain-text credentials once for the admin to share with the driver. The driver ID and PIN are never stored in plain text after this response.
+The endpoint hashes the PIN as `SHA256("{driverId}:{pin}")`, stores it as `pinHash`, and returns the plain-text credentials once for the admin to share with the driver.
 
 ### Driver Login Flow
 
@@ -260,7 +309,7 @@ All driver endpoints authenticated via Firebase Bearer token
 assigned → accepted → arrivedAtPickup → loaded → delivered
 ```
 
-Each `PATCH /api/drivers/me/jobs/{orderId}/status` advances the job one step. On `delivered`:
+On `delivered`:
 - `driverPayout` = `deliveryFee × 0.8`
 - `platformFee` = `deliveryFee × 0.2`
 - Driver status set back to `available`
@@ -330,6 +379,7 @@ The Command Centre is the operational admin UI at `/commandcentre`. It authentic
 |--------|------|------|-------------|
 | GET | `/api/drivers` | Admin | List all drivers |
 | POST | `/api/admin/drivers` | Admin | Create driver account |
+| PATCH | `/api/admin/drivers/{driverId}` | Admin | Update driver profile fields |
 | DELETE | `/api/admin/drivers/{driverId}` | Admin | Delete driver account |
 | GET | `/api/drivers/me` | Driver token | Get own profile |
 | PATCH | `/api/drivers/me/status` | Driver token | Toggle available / offline |
@@ -338,13 +388,16 @@ The Command Centre is the operational admin UI at `/commandcentre`. It authentic
 | GET | `/api/drivers/me/jobs/{orderId}` | Driver token | Get single job detail |
 | PATCH | `/api/drivers/me/jobs/{orderId}/status` | Driver token | Advance job status |
 | GET | `/api/drivers/me/revenue` | Driver token | Earnings summary (today/week/month/all-time) |
+| POST | `/api/drivers/apply` | None | Submit driver application (multipart — uploads licence + proof of residence) |
 
 ### Payments
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/payment/process/{orderId}` | Token | Initiate Ozow payment |
-| POST | `/api/payment/notify` | None | Ozow webhook callback |
+| POST | `/api/payment/initiate/{orderId}` | Token (optional) | Initiate PayFast payment — returns `{ postUrl, fields }` JSON |
+| GET | `/api/payment/redirect/{orderId}` | None | Returns self-submitting HTML page that POSTs to PayFast |
+| POST | `/api/payment/notify` | None (MD5 verified) | PayFast ITN webhook callback |
+| GET | `/api/payment/status/{orderId}` | Token (optional) | Poll payment status after return redirect |
 | GET | `/api/admin/payments` | Admin | All payment records |
 
 ### Pricing
@@ -377,6 +430,7 @@ The Command Centre is the operational admin UI at `/commandcentre`. It authentic
 
 ```
 VITE_API_URL=https://localsza-api-a7eegch0fxfjh3at.southafricanorth-01.azurewebsites.net
+VITE_APP_GOOGLE_MAPS_API_KEY=
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=
 VITE_FIREBASE_PROJECT_ID=localsza
@@ -394,12 +448,11 @@ Cosmos__PrimaryKey
 Cosmos__DatabaseName
 Firebase__ProjectId
 Firebase__ServiceAccountPath        # = "firebase-service-account.json"
-Ozow__SiteCode
-Ozow__PrivateKey
-Ozow__ApiKey
-Ozow__IsTest
-Ozow__PaymentUrl
-Ozow__ApiUrl
+Payfast__MerchantId
+Payfast__MerchantKey
+Payfast__Passphrase                  # empty string if none set on PayFast account
+Payfast__IsTest                      # false for production
+Payfast__NotifyUrl                   # full URL to /api/payment/notify (PayFast calls API directly)
 AzureMaps__SubscriptionKey
 AzureBlob__ConnectionString
 AzureBlob__ContainerName
@@ -410,7 +463,7 @@ Email__Port
 Email__Username
 Email__Password
 Email__From
-AppBaseUrl
+AppBaseUrl                           # frontend base URL for PayFast return/cancel URLs
 ```
 
 ---
@@ -424,7 +477,8 @@ AppBaseUrl
 - Azure Cosmos DB account (or Cosmos emulator)
 - Azure Blob Storage account
 - Firebase project (Authentication + service account JSON)
-- Ozow merchant account (test or production)
+- PayFast merchant account (production or sandbox)
+- Google Maps API key with Places API enabled
 
 ### Backend
 
@@ -440,7 +494,7 @@ dotnet run
 ```bash
 cd frontend
 npm install
-# Configure frontend/.env with VITE_API_URL and Firebase client credentials
+# Configure frontend/.env with VITE_API_URL, VITE_APP_GOOGLE_MAPS_API_KEY, and Firebase credentials
 npm run dev
 # App runs on http://localhost:5173
 ```
@@ -486,18 +540,7 @@ Cosmos DB firewall: `ip-range-filter = "0.0.0.0"` (accept Azure datacenter IPs).
 
 ### Frontend — Netlify
 
-Netlify is connected to the GitHub repo. Merging `issue-186-Levi-VersionOne` into `main` triggers an automatic build using `netlify.toml`:
-
-```toml
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[[redirects]]
-  from = "/*"
-  to   = "/index.html"
-  status = 200
-```
+Netlify is connected to the GitHub repo. Pushing to `main` triggers an automatic build using `netlify.toml`.
 
 To deploy manually:
 

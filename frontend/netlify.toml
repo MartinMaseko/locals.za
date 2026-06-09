@@ -26,6 +26,8 @@
         https://europe-west4-localsza.cloudfunctions.net
         https://maps.googleapis.com
         https://places.googleapis.com
+        https://fonts.googleapis.com
+        https://fonts.gstatic.com
         https://www.google-analytics.com https://analytics.google.com
         https://stats.g.doubleclick.net https://region1.google-analytics.com
         https://region1.analytics.google.com https://www.googletagmanager.com
