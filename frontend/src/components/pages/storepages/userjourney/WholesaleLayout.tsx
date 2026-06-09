@@ -116,10 +116,11 @@ const WholesaleLayout = () => {
       const orderId = orderRes.data.id;
       setOrder(prev => ({ ...prev, orderId, orderNumber: orderRes.data.order_number ?? '' }));
 
-      // Step 2: Navigate to the backend redirect page.
-      // The backend serves a self-submitting PayFast form with no frontend CSP,
-      // so GTM interception and form-action CSP enforcement never apply.
-      window.location.href = `/api/payment/redirect/${orderId}`;
+      // Step 2: Navigate to the backend redirect page using the absolute API URL.
+      // A relative path would be caught by Netlify's SPA catch-all (/* → index.html)
+      // and handed to React Router, which has no /api/* route.
+      const apiBase = (import.meta.env.VITE_API_URL as string) || '';
+      window.location.href = `${apiBase}/api/payment/redirect/${orderId}`;
     } catch {
       setPayError('Could not initiate payment. Please check your connection and try again.');
       setPaying(false);
