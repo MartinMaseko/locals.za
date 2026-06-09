@@ -116,26 +116,10 @@ const WholesaleLayout = () => {
       const orderId = orderRes.data.id;
       setOrder(prev => ({ ...prev, orderId, orderNumber: orderRes.data.order_number ?? '' }));
 
-      // Step 2: Get Ozow payment payload
-      const initRes = await api.post<{ postUrl: string; fields: Record<string, string> }>(
-        `/api/payment/initiate/${orderId}`
-      );
-      const { postUrl, fields } = initRes.data;
-
-      // Step 3: Build a hidden form and submit — browser navigates to Ozow
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = postUrl;
-      for (const [key, value] of Object.entries(fields)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
-      }
-      document.body.appendChild(form);
-      form.submit();
-      // Browser navigates away — code below will not run
+      // Step 2: Navigate to the backend redirect page.
+      // The backend serves a self-submitting PayFast form with no frontend CSP,
+      // so GTM interception and form-action CSP enforcement never apply.
+      window.location.href = `/api/payment/redirect/${orderId}`;
     } catch {
       setPayError('Could not initiate payment. Please check your connection and try again.');
       setPaying(false);

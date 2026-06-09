@@ -15,13 +15,15 @@ interface PlacePrediction {
 let _gmapsPromise: Promise<void> | null = null;
 
 const loadGoogleMaps = (): Promise<void> => {
-  if ((window as Window & { google?: unknown }).google) return Promise.resolve();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((window as any).google?.maps?.places?.AutocompleteSuggestion) return Promise.resolve();
   if (_gmapsPromise) return _gmapsPromise;
   _gmapsPromise = new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places&loading=async`;
+    // Include libraries=places so AutocompleteSuggestion is ready on onload
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
     s.async = true;
-    s.onload  = () => resolve();
+    s.onload = () => resolve();
     s.onerror = () => reject(new Error('Google Maps failed to load'));
     document.head.appendChild(s);
   });
@@ -34,29 +36,42 @@ const useGooglePlacesAutocomplete = (query: string, enabled: boolean) => {
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const debounceRef = useRef<number | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const serviceRef = useRef<any>(null);
+  const sessionTokenRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!GOOGLE_MAPS_KEY) return;
     loadGoogleMaps()
-      .then(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        serviceRef.current = new (window as any).google.maps.places.AutocompleteService();
-        setReady(true);
-      })
+      .then(() => setReady(true))
       .catch(() => {});
   }, []);
 
-  const search = useCallback((q: string) => {
-    if (!ready || !serviceRef.current || !q.trim() || q.length < 3) {
+  const search = useCallback(async (q: string) => {
+    if (!ready || !q.trim() || q.length < 3) {
       setSuggestions([]);
       return;
     }
-    serviceRef.current.getPlacePredictions(
-      { input: q, componentRestrictions: { country: 'za' } },
-      (results: PlacePrediction[] | null) => setSuggestions(results ?? []),
-    );
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const places = (window as any).google.maps.places;
+      if (!sessionTokenRef.current) {
+        sessionTokenRef.current = new places.AutocompleteSessionToken();
+      }
+      const result = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input: q,
+        sessionToken: sessionTokenRef.current,
+        includedRegionCodes: ['ZA'],
+      });
+      setSuggestions(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (result.suggestions as any[]).map((s: any) => ({
+          description: s.placePrediction.text.text,
+          place_id: s.placePrediction.placeId,
+        }))
+      );
+    } catch {
+      setSuggestions([]);
+    }
   }, [ready]);
 
   useEffect(() => {
@@ -66,21 +81,20 @@ const useGooglePlacesAutocomplete = (query: string, enabled: boolean) => {
     return () => { if (debounceRef.current != null) clearTimeout(debounceRef.current); };
   }, [query, enabled, search]);
 
-  const geocodePlaceId = (placeId: string): Promise<{ lat: number; lng: number } | null> =>
-    new Promise(resolve => {
+  const geocodePlaceId = async (placeId: string): Promise<{ lat: number; lng: number } | null> => {
+    try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const g = (window as any).google?.maps;
-      if (!g) { resolve(null); return; }
-      new g.Geocoder().geocode(
-        { placeId },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (results: any[] | null) => {
-          if (!results?.length) { resolve(null); return; }
-          const loc = results[0].geometry.location;
-          resolve({ lat: loc.lat() as number, lng: loc.lng() as number });
-        },
-      );
-    });
+      const places = (window as any).google.maps.places;
+      const place = new places.Place({ id: placeId });
+      await place.fetchFields({ fields: ['location'] });
+      const loc = place.location;
+      if (!loc) return null;
+      sessionTokenRef.current = null; // session ends after place detail fetch
+      return { lat: loc.lat() as number, lng: loc.lng() as number };
+    } catch {
+      return null;
+    }
+  };
 
   const clear = () => setSuggestions([]);
 
@@ -393,7 +407,7 @@ const UploadReceipt = () => {
           )}
           {!GOOGLE_MAPS_KEY && (
             <p className="receipt-address-hint">
-              Address search unavailable — VITE_GOOGLE_MAPS_KEY not set.
+              Address search unavailable — VITE_APP_GOOGLE_MAPS_API_KEY not set.
             </p>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import OzowLogo from '../../../assets/images/OzowLogo.png';
+import PayfastLogo from '../../../assets/images/Payfastlogo.webp';
 import mapLightVersion from '../../../assets/images/mapLightversion.webp';
 import type { WholesaleOutletContext } from './wholesale.types';
 import { formatRand } from './wholesale.types';
@@ -52,15 +52,15 @@ const PaymentPage = () => {
         onClick={onPay}
         disabled={paying || amountDue <= 0}
       >
-        {paying ? 'Redirecting to Ozow…' : `Pay ${formatRand(amountDue)} via Ozow`}
+        {paying ? 'Redirecting to PayFast…' : `Pay ${formatRand(amountDue)} via PayFast`}
       </button>
 
       <div className="payment-trust-logos">
-        <img src={OzowLogo} alt="Ozow" className="payment-ozow-logo" />
+        <img src={PayfastLogo} alt="PayFast" className="payment-ozow-logo" />
       </div>
 
       <p style={{ textAlign: 'center', fontSize: '0.78rem', color: '#888', marginTop: '0.5rem' }}>
-        You will be redirected to Ozow's secure payment page.
+        You will be redirected to PayFast's secure payment page.
       </p>
 
       <button
