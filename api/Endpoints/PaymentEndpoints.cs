@@ -8,13 +8,13 @@ public static class PaymentEndpoints
     public static void MapPaymentEndpoints(this WebApplication app)
     {
         // POST /api/payment/initiate/{orderId}
-        // Returns the URL + hidden form fields the frontend POSTs to Ozow.
+        // Returns the URL + hidden form fields the frontend POSTs to PayFast.
         // Auth optional — guests can pay too.
         app.MapPost("/api/payment/initiate/{orderId}", async (
             HttpContext ctx,
             string orderId,
             CosmosService cosmos,
-            OzowService ozow,
+            PayfastService payfast,
             IConfiguration config) =>
         {
             var uid = AuthHelpers.GetUid(ctx); // null = guest, that's fine
@@ -41,22 +41,21 @@ public static class PaymentEndpoints
                 return Results.BadRequest(new { error = "Order has no payable amount" });
 
             // Email comes from Firebase claims for authed users.
-            // Guests can pass it on the order if needed — fall back to empty.
             var customerEmail = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 
             var baseAppUrl = config["AppBaseUrl"] ?? "http://localhost:5173";
 
-            OzowInitiateResult result;
+            PayfastInitiateResult result;
             try
             {
-                result = ozow.Initiate(order, customerEmail, baseAppUrl);
+                result = payfast.Initiate(order, customerEmail, baseAppUrl);
             }
             catch (Exception ex)
             {
                 return Results.Problem(detail: ex.Message, statusCode: 500);
             }
 
-            // Persist a pending Payment doc so the webhook can correlate later.
+            // Persist a pending Payment doc so the ITN webhook can correlate later.
             var payment = new Payment
             {
                 Id          = orderId,
@@ -64,7 +63,7 @@ public static class PaymentEndpoints
                 UserId      = order.UserId,
                 Amount      = order.Total,
                 Status      = "pending",
-                RequestHash = result.Hash
+                RequestHash = result.Signature
             };
             await cosmos.UpsertAsync("payments", payment, orderId);
 
@@ -76,82 +75,140 @@ public static class PaymentEndpoints
         });
 
         // POST /api/payment/notify
-        // Ozow's webhook (form-urlencoded). MUST be anonymous —
-        // already in FirebaseAuthMiddleware skip list.
+        // PayFast ITN (Instant Transaction Notification) — form-urlencoded POST.
+        // MUST be anonymous — already in FirebaseAuthMiddleware skip list.
         app.MapPost("/api/payment/notify", async (
             HttpContext ctx,
             CosmosService cosmos,
-            OzowService ozow,
+            PayfastService payfast,
             ILogger<Program> log) =>
         {
             var form = await ctx.Request.ReadFormAsync();
             var dict = form.ToDictionary(kv => kv.Key, kv => kv.Value.ToString());
 
-            // Step 1: hash check
-            if (!ozow.VerifyNotification(dict))
-                return Results.BadRequest(new { error = "Invalid hash" });
+            // Step 1: verify ITN signature
+            if (!payfast.VerifyItn(dict))
+                return Results.BadRequest(new { error = "Invalid signature" });
 
-            var orderId   = dict.GetValueOrDefault("TransactionReference") ?? "";
-            var txnId     = dict.GetValueOrDefault("TransactionId");
-            var status    = dict.GetValueOrDefault("Status")?.ToLowerInvariant() ?? "error";
-            var statusMsg = dict.GetValueOrDefault("StatusMessage");
+            var orderId       = dict.GetValueOrDefault("m_payment_id") ?? "";
+            var pfPaymentId   = dict.GetValueOrDefault("pf_payment_id");
+            var paymentStatus = dict.GetValueOrDefault("payment_status")?.ToUpperInvariant() ?? "";
 
             if (string.IsNullOrEmpty(orderId))
-                return Results.BadRequest(new { error = "Missing TransactionReference" });
+                return Results.BadRequest(new { error = "Missing m_payment_id" });
 
-            // Step 2: API cross-check (defends against spoofed callbacks
-            // even if hash somehow passes)
-            var apiStatus = await ozow.CheckTransactionStatusAsync(orderId);
-            if (apiStatus is not null &&
-                !string.Equals(apiStatus.Status, status, StringComparison.OrdinalIgnoreCase))
-            {
-                log.LogWarning("Ozow notify: status mismatch — notify={NotifyStatus} api={ApiStatus}",
-                    status, apiStatus.Status);
-                return Results.BadRequest(new { error = "Status mismatch with API" });
-            }
-
-            // Step 3: update the Payment doc
+            // Step 2: update the Payment doc
             var payment = await cosmos.GetAsync<Payment>("payments", orderId, orderId);
             if (payment is null)
             {
-                log.LogWarning("Ozow notify: no Payment doc for order {OrderId} — acking anyway", orderId);
-                return Results.Ok(); // ack to stop Ozow's retry loop
+                log.LogWarning("PayFast ITN: no Payment doc for order {OrderId} — acking anyway", orderId);
+                return Results.Ok(); // ack to stop PayFast's retry loop
             }
 
-            payment.OzowTransactionId = txnId;
-            payment.Status            = status;
-            payment.StatusMessage     = statusMsg;
-            payment.UpdatedAt         = DateTime.UtcNow.ToString("o");
+            payment.PfPaymentId = pfPaymentId;
+            payment.Status      = paymentStatus switch
+            {
+                "COMPLETE"  => "complete",
+                "FAILED"    => "failed",
+                "CANCELLED" => "cancelled",
+                _           => payment.Status
+            };
+            payment.UpdatedAt = DateTime.UtcNow.ToString("o");
             await cosmos.UpsertAsync("payments", payment, orderId);
 
-            // Step 4: flip the Order status based on Ozow's status code
+            // Step 3: flip the Order status
             var orders = await cosmos.QueryAsync<Order>("orders",
                 "SELECT * FROM c WHERE c.id = @id",
                 new() { ["@id"] = orderId });
             var order = orders.FirstOrDefault();
             if (order is not null)
             {
-                order.Status = status switch
+                order.Status = paymentStatus switch
                 {
-                    "complete"             => "paid",
-                    "cancelled"            => "cancelled",
-                    "abandoned"            => "cancelled",
-                    "error"                => "pending", // user can retry payment
-                    "pendinginvestigation" => "pending",
-                    _                      => order.Status
+                    "COMPLETE"  => "paid",
+                    "CANCELLED" => "cancelled",
+                    "FAILED"    => "pending", // user can retry payment
+                    _           => order.Status
                 };
                 order.UpdatedAt = DateTime.UtcNow.ToString("o");
                 var pk = order.UserId ?? order.GuestId!;
                 await cosmos.UpsertAsync("orders", order, pk);
             }
 
-            log.LogInformation("Ozow notify processed: order={OrderId} status={Status}", orderId, status);
+            log.LogInformation("PayFast ITN processed: order={OrderId} status={Status}", orderId, paymentStatus);
             return Results.Ok();
         });
 
+        // GET /api/payment/redirect/{orderId}
+        // Returns a self-submitting HTML page that POSTs to PayFast.
+        // Served by the API (no CSP headers) so GTM/form-action CSP never applies.
+        app.MapGet("/api/payment/redirect/{orderId}", async (
+            HttpContext ctx,
+            string orderId,
+            CosmosService cosmos,
+            PayfastService payfast,
+            IConfiguration config) =>
+        {
+            var uid = AuthHelpers.GetUid(ctx);
+            Order? order;
+            if (uid is not null)
+            {
+                order = await cosmos.GetAsync<Order>("orders", orderId, uid);
+            }
+            else
+            {
+                var rows = await cosmos.QueryAsync<Order>("orders",
+                    "SELECT * FROM c WHERE c.id = @id",
+                    new() { ["@id"] = orderId });
+                order = rows.FirstOrDefault();
+            }
+
+            if (order is null)
+                return Results.NotFound("Order not found");
+
+            if (order.Total <= 0)
+                return Results.BadRequest("Order has no payable amount");
+
+            var customerEmail = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var baseAppUrl = config["AppBaseUrl"] ?? "http://localhost:5173";
+
+            PayfastInitiateResult result;
+            try { result = payfast.Initiate(order, customerEmail, baseAppUrl); }
+            catch (Exception ex) { return Results.Problem(detail: ex.Message, statusCode: 500); }
+
+            var payment = new Payment
+            {
+                Id          = orderId,
+                OrderId     = orderId,
+                UserId      = order.UserId,
+                Amount      = order.Total,
+                Status      = "pending",
+                RequestHash = result.Signature
+            };
+            await cosmos.UpsertAsync("payments", payment, orderId);
+
+            var inputs = string.Concat(result.Fields.Select(kv =>
+                $"<input type=\"hidden\" name=\"{System.Net.WebUtility.HtmlEncode(kv.Key)}\" value=\"{System.Net.WebUtility.HtmlEncode(kv.Value)}\"/>\n"));
+
+            var html = $"""
+                <!DOCTYPE html>
+                <html lang="en">
+                <head><meta charset="UTF-8"><title>Redirecting to PayFast…</title></head>
+                <body style="font-family:sans-serif;text-align:center;padding-top:20vh">
+                <p>Redirecting to PayFast, please wait…</p>
+                <form id="pf" method="POST" action="{System.Net.WebUtility.HtmlEncode(result.PostUrl)}">
+                {inputs}</form>
+                <script>document.getElementById('pf').submit();</script>
+                </body>
+                </html>
+                """;
+
+            return Results.Content(html, "text/html; charset=utf-8");
+        });
+
         // GET /api/payment/status/{orderId}
-        // Frontend polls this after Ozow redirects back to /order/payment/success
-        // because the SuccessUrl redirect can arrive before the notify webhook.
+        // Frontend polls this after PayFast redirects back to /order/payment/success
+        // because the return_url redirect can arrive before the ITN webhook.
         app.MapGet("/api/payment/status/{orderId}", async (
             HttpContext ctx,
             string orderId,

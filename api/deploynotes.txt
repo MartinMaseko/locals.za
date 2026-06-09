@@ -176,17 +176,59 @@ CLEAN UP (optional, after successful deploy)
 ----------------------------------------------------
 LAST DEPLOYED
 ----------------------------------------------------
-  Date    : 2026-06-05
+  Date    : 2026-06-09
   By      : kmmas
-  Version : Slice 20 (Ozow card payment — PaymentMethodType field)
-  Notes   : Added ["PaymentMethodType"] = "card" to OzowService.Initiate()
-            payload after HashCheck is set (does not alter SHA-512 signature).
-            Pre-selects the Visa card tab on the Ozow hosted checkout page.
-            Also: Deliveries CC page — search bar added (client-side filter
-            by order number). Receipts CC modal — buyer delivery_fee and
-            order total now shown in review metadata panel.
-  Build   : Self-contained linux-x64, 54.3 MB, 0 errors, 2 pre-existing warnings
-  Status  : ✓ Deployed — /api/stores 200 OK confirmed
+  Version : Slice 23 (PayFast integration + backend payment redirect)
+  Notes   : 1. PayfastService.cs — new service replacing Ozow. MD5 signature,
+               alphabetically sorted params. Initiate() + VerifyItn().
+            2. PaymentEndpoints.cs — all 3 endpoints migrated to PayFast ITN.
+               New GET /api/payment/redirect/{orderId}: returns self-submitting
+               HTML page that POSTs to PayFast. Bypasses frontend CSP form-action
+               and GTM form interception (GTM does not run on backend HTML pages).
+            3. FirebaseAuthMiddleware — /api/payment/redirect added to anonymous
+               skip list.
+            4. Payment.cs — added PfPaymentId field.
+            Frontend (Netlify — not in this deploy):
+            5. WholesaleLayout.tsx — onPay now navigates to
+               /api/payment/redirect/{orderId} instead of building a DOM form.
+            6. PaymentPage.tsx — replaced Ozow with PayFast logo + copy.
+            7. CSP (index.html, vite.config.ts, netlify.toml) — added
+               maps.googleapis.com + places.googleapis.com to connect-src;
+               atlas.microsoft.com fonts to vite.config.ts font-src;
+               PayFast URLs with exact path in form-action.
+  Build   : Self-contained linux-x64, 54 MB, 2 pre-existing warnings
+  Status  : ✓ Deployed — /health 200 OK, /api/payment/redirect/test-id 404 confirmed
+
+----------------------------------------------------
+PREVIOUS DEPLOY
+----------------------------------------------------
+  Date    : 2026-06-08
+               Accepts name, surname, ID number, phone, email, vehicle type,
+               load capacity, bank details + 2 file uploads (licence, proof of
+               residence). Uploads files to Azure Blob (driver-applications
+               container) and emails admin@locals-za.co.za via MailKit.
+            2. PATCH /api/admin/drivers/{driverId} — admin-only endpoint to
+               update driver fields (fullName, email, phoneNumber, vehicleType,
+               vehicleModel).
+            3. QuoteEndpoints — DeliveryQuoteRequest now accepts optional
+               DropoffLat/DropoffLng (doubles). When provided, passes
+               "{lat},{lng}" directly to MapsService.GetRouteAsync() bypassing
+               Azure Maps geocoding. Fixes township/informal-settlement addresses
+               that Azure Maps geocoder could not resolve.
+            4. LocalsZaApi.csproj — added StaticWebAssetsEnabled=false to fix
+               SDK 10.0.300 staticwebassets target bug (reported "Creating
+               directory" as errors; pure API project doesn't need static assets).
+            Frontend (not in this deploy — Netlify):
+            5. UploadReceipt.tsx — replaced Azure Maps autocomplete with Google
+               Places AutocompleteService (VITE_APP_GOOGLE_MAPS_API_KEY). Country
+               restricted to ZA. Geocodes selected place to lat/lng, stored in
+               order state and passed to quote API.
+            6. DeliveryPage.tsx — passes dropoffLat/dropoffLng to quote API when
+               Google-resolved coords are available.
+            7. DriverRegistration.tsx — new public page at /driver-register.
+            8. Drivers.tsx (CC) — edit driver modal added.
+  Build   : Self-contained linux-x64, 54.2 MB, 0 errors, 2 pre-existing warnings
+  Status  : ✓ Deployed — /health 200 OK confirmed 21:34 UTC
 
 ----------------------------------------------------
 PREVIOUS DEPLOY

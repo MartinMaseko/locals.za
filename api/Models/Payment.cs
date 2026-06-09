@@ -18,11 +18,15 @@ public class Payment
     // "pending" | "complete" | "cancelled" | "error" | "abandoned" | "pendinginvestigation"
     public string Status { get; set; } = "pending";
 
-    // Ozow's TransactionId (set on /notify webhook)
+    // PayFast's pf_payment_id (set on /notify ITN)
+    [JsonPropertyName("pf_payment_id")]
+    public string? PfPaymentId { get; set; }
+
+    // Legacy: Ozow's TransactionId — kept for backward compatibility with old payment docs
     [JsonPropertyName("ozow_transaction_id")]
     public string? OzowTransactionId { get; set; }
 
-    // The hash we computed when initiating — used to verify the webhook
+    // The signature/hash we computed when initiating — used to verify the webhook
     [JsonPropertyName("request_hash")]
     public string? RequestHash { get; set; }
 

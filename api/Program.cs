@@ -39,6 +39,7 @@ try
     builder.Services.AddSingleton<CosmosService>();
     builder.Services.AddSingleton<BlobService>();
     builder.Services.AddSingleton<OzowService>();
+    builder.Services.AddSingleton<PayfastService>();
     builder.Services.AddSingleton<MapsService>();
     builder.Services.AddSingleton<PricingService>();
     builder.Services.AddSingleton<NotificationService>();
