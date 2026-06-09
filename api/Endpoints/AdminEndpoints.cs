@@ -290,6 +290,40 @@ public static class AdminEndpoints
             });
         });
 
+        // ── Update driver profile ─────────────────────────────────────────────
+        app.MapPatch("/api/admin/drivers/{driverId}", async (HttpContext ctx,
+            string driverId, CosmosService cosmos) =>
+        {
+            if (!AuthHelpers.IsAdmin(ctx)) return Forbidden();
+
+            var body = await ctx.Request.ReadFromJsonAsync<UpdateDriverBody>();
+            if (body is null) return Results.BadRequest(new { error = "Missing body" });
+
+            var driver = await cosmos.GetAsync<Driver>("drivers", driverId, driverId);
+            if (driver is null) return Results.NotFound(new { error = "Driver not found" });
+
+            if (!string.IsNullOrWhiteSpace(body.FullName))    driver.FullName     = body.FullName.Trim();
+            if (!string.IsNullOrWhiteSpace(body.Email))       driver.Email        = body.Email.Trim();
+            if (!string.IsNullOrWhiteSpace(body.PhoneNumber)) driver.PhoneNumber  = body.PhoneNumber.Trim();
+            if (!string.IsNullOrWhiteSpace(body.VehicleType)) driver.VehicleType  = body.VehicleType.Trim();
+            if (body.VehicleModel is not null)                 driver.VehicleModel = body.VehicleModel.Trim();
+
+            await cosmos.UpsertAsync("drivers", driver, driver.Id);
+
+            return Results.Ok(new
+            {
+                id            = driver.Id,
+                driver_id     = driver.DriverId,
+                full_name     = driver.FullName,
+                email         = driver.Email,
+                phone_number  = driver.PhoneNumber,
+                vehicle_type  = driver.VehicleType,
+                vehicle_model = driver.VehicleModel,
+                status        = driver.Status,
+                created_at    = driver.CreatedAt,
+            });
+        });
+
         // ── Delete driver account ─────────────────────────────────────────────
         app.MapDelete("/api/admin/drivers/{driverId}", async (HttpContext ctx,
             string driverId, CosmosService cosmos) =>
@@ -368,6 +402,14 @@ record CreateDriverBody(
     string FullName,
     string Pin,
     string? DriverId,
+    string? Email,
+    string? PhoneNumber,
+    string? VehicleType,
+    string? VehicleModel
+);
+
+record UpdateDriverBody(
+    string? FullName,
     string? Email,
     string? PhoneNumber,
     string? VehicleType,

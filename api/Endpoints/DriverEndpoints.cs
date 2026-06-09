@@ -317,6 +317,61 @@ public static class DriverEndpoints
             });
         }).AllowAnonymous();
 
+        // ── Driver application — anonymous, public ────────────────────────────
+        app.MapPost("/api/drivers/apply", async (HttpContext ctx, BlobService blobs, EmailService email) =>
+        {
+            if (!ctx.Request.HasFormContentType)
+                return Results.BadRequest(new { error = "Multipart form data required." });
+
+            var form = await ctx.Request.ReadFormAsync();
+
+            var firstName     = form["firstName"].FirstOrDefault()     ?? "";
+            var surname       = form["surname"].FirstOrDefault()       ?? "";
+            var idNumber      = form["idNumber"].FirstOrDefault()      ?? "";
+            var phoneNumber   = form["phoneNumber"].FirstOrDefault()   ?? "";
+            var emailAddr     = form["email"].FirstOrDefault()         ?? "";
+            var vehicleType   = form["vehicleType"].FirstOrDefault()   ?? "";
+            var loadCapacity  = form["loadCapacity"].FirstOrDefault()  ?? "";
+            var bankName      = form["bankName"].FirstOrDefault()      ?? "";
+            var accountType   = form["accountType"].FirstOrDefault()   ?? "";
+            var accountNumber = form["accountNumber"].FirstOrDefault() ?? "";
+            var branchCode    = form["branchCode"].FirstOrDefault()    ?? "";
+
+            if (string.IsNullOrWhiteSpace(firstName))
+                return Results.BadRequest(new { error = "First name is required." });
+            if (string.IsNullOrWhiteSpace(surname))
+                return Results.BadRequest(new { error = "Surname is required." });
+            if (string.IsNullOrWhiteSpace(idNumber))
+                return Results.BadRequest(new { error = "ID number is required." });
+
+            var licenseFile = form.Files["license"];
+            var proofFile   = form.Files["proof"];
+
+            if (licenseFile is null || licenseFile.Length == 0)
+                return Results.BadRequest(new { error = "Driver's licence document is required." });
+            if (proofFile is null || proofFile.Length == 0)
+                return Results.BadRequest(new { error = "Proof of residence document is required." });
+            if (licenseFile.Length > 10 * 1024 * 1024)
+                return Results.BadRequest(new { error = "Licence file too large — max 10 MB." });
+            if (proofFile.Length > 10 * 1024 * 1024)
+                return Results.BadRequest(new { error = "Proof of residence file too large — max 10 MB." });
+
+            string licenseUrl, proofUrl;
+            using (var stream = licenseFile.OpenReadStream())
+                licenseUrl = await blobs.UploadPublicAsync(stream, licenseFile.FileName, licenseFile.ContentType, "driver-applications");
+            using (var stream = proofFile.OpenReadStream())
+                proofUrl = await blobs.UploadPublicAsync(stream, proofFile.FileName, proofFile.ContentType, "driver-applications");
+
+            var data = new DriverApplicationData(
+                firstName, surname, idNumber, phoneNumber, emailAddr,
+                vehicleType, loadCapacity, bankName, accountType,
+                accountNumber, branchCode, licenseUrl, proofUrl
+            );
+            await email.SendDriverApplicationAsync(data);
+
+            return Results.Ok(new { success = true, message = "Application submitted. We'll be in touch within 2 business days." });
+        }).DisableAntiforgery().AllowAnonymous();
+
         // Step 2: issue Firebase custom token
         app.MapPost("/api/drivers/login-link", async (HttpContext ctx, CosmosService cosmos,
             FirebaseAuthService firebase) =>

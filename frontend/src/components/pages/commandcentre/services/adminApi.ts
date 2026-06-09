@@ -256,6 +256,14 @@ export const adminApi = {
     vehicleModel?: string;
   }) => api.post<CreatedDriverResponse>('/api/admin/drivers', data).then(r => r.data),
 
+  updateDriver: (driverId: string, data: {
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+    vehicleType?: string;
+    vehicleModel?: string;
+  }) => api.patch<AdminDriverFull>(`/api/admin/drivers/${driverId}`, data).then(r => r.data),
+
   deleteDriver: (driverId: string) =>
     api.delete<{ deleted: boolean; driver_id: string }>(`/api/admin/drivers/${driverId}`).then(r => r.data),
 

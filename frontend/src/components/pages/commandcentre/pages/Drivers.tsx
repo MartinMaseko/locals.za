@@ -37,6 +37,10 @@ const Drivers = () => {
   const [credsModal, setCredsModal]   = useState<CreatedDriverResponse | null>(null);
   // Delete confirmation
   const [deletingId, setDeletingId]   = useState<string | null>(null);
+  // Edit driver
+  const [editDriver, setEditDriver]   = useState<AdminDriverFull | null>(null);
+  const [editForm, setEditForm]       = useState({ fullName: '', email: '', phoneNumber: '', vehicleType: 'bakkie', vehicleModel: '' });
+  const [editSaving, setEditSaving]   = useState(false);
 
   useEffect(() => {
     Promise.all([adminApi.getDrivers(), adminApi.getDriverRevenue()])
@@ -91,6 +95,43 @@ const Drivers = () => {
       setDeletingId(null);
     }
   };
+
+  const openEdit = (d: AdminDriverFull) => {
+    setEditDriver(d);
+    setEditForm({
+      fullName:     d.full_name,
+      email:        d.email        ?? '',
+      phoneNumber:  d.phone_number ?? '',
+      vehicleType:  d.vehicle_type ?? 'bakkie',
+      vehicleModel: d.vehicle_model ?? '',
+    });
+    setError(null);
+  };
+
+  const handleEdit = async () => {
+    if (!editDriver) return;
+    const id = editDriver.driver_id || editDriver.id;
+    setEditSaving(true);
+    setError(null);
+    try {
+      const updated = await adminApi.updateDriver(id, {
+        fullName:     editForm.fullName     || undefined,
+        email:        editForm.email        || undefined,
+        phoneNumber:  editForm.phoneNumber  || undefined,
+        vehicleType:  editForm.vehicleType  || undefined,
+        vehicleModel: editForm.vehicleModel,
+      });
+      setDrivers(prev => prev.map(d => (d.driver_id === id || d.id === id) ? { ...d, ...updated } : d));
+      setEditDriver(null);
+    } catch {
+      setError('Failed to update driver.');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const setEdit = (k: keyof typeof editForm, v: string) =>
+    setEditForm(prev => ({ ...prev, [k]: v }));
 
   const set = (k: keyof typeof EMPTY_FORM, v: string) =>
     setForm(prev => ({ ...prev, [k]: v }));
@@ -154,9 +195,18 @@ const Drivers = () => {
                     </span>
                   </div>
                 </div>
-                {/* Delete — only show when we have a stable ID to delete by */}
+                {/* Edit / Delete controls */}
                 {deleteId && (
-                  <div style={{ marginTop: '0.75rem', textAlign: 'right' }}>
+                  <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                    {deletingId !== deleteId && (
+                      <button
+                        className="cc-btn cc-btn--secondary"
+                        style={{ fontSize: '0.75rem', padding: '3px 10px' }}
+                        onClick={() => openEdit(d)}
+                      >
+                        Edit
+                      </button>
+                    )}
                     {deletingId === deleteId ? (
                       <span style={{ fontSize: '0.78rem', color: '#888' }}>
                         Confirm delete?{' '}
@@ -394,6 +444,99 @@ const Drivers = () => {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit driver modal ── */}
+      {editDriver && (
+        <div className="cc-modal-overlay" onClick={() => setEditDriver(null)}>
+          <div
+            className="cc-modal"
+            style={{ maxWidth: 480 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="cc-modal-header">
+              <h2 className="cc-modal-title">Edit Driver — {editDriver.full_name}</h2>
+              <button className="cc-modal-close" onClick={() => setEditDriver(null)}>✕</button>
+            </div>
+
+            {error && <p className="cc-error">{error}</p>}
+
+            <div className="cc-form-grid">
+              <div className="cc-form-field" style={{ gridColumn: '1 / -1' }}>
+                <label className="cc-form-label">Full Name</label>
+                <input
+                  className="cc-form-input"
+                  value={editForm.fullName}
+                  onChange={e => setEdit('fullName', e.target.value)}
+                  placeholder="Full name"
+                />
+              </div>
+
+              <div className="cc-form-field">
+                <label className="cc-form-label">Phone Number</label>
+                <input
+                  className="cc-form-input"
+                  value={editForm.phoneNumber}
+                  onChange={e => setEdit('phoneNumber', e.target.value)}
+                  placeholder="+27 82 123 4567"
+                />
+              </div>
+
+              <div className="cc-form-field">
+                <label className="cc-form-label">Email</label>
+                <input
+                  type="email"
+                  className="cc-form-input"
+                  value={editForm.email}
+                  onChange={e => setEdit('email', e.target.value)}
+                  placeholder="driver@example.com"
+                />
+              </div>
+
+              <div className="cc-form-field">
+                <label className="cc-form-label">Vehicle Type</label>
+                <select
+                  className="cc-form-input"
+                  value={editForm.vehicleType}
+                  onChange={e => setEdit('vehicleType', e.target.value)}
+                >
+                  {VEHICLE_TYPES.map(v => (
+                    <option key={v} value={v} style={{ textTransform: 'capitalize' }}>
+                      {v.charAt(0).toUpperCase() + v.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="cc-form-field">
+                <label className="cc-form-label">Vehicle Model</label>
+                <input
+                  className="cc-form-input"
+                  value={editForm.vehicleModel}
+                  onChange={e => setEdit('vehicleModel', e.target.value)}
+                  placeholder="e.g. Toyota Hilux"
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+              <button
+                className="cc-btn cc-btn--primary"
+                style={{ minWidth: 120 }}
+                onClick={handleEdit}
+                disabled={editSaving}
+              >
+                {editSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+              <button
+                className="cc-btn cc-btn--secondary"
+                onClick={() => { setEditDriver(null); setError(null); }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

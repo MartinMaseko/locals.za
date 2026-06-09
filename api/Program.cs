@@ -42,6 +42,7 @@ try
     builder.Services.AddSingleton<MapsService>();
     builder.Services.AddSingleton<PricingService>();
     builder.Services.AddSingleton<NotificationService>();
+    builder.Services.AddSingleton<EmailService>();
     builder.Services.AddHttpClient();
 
     var app = builder.Build();
