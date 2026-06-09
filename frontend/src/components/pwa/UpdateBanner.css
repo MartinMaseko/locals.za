@@ -1,0 +1,46 @@
+.update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 184, 3, 0.35);
+  animation: update-banner-slide-down 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes update-banner-slide-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.update-banner__msg {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+}
+
+.update-banner__btn {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #FFB803;
+  background: transparent;
+  color: #FFB803;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.update-banner__btn:hover,
+.update-banner__btn:focus-visible {
+  background: #FFB803;
+  color: #090909;
+  outline: none;
+}

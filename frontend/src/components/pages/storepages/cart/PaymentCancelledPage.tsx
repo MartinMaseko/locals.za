@@ -70,8 +70,8 @@ const PaymentCancelledPage: React.FC = () => {
         const auth = getAuth(app);
         const user = auth.currentUser;
         
-        const isFromPaymentProvider = location.search.includes('TransactionReference') || 
-                              location.search.includes('Status') ||
+        const isFromPaymentProvider = location.search.includes('payment_status') ||
+                              location.search.includes('pf_payment_id') ||
                               location.pathname.includes('/payment-cancelled/');
 
         let orderData: Order | null = null;
